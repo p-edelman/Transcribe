@@ -1,5 +1,3 @@
 #include "transcribe.h"
 
-Transcribe::Transcribe(QObject *parent) : QObject(parent) {
-
-}
+Transcribe::Transcribe(int& argc, char** argv) : QGuiApplication(argc, argv) {}

@@ -1,8 +1,9 @@
-#include <QGuiApplication>
 #include <QQmlApplicationEngine>
 
+#include "transcribe.h"
+
 int main(int argc, char *argv[]) {
-  QGuiApplication app(argc, argv);
+  Transcribe app(argc, argv);
 
   QQmlApplicationEngine engine;
   engine.load(QUrl(QStringLiteral("qrc:/main.qml")));

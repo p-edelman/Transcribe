@@ -1,18 +1,12 @@
 #ifndef TRANSCRIBE_H
 #define TRANSCRIBE_H
 
-#include <QObject>
+#include <QGuiApplication>
 
-/** The main application class. */
-class Transcribe : public QObject
-{
-  Q_OBJECT
+class Transcribe : public QGuiApplication {
+
 public:
-  explicit Transcribe(QObject *parent = 0);
-
-signals:
-
-public slots:
+  Transcribe(int &argc, char **argv);
 };
 
 #endif // TRANSCRIBE_H
