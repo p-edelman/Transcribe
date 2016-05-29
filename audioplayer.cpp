@@ -26,6 +26,14 @@ void AudioPlayer::setAudioControls(QObject* controls) {
   }
 }
 
+void AudioPlayer::seek(SeekDirection direction, int seconds) {
+  if (direction == SeekDirection::FORWARD) {
+    m_player->setPosition(m_player->position() + seconds * 1000);
+  } else {
+    m_player->setPosition(m_player->position() - seconds * 1000);
+  }
+}
+
 void AudioPlayer::openAudioFile(const QString &url) {
   m_player->stop();
   m_player->setMedia(QUrl(url));

@@ -6,6 +6,8 @@
 #include <QDebug>
 #include <QMediaPlayer>
 
+enum SeekDirection {FORWARD, BACKWARD};
+
 /** The 'back-end' class for playing audio files. It is complemented by a
  *  QML MediaControls element to interact with it. */
 class AudioPlayer : public QObject {
@@ -18,6 +20,9 @@ public:
    *  playback.
    *  @param controls a fully initialized QML MediaControls element. */
   void setAudioControls(QObject* controls);
+
+  /** Skip a number of seconds backward or forward in the audio stream. */
+  void seek(SeekDirection direction, int seconds);
 
 signals:
 

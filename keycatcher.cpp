@@ -22,8 +22,29 @@ bool KeyCatcher::eventFilter(QObject* object, QEvent* event) {
         m_player->togglePlayPause(false);
         break;
       case Qt::Key_MediaNext:
+        m_player->seek(SeekDirection::FORWARD, 5);
         break;
       case Qt::Key_MediaPrevious:
+        m_player->seek(SeekDirection::FORWARD, 5);
+        break;
+      case Qt::Key_Space:
+        if (key_event->modifiers() & Qt::ControlModifier) {
+          m_player->togglePlayPause();
+        }
+        break;
+      case Qt::Key_Left:
+        if (key_event->modifiers() & Qt::ControlModifier) {
+          m_player->seek(SeekDirection::BACKWARD, 10);
+        } else if (key_event->modifiers() & Qt::AltModifier) {
+          m_player->seek(SeekDirection::BACKWARD, 5);
+        }
+        break;
+      case Qt::Key_Right:
+        if (key_event->modifiers() & Qt::ControlModifier) {
+          m_player->seek(SeekDirection::FORWARD, 10);
+        } else if (key_event->modifiers() & Qt::AltModifier) {
+          m_player->seek(SeekDirection::FORWARD, 5);
+        }
         break;
     }
 
