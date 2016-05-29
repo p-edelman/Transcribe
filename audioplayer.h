@@ -29,13 +29,20 @@ public slots:
   /** Seek to the specified position in the stream. */
   void setAudioPosition(int seconds);
 
+  /** Play or pause the audio.
+    * @param should_be_playing indicates whether the audio should be playing. */
+  void togglePlayPause(bool should_be_playing);
+
   /** Callback for when the position in the audio stream has changed to update
    *  the AudioControls element. */
   void audioPositionChanged(qint64 milliseconds);
 
-  /** Callback for when the QMediaPlayerhas finished loading a new audio file.
+  /** Callback for when the QMediaPlayer has finished loading a new audio file.
     */
   void audioAvailableChanged(bool available);
+
+  /** Callback for when the QMediaPlayer has changed the playing state. */
+  void playingStateChanged(QMediaPlayer::State state);
 
 private:
   /** The main QMediaPlayer instance for playing and seeking audio files. */
