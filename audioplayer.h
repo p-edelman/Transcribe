@@ -29,8 +29,12 @@ public slots:
   /** Seek to the specified position in the stream. */
   void setAudioPosition(int seconds);
 
+  /** Play or pause the audio, depending on the current state. */
+  void togglePlayPause();
+
   /** Play or pause the audio.
-    * @param should_be_playing indicates whether the audio should be playing. */
+    * @param should_be_playing indicates whether the audio should be playing
+    *                          or be paused. */
   void togglePlayPause(bool should_be_playing);
 
   /** Callback for when the position in the audio stream has changed to update

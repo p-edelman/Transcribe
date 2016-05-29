@@ -13,7 +13,6 @@ FileDialog {
   signal audioFileOpenendSignal(string file_url)
 
   onAccepted: {
-    console.log(fileUrl)
     audioFileOpenendSignal(fileUrl)
   }
 }

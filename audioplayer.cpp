@@ -53,6 +53,14 @@ void AudioPlayer::setAudioPosition(int seconds) {
   m_player->setPosition(seconds * 1000);
 }
 
+void AudioPlayer::togglePlayPause() {
+  if (m_player->state() == QMediaPlayer::PlayingState) {
+    togglePlayPause(false);
+  } else {
+    togglePlayPause(true);
+  }
+}
+
 void AudioPlayer::togglePlayPause(bool should_be_playing) {
   if (m_player->state() == QMediaPlayer::PlayingState) {
     if (!should_be_playing) {

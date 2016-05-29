@@ -5,6 +5,9 @@ Transcribe::Transcribe(int& argc, char** argv) : QGuiApplication(argc, argv) {
 }
 
 void Transcribe::guiReady(QObject* root) {
+  KeyCatcher* catcher = new KeyCatcher(this, m_player, root);
+  root->installEventFilter(catcher);
+
   QObject* controls = root->findChild<QObject *>("media_controls");
   if (controls == NULL) {
     qDebug() << "Couldn't find the media player";
