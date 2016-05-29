@@ -16,7 +16,9 @@ void AudioPlayer::setAudioControls(QObject* controls) {
     QObject::connect(m_player, SIGNAL(positionChanged(qint64)),
                      this, SLOT(audioPositionChanged(qint64)));
     QObject::connect(m_player, SIGNAL(audioAvailableChanged(bool)),
-                     this, SLOT(audioAvailableChanged(bool)));
+                     this, SLOT(audioAvailabilityChanged()));
+    QObject::connect(m_player, SIGNAL(durationChanged(qint64)),
+                     this, SLOT(audioAvailabilityChanged()));
     QObject::connect(m_controls, SIGNAL(playingStateChanged(bool)),
                      this, SLOT(togglePlayPause(bool)));
     QObject::connect(m_player, SIGNAL(stateChanged(QMediaPlayer::State)),
@@ -29,12 +31,15 @@ void AudioPlayer::openAudioFile(const QString &url) {
   m_player->setMedia(QUrl(url));
 }
 
-void AudioPlayer::audioAvailableChanged(bool available) {
-  // Set the time of the MediaControls to the new value or 0 if no media is
-  // available.
+void AudioPlayer::audioAvailabilityChanged() {
+  // Set the duration of the MediaControls to the duration of the loaded
+  // media if it is availabe, or 0 if no media is available.
+  // Note thatthe reported duration might be -1 initially even though the
+  // audio is available. That's why this method needs to be bound to the
+  // durationChanged signal as well.
   QVariant seconds;
   QVariant ret_val;
-  if (available) {
+  if (m_player->isAudioAvailable()) {
     seconds.setValue(round(m_player->duration() / 1000));
   } else {
     seconds.setValue(0);
@@ -83,3 +88,4 @@ void AudioPlayer::playingStateChanged(QMediaPlayer::State state) {
                             Q_RETURN_ARG(QVariant, ret_val),
                             Q_ARG(QVariant, is_playing));
 }
+

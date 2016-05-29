@@ -37,9 +37,9 @@ public slots:
    *  the AudioControls element. */
   void audioPositionChanged(qint64 milliseconds);
 
-  /** Callback for when the QMediaPlayer has finished loading a new audio file.
-    */
-  void audioAvailableChanged(bool available);
+  /** Callback for when the QMediaPlayer has finished loading a new audio file
+   *  or the duration is changed. */
+  void audioAvailabilityChanged();
 
   /** Callback for when the QMediaPlayer has changed the playing state. */
   void playingStateChanged(QMediaPlayer::State state);
