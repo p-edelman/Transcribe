@@ -18,7 +18,7 @@ Item {
   anchors.right: parent.right
 
   Text {
-    id:    start_time
+    id:    curr_time
     text: "0.00:00"
 
     anchors.left: parent.left
@@ -29,12 +29,12 @@ Item {
     id: slider
 
     orientation:              Qt.Horizontal
-    updateValueWhileDragging: false
+    updateValueWhileDragging: true
     stepSize:                 1.0
 
     anchors.right: end_time.left
     anchors.top:   parent.top
-    anchors.left:  start_time.right
+    anchors.left:  curr_time.right
 
     /* Sends a signal that the user changed the value on the slider.
        Note that we can't use onValueChanged for this, as this also responds
@@ -42,6 +42,11 @@ Item {
      */
     onPressedChanged: {
       if (!pressed) media_player.valueChanged(value)
+    }
+
+    /* Display the seek time if the user drags the slider. */
+    onValueChanged: {
+      if (pressed) curr_time.text = formatSeconds(value)
     }
   }
 
@@ -62,7 +67,10 @@ Item {
 
   /** Set the position of the slider to the specified amount of seconds. */
   function setPosition(seconds) {
-    slider.value = seconds
+    if (!slider.pressed) { // Ignore if the user is dragging the slider
+      curr_time.text = formatSeconds(seconds)
+      slider.value   = seconds
+    }
   }
 
   /** Internal function to convert seconds to h.mm:ss strings. */
