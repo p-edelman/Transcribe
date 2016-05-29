@@ -7,7 +7,8 @@ import QtQuick.Controls 1.4
     but it should be coupled to an audio player component to respond to these
     signals and to call these methods. */
 Item {
-  /** Emitted when the user changes the value of the slider. */
+  /** Emitted when the user changes the value of the slider, as time in seconds
+    */
   signal valueChanged(int seconds)
 
   id: media_player
@@ -35,8 +36,12 @@ Item {
     anchors.top:   parent.top
     anchors.left:  start_time.right
 
-    onValueChanged: {
-      media_player.valueChanged(value)
+    /* Sends a signal that the user changed the value on the slider.
+       Note that we can't use onValueChanged for this, as this also responds
+       to programmatic changes (thus to slider updates from the audio player).
+     */
+    onPressedChanged: {
+      if (!pressed) media_player.valueChanged(value)
     }
   }
 
@@ -48,15 +53,14 @@ Item {
     anchors.top:   parent.top
   }
 
-  /** Set the duration for the media player to the specified amount of seconds */
+  /** Set the duration for the media player to the specified amount of seconds.
+    */
   function setDuration(seconds) {
     end_time.text       = formatSeconds(seconds)
     slider.maximumValue = seconds
-    console.log("Setting duration to " + seconds)
   }
 
-  /** Set the current position in the audio stream to the specified amount
-      of seconds. */
+  /** Set the position of the slider to the specified amount of seconds. */
   function setPosition(seconds) {
     slider.value = seconds
   }

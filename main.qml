@@ -7,6 +7,26 @@ ApplicationWindow {
   height:  480
   title:   qsTr("Transcriber")
 
-  MediaPlayer {
+  AudioFileChooser {
+    id:         audio_file_chooser
+    objectName: "audio_file_chooser"
+  }
+
+  menuBar: MenuBar {
+    Menu {
+      title: qsTr("File")
+      MenuItem {
+        text: qsTr("&Open audio")
+        onTriggered: audio_file_chooser.open()
+      }
+      MenuItem {
+        text: qsTr("Exit")
+        onTriggered: Qt.quit();
+      }
+    }
+  }
+
+  MediaControls {
+    objectName: "media_controls"
   }
 }

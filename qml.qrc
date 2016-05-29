@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>main.qml</file>
-        <file>MediaPlayer.qml</file>
+        <file>MediaControls.qml</file>
+        <file>AudioFileChooser.qml</file>
     </qresource>
 </RCC>

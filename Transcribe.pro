@@ -4,7 +4,8 @@ QT += qml quick multimedia
 CONFIG += c++11
 
 SOURCES += main.cpp \
-    transcribe.cpp
+    transcribe.cpp \
+    audioplayer.cpp
 
 RESOURCES += qml.qrc
 
@@ -15,4 +16,5 @@ QML_IMPORT_PATH =
 include(deployment.pri)
 
 HEADERS += \
-    transcribe.h
+    transcribe.h \
+    audioplayer.h

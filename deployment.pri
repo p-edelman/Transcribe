@@ -11,3 +11,7 @@ unix:!android {
 }
 
 export(INSTALLS)
+
+HEADERS +=
+
+SOURCES +=
