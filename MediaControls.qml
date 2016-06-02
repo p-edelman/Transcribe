@@ -21,6 +21,8 @@ Item {
   anchors.left:  parent.left
   anchors.right: parent.right
 
+  implicitHeight: slider.height + play_pause_btn.height
+
   Text {
     id:      curr_time
     text:    formatSeconds(0)

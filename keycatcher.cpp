@@ -12,6 +12,10 @@ bool KeyCatcher::eventFilter(QObject* object, QEvent* event) {
   if (event->type() == QEvent::KeyPress) {
     QKeyEvent* key_event = static_cast<QKeyEvent*>(event);
 
+    // Keep track of whether we consume the key press or need to send it
+    // along
+    bool is_consumed = true;
+
     switch (key_event->key()) {
       case Qt::Key_MediaPlay:
       case Qt::Key_MediaTogglePlayPause:
@@ -30,6 +34,8 @@ bool KeyCatcher::eventFilter(QObject* object, QEvent* event) {
       case Qt::Key_Space:
         if (key_event->modifiers() & Qt::ControlModifier) {
           m_player->togglePlayPause();
+        } else {
+          is_consumed = false;
         }
         break;
       case Qt::Key_Left:
@@ -37,6 +43,8 @@ bool KeyCatcher::eventFilter(QObject* object, QEvent* event) {
           m_player->seek(SeekDirection::BACKWARD, 10);
         } else if (key_event->modifiers() & Qt::AltModifier) {
           m_player->seek(SeekDirection::BACKWARD, 5);
+        } else {
+          is_consumed = false;
         }
         break;
       case Qt::Key_Right:
@@ -44,12 +52,16 @@ bool KeyCatcher::eventFilter(QObject* object, QEvent* event) {
           m_player->seek(SeekDirection::FORWARD, 10);
         } else if (key_event->modifiers() & Qt::AltModifier) {
           m_player->seek(SeekDirection::FORWARD, 5);
+        } else {
+          is_consumed = false;
         }
         break;
+      default:
+        is_consumed = false;
     }
 
-    return true;
-  } else {
-    return QObject::eventFilter(object, event);
+    return is_consumed;
   }
+
+  return QObject::eventFilter(object, event);
 }

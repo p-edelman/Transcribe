@@ -27,6 +27,23 @@ ApplicationWindow {
   }
 
   MediaControls {
+    id:         media_controls
     objectName: "media_controls"
   }
+
+  TextEdit {
+    id: text_area
+
+    anchors.top:    media_controls.bottom
+    anchors.right:  parent.right
+    anchors.bottom: parent.bottom
+    anchors.left:   parent.left
+
+    focus:               true
+    font.pixelSize:      12
+    cursorVisible:       true
+    textFormat:          Text.PlainText
+    horizontalAlignment: Text.AlignLeft
+  }
+
 }
