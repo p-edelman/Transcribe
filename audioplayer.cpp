@@ -123,7 +123,6 @@ void AudioPlayer::toggleWaiting(bool should_wait) {
   if (should_wait) {
     if (m_state == PlayerState::PLAYING) {
       setState(PlayerState::WAITING);
-      m_pause_timer->stop();
     }
   } else {
     if (m_state == PlayerState::WAITING) {
@@ -156,7 +155,7 @@ void AudioPlayer::restartTypingTimer() {
 }
 
 void AudioPlayer::maybeStartPauseTimer() {
-  if (m_state != PlayerState::PAUSED) {
+  if (m_state == PlayerState::PLAYING) {
     if (!m_pause_timer->isActive()) {
       m_pause_timer->start(m_pause_timeout);
     }
@@ -173,6 +172,11 @@ void AudioPlayer::typingTimeout() {
   } else if (m_state == PlayerState::PLAYING) {
     restartPauseTimer();
   }
+
+  // We're a signal of absence (of typing), so we should keep generating
+  // signals that we're still not typing (untill we are overridden by typing,
+  // of course)
+  restartTypingTimer();
 }
 
 
