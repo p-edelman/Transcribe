@@ -44,6 +44,7 @@ ApplicationWindow {
     cursorVisible:       true
     textFormat:          Text.PlainText
     horizontalAlignment: Text.AlignLeft
+    wrapMode:            TextEdit.WordWrap
   }
 
 }
