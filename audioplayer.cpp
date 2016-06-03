@@ -1,8 +1,19 @@
 #include "audioplayer.h"
 
 AudioPlayer::AudioPlayer(QObject *parent) : QObject(parent) {
+  m_state    = PlayerState::PAUSED;
+
   m_player   = new QMediaPlayer;
   m_controls = NULL;
+
+  // Initialize the timers to single shot timers and connect them to their
+  // respective fallbacks;
+  m_pause_timer  = new QTimer();
+  m_typing_timer = new QTimer();
+  m_pause_timer->setSingleShot(true);
+  m_typing_timer->setSingleShot(true);
+  connect(m_pause_timer, SIGNAL(timeout()), this, SLOT(pauseTimeout()));
+  connect(m_typing_timer, SIGNAL(timeout()), this, SLOT(typingTimeout()));
 }
 
 void AudioPlayer::setAudioControls(QObject* controls) {
@@ -21,8 +32,6 @@ void AudioPlayer::setAudioControls(QObject* controls) {
                      this, SLOT(audioAvailabilityChanged()));
     QObject::connect(m_controls, SIGNAL(playingStateChanged(bool)),
                      this, SLOT(togglePlayPause(bool)));
-    QObject::connect(m_player, SIGNAL(stateChanged(QMediaPlayer::State)),
-                     this, SLOT(playingStateChanged(QMediaPlayer::State)));
   }
 }
 
@@ -61,22 +70,64 @@ void AudioPlayer::setAudioPosition(int seconds) {
   m_player->setPosition(seconds * 1000);
 }
 
-void AudioPlayer::togglePlayPause() {
-  if (m_player->state() == QMediaPlayer::PlayingState) {
-    togglePlayPause(false);
-  } else {
-    togglePlayPause(true);
+void AudioPlayer::setState(PlayerState state) {
+  if (state != m_state) {
+    m_state = state;
+
+    // Take care of the audio and timers
+    if (m_state == PlayerState::PAUSED) {
+      m_pause_timer->stop();
+      m_typing_timer->stop();
+      m_player->pause();
+    } else if (m_state == PlayerState::PLAYING) {
+      m_player->play();
+    } else if (m_state == PlayerState::WAITING) {
+      m_pause_timer->stop();
+      m_player->pause();
+    }
+
+    // Signal the Controls that the audio has started or stopped playing.
+    QVariant is_playing(m_state);
+    QVariant ret_val;
+    QMetaObject::invokeMethod(m_controls, "setState",
+                              Q_RETURN_ARG(QVariant, ret_val),
+                              Q_ARG(QVariant, is_playing));
   }
 }
 
-void AudioPlayer::togglePlayPause(bool should_be_playing) {
-  if (m_player->state() == QMediaPlayer::PlayingState) {
-    if (!should_be_playing) {
-      m_player->pause();
+void AudioPlayer::togglePlayPause() {
+  if (m_state == PlayerState::PAUSED) {
+    setState(PlayerState::PLAYING);
+  } else {
+    // If either PLAYING or WAITING, go to PAUSED
+    setState(PlayerState::PAUSED);
+  }
+}
+
+void AudioPlayer::togglePlayPause(bool should_play) {
+  if (m_state == PlayerState::PAUSED) {
+    if (should_play) {
+      // We're toggling between PAUSED and PLAYING here, so if we're WAITING,
+      // we should remain there.
+      setState(PlayerState::PLAYING);
     }
   } else {
-    if (should_be_playing) {
-      m_player->play();
+    // We can go to PAUSED from both PLAYING and WAITING state
+    if (m_state != PlayerState::PAUSED) {
+      setState(PlayerState::PAUSED);
+    }
+  }
+}
+
+void AudioPlayer::toggleWaiting(bool should_wait) {
+  if (should_wait) {
+    if (m_state == PlayerState::PLAYING) {
+      setState(PlayerState::WAITING);
+      m_pause_timer->stop();
+    }
+  } else {
+    if (m_state == PlayerState::WAITING) {
+      setState(PlayerState::PLAYING);
     }
   }
 }
@@ -90,18 +141,38 @@ void AudioPlayer::audioPositionChanged(qint64 milliseconds) {
                             Q_ARG(QVariant, seconds));
 }
 
-void AudioPlayer::playingStateChanged(QMediaPlayer::State state) {
-  // Signal the Controls that the audio has started or stopped playing.
-  QVariant is_playing;
-  if (state == QMediaPlayer::PlayingState) {
-    is_playing.setValue(true);
-  } else {
-    is_playing.setValue(false);
+void AudioPlayer::restartPauseTimer() {
+  if (m_state == PlayerState::PLAYING) {
+    m_pause_timer->stop();
+    m_pause_timer->start(m_pause_timeout);
   }
-
-  QVariant ret_val;
-  QMetaObject::invokeMethod(m_controls, "setPlayingState",
-                            Q_RETURN_ARG(QVariant, ret_val),
-                            Q_ARG(QVariant, is_playing));
 }
+
+void AudioPlayer::restartTypingTimer() {
+  if (m_state != PlayerState::PAUSED) {
+    m_typing_timer->stop();
+    m_typing_timer->start(m_typing_timeout);
+  }
+}
+
+void AudioPlayer::maybeStartPauseTimer() {
+  if (m_state != PlayerState::PAUSED) {
+    if (!m_pause_timer->isActive()) {
+      m_pause_timer->start(m_pause_timeout);
+    }
+  }
+}
+
+void AudioPlayer::pauseTimeout() {
+  toggleWaiting(true);
+}
+
+void AudioPlayer::typingTimeout() {
+  if (m_state == PlayerState::WAITING) {
+    setState(PlayerState::PLAYING);
+  } else if (m_state == PlayerState::PLAYING) {
+    restartPauseTimer();
+  }
+}
+
 

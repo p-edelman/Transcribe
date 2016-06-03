@@ -1,6 +1,8 @@
 import QtQuick 2.0
 import QtQuick.Controls 1.4
 
+import AudioPlayer 1.0
+
 /** Provides a slider and visual controls to control the audio.
     This component purely takes care of the UI side of things; it emits signals
     when the user interacts with it, and has methods to change the appearance,
@@ -94,6 +96,16 @@ Item {
     }
   }
 
+  CheckBox {
+    id:   waiting_check;
+    text: qsTr("Waiting")
+
+    enabled: false
+
+    anchors.left:           play_pause_btn.right
+    anchors.verticalCenter: play_pause_btn.verticalCenter
+  }
+
   /** Set the duration for the media player to the specified amount of seconds
       If seconds is 0 or smaller, the controls will be disabled (and vice
       versa). */
@@ -120,11 +132,22 @@ Item {
     }
   }
 
-  /** Signal that the playing state has changed and that the GUI should be
-      updated to the new state. */
-  function setPlayingState(state) {
-    play_pause_btn.checked = state
-    play_pause_btn.setText(state)
+  /** Signal that the playing or waiting state has changed and that the GUI
+      should be updated to the new state.
+      @param state an AudioPlayer PlayerState state */
+  function setState(state) {
+    if ((state === PlayerState.PLAYING) || (state === PlayerState.WAITING)) {
+      play_pause_btn.checked = true
+      play_pause_btn.setText(true)
+    } else {
+      play_pause_btn.checked = true
+      play_pause_btn.setText(true)
+    }
+    if (state === PlayerState.WAITING) {
+      waiting_check.checked = true
+    } else {
+      waiting_check.checked = false
+    }
   }
 
   /** Internal function to convert seconds to h.mm:ss strings. */

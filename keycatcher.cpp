@@ -60,6 +60,13 @@ bool KeyCatcher::eventFilter(QObject* object, QEvent* event) {
         is_consumed = false;
     }
 
+    // When the key is not consumed the user is typing in the window and
+    // we should signal the AudioPlayer.
+    if (!is_consumed) {
+      m_player->maybeStartPauseTimer();
+      m_player->restartTypingTimer();
+    }
+
     return is_consumed;
   }
 
