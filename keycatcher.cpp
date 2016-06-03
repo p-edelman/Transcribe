@@ -39,18 +39,14 @@ bool KeyCatcher::eventFilter(QObject* object, QEvent* event) {
         }
         break;
       case Qt::Key_Left:
-        if (key_event->modifiers() & Qt::ControlModifier) {
-          m_player->seek(SeekDirection::BACKWARD, 10);
-        } else if (key_event->modifiers() & Qt::AltModifier) {
+        if (key_event->modifiers() & Qt::AltModifier) {
           m_player->seek(SeekDirection::BACKWARD, 5);
         } else {
           is_consumed = false;
         }
         break;
       case Qt::Key_Right:
-        if (key_event->modifiers() & Qt::ControlModifier) {
-          m_player->seek(SeekDirection::FORWARD, 10);
-        } else if (key_event->modifiers() & Qt::AltModifier) {
+        if (key_event->modifiers() & Qt::AltModifier) {
           m_player->seek(SeekDirection::FORWARD, 5);
         } else {
           is_consumed = false;
