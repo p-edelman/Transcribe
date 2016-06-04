@@ -39,6 +39,10 @@ public:
    *  @param controls a fully initialized QML MediaControls element. */
   void setAudioControls(QObject* controls);
 
+  /** Open a new audio file.
+   *  @param url an as QUrl formatted QString of the new file location. */
+  void openAudioFile(const QString &url);
+
   /** Skip a number of seconds backward or forward in the audio stream. */
   void seek(SeekDirection direction, int seconds);
 
@@ -57,10 +61,6 @@ public:
 signals:
 
 public slots:
-  /** Open a new audio file.
-   *  @param url an as QUrl formatted QString of the new file location. */
-  void openAudioFile(const QString &url);
-
   /** Seek to the specified position in the stream. */
   void setAudioPosition(int seconds);
 
