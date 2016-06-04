@@ -1,14 +1,87 @@
 #include "transcribe.h"
 
 Transcribe::Transcribe(int& argc, char** argv) : QGuiApplication(argc, argv) {
-  m_player = new AudioPlayer();
+  m_player    = new AudioPlayer();
+  m_text_file = NULL;
+}
+
+void Transcribe::setTextDirty(bool is_dirty) {
+  if (m_is_text_dirty != is_dirty) {
+    m_is_text_dirty = is_dirty;
+    emit textDirtyChanged(is_dirty);
+  }
+}
+
+bool Transcribe::isTextDirty() {
+  return m_is_text_dirty;
+}
+
+QString Transcribe::getTextFileName() const {
+  if (m_text_file != NULL) {
+    QFileInfo info(m_text_file->fileName());
+    return info.fileName();
+  }
+  return QString(tr("No transcript file loaded"));
+}
+
+void Transcribe::saveText() {
+  if (!m_text_file) {
+    // This shouldn't happen because of the GUI. We silently ignore it
+    qDebug() << "There is the text file loaded";
+    return;
+  }
+
+  // We want the file saving process to be atomic or at least close, so we can't
+  // loose any work. So we save the text to a temporary file first.
+  QTemporaryFile temp_file;
+  if (temp_file.open()) {
+    QTextStream out_stream(&temp_file);
+    out_stream << QQmlProperty::read(m_text_area, "text").toString();
+    temp_file.close();
+  } else {
+    // TODO
+    qDebug() << "Couldn't create temp file";
+  }
+
+  if (!m_text_file->isOpen()) {
+    // Now move the existing file to a file with the .old extension, or .old1,
+    // .old2, etc if it already exists
+    QString old_file_name;
+    if (m_text_file->exists()) {
+      old_file_name = m_text_file->fileName() + ".old";
+      unsigned int old_ext_counter = 1;
+      while (QFile::exists(old_file_name)) {
+        qDebug() << "Searching for old file name";
+        old_file_name + QString::number(old_ext_counter);
+      }
+      if (!QFile::rename(m_text_file->fileName(), old_file_name)) {
+        // TODO
+        qDebug() << "Couldn't move file to .old file";
+      }
+    }
+
+    // Now we can move the temp file to our actual target file
+    if (QFile::rename(temp_file.fileName(), m_text_file->fileName())) {
+      // Indicate that the text is not dirty anymore
+      setTextDirty(false);
+
+      // Remove the .old file
+      if (QFile::exists(old_file_name)) {
+        QFile::remove(old_file_name);
+      }
+    } else {
+      // TODO
+      qDebug() << "Couldn't copy temp file " << temp_file.fileName() << " to " + m_text_file->fileName();
+    }
+  } else {
+    // TODO
+    qDebug() << "File is open";
+  }
 }
 
 void Transcribe::guiReady(QObject* root) {
   m_app_root  = root;
   m_text_area = m_app_root->findChild<QObject *>("text_area");
-
-  m_text_file = NULL;
 
   // Install the key filter
   KeyCatcher* catcher = new KeyCatcher(this, m_player, root);
@@ -30,9 +103,10 @@ void Transcribe::guiReady(QObject* root) {
 }
 
 void Transcribe::audioFilePicked(const QString &url) {
-  // Save any text that we currently might have
-  saveText();
+  // Unload the current text file
   m_text_file = NULL;
+  emit textFileNameChanged();
+  QQmlProperty::write(m_app_root, "is_editable", QVariant(false));
 
   // Open the audio file
   m_player->openAudioFile(url);
@@ -45,81 +119,28 @@ void Transcribe::audioFilePicked(const QString &url) {
 void Transcribe::textFilePicked(const QString &url) {
   m_text_file = new QFile(QUrl(url).path());
 
+  // Because the way the UI works, we can assume that the text is not dirty
+  // So if the file exists, we load the contents into the editor window.
   if (m_text_file->exists()) {
-    // If the text file already exists, load the text into the editor
     if (m_text_file->open(QIODevice::ReadOnly | QIODevice::Text)) {
       QTextStream in_stream(m_text_file);
       QVariant text(in_stream.readAll());
       QQmlProperty::write(m_text_area, "text", text);
       m_text_file->close();
+      setTextDirty(false); // QML has signalled text is dirty because we changed
+                           // text, so we need reset this.
+    } else {
+      // Todo
     }
   } else {
-    // If the text file doesn't exist, create it
+    // If the text file doesn't exist, empty the editor and create the file
+    // by saving the text to it
+    QQmlProperty::write(m_text_area, "text", QVariant(""));
     saveText();
   }
 
   // Update the gui
-  QMetaObject::invokeMethod(m_app_root, "setFileName",
-                            QGenericReturnArgument(),
-                            Q_ARG(QVariant, QVariant(m_text_file->fileName())));
-  QMetaObject::invokeMethod(m_app_root, "setDirty",
-                            QGenericReturnArgument(),
-                            Q_ARG(QVariant, QVariant(false)));
-}
-
-void Transcribe::saveText() {
-  // If we don't have a file yet, open or create one
-  if (!m_text_file) {
-    QObject* text_file_chooser = m_app_root->findChild<QObject *>("text_file_chooser");
-    QMetaObject::invokeMethod(text_file_chooser, "open");
-    return;
-  }
-
-  // We want the file saving process to be atomic or at least close, so we can't
-  // loose any work. So we save the text to a temporary file first.
-  QTemporaryFile temp_file;
-  if (temp_file.open()) {
-    QTextStream out_stream(&temp_file);
-    out_stream << QQmlProperty::read(m_text_area, "text").toString();
-    temp_file.close();
-  } else {
-    // TODO
-    qDebug() << "Couldn't create temp file";
-  }
-
-  QString save_file_name;
-  if (!m_text_file->isOpen()) {
-    // Now give the existing file the .old extension, or .old1, .old2, etc if
-    // it already exists
-    if (m_text_file->exists()) {
-      old_file_name = m_text_file->fileName() + ".old";
-      unsigned int old_ext_counter = 1;
-      while (QFile::exists(old_file_name)) {
-        qDebug() << "Searching for old file name";
-        save_file_name + QString::number(old_ext_counter);
-      }
-      if (!QFile::rename(m_text_file->fileName(), old_file_name)) {
-        // TODO
-        qDebug() << "Couldn't move file to .old file";
-      }
-    }
-    // Now we can move the temp file to our actual target file
-    if (QFile::rename(temp_file.fileName(), m_text_file->fileName())) {
-      // Update the GUI
-      QMetaObject::invokeMethod(m_app_root, "setDirty",
-                                QGenericReturnArgument(),
-                                Q_ARG(QVariant, QVariant(false)));
-
-      // Remove the .old file
-      if (QFile::exists(old_file_name)) {
-        QFile::remove(old_file_name);
-      }
-    } else {
-      // TODO
-      qDebug() << "Couldn't copy temp file " << temp_file.fileName() << " to " + m_text_file->fileName();
-    }
-  } else {
-    // TODO
-    qDebug() << "File is open";
-  }
+  emit textFileNameChanged();
+  QQmlProperty::write(m_app_root, "is_editable", QVariant(true));
+  setTextDirty(false);
 }

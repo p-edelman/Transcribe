@@ -10,6 +10,9 @@ ApplicationWindow {
   width:   640
   height:  480
 
+  /** Indicates whether the GUI is useable for editing text files. */
+  property bool is_editable
+
   /** Signals that the user wants to save the text. */
   signal saveText()
 
@@ -19,22 +22,33 @@ ApplicationWindow {
   }
 
   TextFileChooser {
-    id:             text_file_chooser
-    objectName:     "text_file_chooser"
+    id:         text_file_chooser
+    objectName: "text_file_chooser"
   }
 
   menuBar: MenuBar {
     Menu {
       title: qsTr("File")
       MenuItem {
-        text:        qsTr("&Open audio")
+        text: {
+          if (app.is_text_dirty) {
+            qsTr("&Open audio (save text changes first)")
+          } else {
+            qsTr("&Open audio")
+          }
+        }
+        enabled: {
+          if (app.is_text_dirty) {false} else {true}
+        }
         onTriggered: audio_file_chooser.open()
       }
       MenuItem {
         id:          save_text_menu_item
         text:        qsTr("&Save text")
         onTriggered: main_window.saveText()
-        enabled:     false
+        enabled: {
+          if (app.is_text_dirty) {true} else {false}
+        }
       }
       MenuItem {
         text:        qsTr("Exit")
@@ -47,16 +61,20 @@ ApplicationWindow {
     Text {
       id: file_name_display
 
+      text: app.text_file_name
+
       anchors.bottom: parent.bottom
       anchors.top:    parent.top
       anchors.left:   parent.left
 
       font.pixelSize: 12
-
-      Component.onCompleted: setFileName("")
     }
     Text {
       id: dirty_display
+
+      text: {
+        if (app.is_text_dirty) {" *"} else {""}
+      }
 
       anchors.bottom: parent.bottom
       anchors.top:    parent.top
@@ -72,7 +90,13 @@ ApplicationWindow {
   }
 
   Rectangle {
-    color: white;
+    color: {
+      if (main_window.is_editable) {
+        "white";
+      } else {
+        "lightgray"
+      }
+    }
 
     anchors.top:    media_controls.bottom
     anchors.right:  parent.right
@@ -85,6 +109,7 @@ ApplicationWindow {
 
       anchors.fill: parent
 
+      readOnly:            !main_window.is_editable
       focus:               true
       font.pixelSize:      12
       cursorVisible:       true
@@ -92,33 +117,9 @@ ApplicationWindow {
       horizontalAlignment: Text.AlignLeft
       wrapMode:            TextEdit.WordWrap
 
-      onTextChanged: setDirty(true)
+      onTextChanged: app.is_text_dirty = true
     }
   }
 
-  /** Set the name of the text file in the status bar, or indicate that there is
-      no text file.
-      @param file_name the name of the file, or an empty string to indicate
-                       that there is no open file. */
-  function setFileName(file_name) {
-    if (file_name == "") {
-      file_name_display.text        = qsTr("Unsaved")
-      file_name_display.font.italic = true
-    } else {
-      file_name_display.text =        file_name
-      file_name_display.font.italic = false
-    }
-  }
-
-  /** Set the dirty status for the text file; thus the text in the text area
-      is not saved. */
-  function setDirty(is_dirty) {
-    if (is_dirty) {
-      dirty_display.text          = " *"
-      save_text_menu_item.enabled = true
-    } else {
-      dirty_display.text = ""
-      save_text_menu_item.enabled = false
-    }
-  }
+  Component.onCompleted: is_editable = false
 }
