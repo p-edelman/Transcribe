@@ -52,6 +52,12 @@ bool KeyCatcher::eventFilter(QObject* object, QEvent* event) {
           is_consumed = false;
         }
         break;
+      case Qt::Key_S:
+        if (key_event->modifiers() & Qt::ControlModifier) {
+          m_transcribe->saveText();
+        } else {
+          is_consumed = false;
+        }
       default:
         is_consumed = false;
     }
