@@ -20,3 +20,6 @@ HEADERS += \
     transcribe.h \
     audioplayer.h \
     keycatcher.h
+
+DISTFILES += \
+    README.md
