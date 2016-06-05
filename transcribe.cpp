@@ -27,7 +27,7 @@ QString Transcribe::getTextFileName() const {
 void Transcribe::saveText() {
   if (!m_text_file) {
     // This shouldn't happen because of the GUI. We silently ignore it
-    qDebug() << "There is the text file loaded";
+    qDebug() << "There is no text file loaded";
     return;
   }
 

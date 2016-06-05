@@ -1,5 +1,6 @@
 import QtQuick 2.4
 import QtQuick.Controls 1.4
+import QtQuick.Controls.Styles 1.4
 import QtQuick.Layouts 1.0
 
 ApplicationWindow {
@@ -89,56 +90,37 @@ ApplicationWindow {
     objectName: "media_controls"
   }
 
-  Rectangle {
-    id: color_rect
-
-    color: {
-      if (main_window.is_editable) {
-        "white";
-      } else {
-        "lightgray"
-      }
-    }
+  TextArea {
+    id:         text_area
+    objectName: "text_area"
 
     anchors.top:    media_controls.bottom
     anchors.right:  parent.right
     anchors.bottom: parent.bottom
     anchors.left:   parent.left
 
-    ScrollView {
-      id: text_area_scroll
+    readOnly:            !main_window.is_editable
+    focus:               true
+    font.pixelSize:      12
+    textFormat:          Text.PlainText
+    horizontalAlignment: Text.AlignLeft
+    wrapMode:            TextEdit.WordWrap
 
-      width:  color_rect.width
-      height: color_rect.height
+    // Set the text to dirty status whenever it changes
+    onTextChanged: app.is_text_dirty = true
 
-      horizontalScrollBarPolicy: Qt.ScrollBarAlwaysOff
-      verticalScrollBarPolicy:   Qt.ScrollBarAsNeeded
+    // On loading, the text gets changed so the status gets set to dirty, even
+    // though the user didn't change anything. So we have to reset it after
+    // loading.
+    Component.onCompleted: app.is_text_dirty = false
 
-      function ensureVisible(cursor) {
-        if (flickableItem.contentY >= cursor.y) {
-          flickableItem.contentY = cursor.y;
-        } else if (flickableItem.contentY + height <= cursor.y + cursor.height) {
-          flickableItem.contentY = cursor.y + cursor.height - height;
+    style: TextAreaStyle {
+      backgroundColor: {
+        if (main_window.is_editable) {
+          "white";
+        } else {
+          "lightgray"
         }
-      }
-
-      TextEdit {
-        id:         text_area
-        objectName: "text_area"
-
-        readOnly:            !main_window.is_editable
-        focus:               true
-        font.pixelSize:      12
-        cursorVisible:       true
-        textFormat:          Text.PlainText
-        horizontalAlignment: Text.AlignLeft
-        wrapMode:            TextEdit.WordWrap
-
-        onTextChanged: app.is_text_dirty = true
-
-        // Make the are scroll along with the text the user is typing
-        width:                    text_area_scroll.width
-        onCursorRectangleChanged: text_area_scroll.ensureVisible(cursorRectangle)
       }
     }
   }
