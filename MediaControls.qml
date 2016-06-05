@@ -81,7 +81,6 @@ Item {
     anchors.top:              slider.bottom
 
     onClicked: {
-      //setText(checked)
       media_player.playingStateChanged(checked)
     }
 
@@ -140,8 +139,8 @@ Item {
       play_pause_btn.checked = true
       play_pause_btn.setText(true)
     } else {
-      play_pause_btn.checked = true
-      play_pause_btn.setText(true)
+      play_pause_btn.checked = false
+      play_pause_btn.setText(false)
     }
     if (state === PlayerState.WAITING) {
       waiting_check.checked = true
