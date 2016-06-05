@@ -15,12 +15,6 @@ The app is written using het Qt framework runs on Android and Linux. It should a
 
 It works, but it's very rough around the edges and lacks quality controls, so there's no released version yet. You're of course free to checkout the repository.
 
-The app is written using het Qt framework runs on Android and Linux, but it should also work on Mac an Windows whene someone compiles it on those platforms.
-
-## Status
-
-It works, but it's very rough around the edges and lacks quality controls, so there's no released version yet. You're free to checkout the repository.
-
 ## The very short manual
 
 From the menu, you can open an audio file. Immediately after that, you will be asked to open a text file for saving the transcript text. If you pick an existing file, the text will be loaded in the editor window.
