@@ -90,6 +90,8 @@ ApplicationWindow {
   }
 
   Rectangle {
+    id: color_rect
+
     color: {
       if (main_window.is_editable) {
         "white";
@@ -103,21 +105,41 @@ ApplicationWindow {
     anchors.bottom: parent.bottom
     anchors.left:   parent.left
 
-    TextEdit {
-      id:         text_area
-      objectName: "text_area"
+    ScrollView {
+      id: text_area_scroll
 
-      anchors.fill: parent
+      width:  color_rect.width
+      height: color_rect.height
 
-      readOnly:            !main_window.is_editable
-      focus:               true
-      font.pixelSize:      12
-      cursorVisible:       true
-      textFormat:          Text.PlainText
-      horizontalAlignment: Text.AlignLeft
-      wrapMode:            TextEdit.WordWrap
+      horizontalScrollBarPolicy: Qt.ScrollBarAlwaysOff
+      verticalScrollBarPolicy:   Qt.ScrollBarAsNeeded
 
-      onTextChanged: app.is_text_dirty = true
+      function ensureVisible(cursor) {
+        if (flickableItem.contentY >= cursor.y) {
+          flickableItem.contentY = cursor.y;
+        } else if (flickableItem.contentY + height <= cursor.y + cursor.height) {
+          flickableItem.contentY = cursor.y + cursor.height - height;
+        }
+      }
+
+      TextEdit {
+        id:         text_area
+        objectName: "text_area"
+
+        readOnly:            !main_window.is_editable
+        focus:               true
+        font.pixelSize:      12
+        cursorVisible:       true
+        textFormat:          Text.PlainText
+        horizontalAlignment: Text.AlignLeft
+        wrapMode:            TextEdit.WordWrap
+
+        onTextChanged: app.is_text_dirty = true
+
+        // Make the are scroll along with the text the user is typing
+        width:                    text_area_scroll.width
+        onCursorRectangleChanged: text_area_scroll.ensureVisible(cursorRectangle)
+      }
     }
   }
 
