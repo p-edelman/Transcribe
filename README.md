@@ -14,6 +14,12 @@ The app is written using het Qt framework runs on Android and Linux. It should a
 ## Status
 
 It works, but it's very rough around the edges and lacks quality controls, so there's no released version yet. You're of course free to checkout the repository.
+=======
+The app is written using het Qt framework runs on Android and Linux, but it should also work on Mac an Windows whene someone compiles it on those platforms.
+
+## Status
+
+It works, but it's very rough around the edges and lacks quality controls, so there's no released version yet. You're free to checkout the repository.
 
 ## The very short manual
 
