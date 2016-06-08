@@ -109,7 +109,7 @@ void Transcribe::audioFilePicked(const QUrl &url) {
   QQmlProperty::write(m_app_root, "is_editable", QVariant(false));
 
   // Open the audio file
-  m_player->openAudioFile(url.toLocalFile());
+  m_player->openAudioFile(url);
 
   // Let the user pick a text file for the transcript
   QObject* file_chooser = m_app_root->findChild<QObject *>("text_file_chooser");

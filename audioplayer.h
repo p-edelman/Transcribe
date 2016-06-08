@@ -41,7 +41,7 @@ public:
 
   /** Open a new audio file.
    *  @param url an as QUrl formatted QString of the new file location. */
-  void openAudioFile(const QString &url);
+  void openAudioFile(const QUrl &url);
 
   /** Skip a number of seconds backward or forward in the audio stream. */
   void seek(SeekDirection direction, int seconds);

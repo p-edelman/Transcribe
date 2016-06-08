@@ -43,7 +43,7 @@ void AudioPlayer::seek(SeekDirection direction, int seconds) {
   }
 }
 
-void AudioPlayer::openAudioFile(const QString &url) {
+void AudioPlayer::openAudioFile(const QUrl& url) {
   m_player->stop();
   m_player->setMedia(QUrl(url));
 }
