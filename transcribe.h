@@ -71,12 +71,12 @@ private slots:
 
   /** Callback for when the user has picked an audio file. It will be loaded
    *  and the dialog for picking a text file will be displayed. */
-  void audioFilePicked(const QString &url);
+  void audioFilePicked(const QUrl& url);
 
   /** Callback for when the user has picked a text file for the transcription
    *  text. If it is an existing file, the text will be loaded into the editor,
    *  otherwise a new file will be created. */
-  void textFilePicked(const QString &url);
+  void textFilePicked(const QUrl &url);
 };
 
 #endif // TRANSCRIBE_H

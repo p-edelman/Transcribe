@@ -10,7 +10,7 @@ FileDialog {
   selectExisting: false
   nameFilters:    ["Text files (*.txt)", "All (*.*)"]
 
-  signal textFileChosenSignal(string file_url)
+  signal textFileChosenSignal(url file_url)
 
   onAccepted: {
     console.log("Chose file " + fileUrl)

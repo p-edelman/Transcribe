@@ -95,28 +95,29 @@ void Transcribe::guiReady(QObject* root) {
   QObject::connect(m_app_root, SIGNAL(saveText()),
                    this, SLOT(saveText()));
   QObject* audio_chooser = root->findChild<QObject*>("audio_file_chooser");
-  QObject::connect(audio_chooser, SIGNAL(audioFileOpenendSignal(QString)),
-                   this, SLOT(audioFilePicked(QString)));
+  QObject::connect(audio_chooser, SIGNAL(audioFileOpenendSignal(QUrl)),
+                   this, SLOT(audioFilePicked(QUrl)));
   QObject* text_file_chooser = root->findChild<QObject*>("text_file_chooser");
-  QObject::connect(text_file_chooser, SIGNAL(textFileChosenSignal(QString)),
-                   this, SLOT(textFilePicked(QString)));
+  QObject::connect(text_file_chooser, SIGNAL(textFileChosenSignal(QUrl)),
+                   this, SLOT(textFilePicked(QUrl)));
 }
 
-void Transcribe::audioFilePicked(const QString &url) {
+void Transcribe::audioFilePicked(const QUrl &url) {
   // Unload the current text file
   m_text_file = NULL;
   emit textFileNameChanged();
   QQmlProperty::write(m_app_root, "is_editable", QVariant(false));
 
   // Open the audio file
-  m_player->openAudioFile(url);
+  m_player->openAudioFile(url.toLocalFile());
 
   // Let the user pick a text file for the transcript
   QObject* file_chooser = m_app_root->findChild<QObject *>("text_file_chooser");
+  QQmlProperty::write(file_chooser, "folder", url.adjusted(QUrl::PreferLocalFile | QUrl::RemoveFilename));
   QMetaObject::invokeMethod(file_chooser, "open");
 }
 
-void Transcribe::textFilePicked(const QString &url) {
+void Transcribe::textFilePicked(const QUrl& url) {
   m_text_file = new QFile(QUrl(url).path());
 
   // Because the way the UI works, we can assume that the text is not dirty

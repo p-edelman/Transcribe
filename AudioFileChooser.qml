@@ -10,7 +10,7 @@ FileDialog {
   selectMultiple: false
   nameFilters:    ["Audio files (*.wav *.mp3)"]
 
-  signal audioFileOpenendSignal(string file_url)
+  signal audioFileOpenendSignal(url file_url)
 
   onAccepted: {
     audioFileOpenendSignal(fileUrl)
