@@ -59,29 +59,23 @@ ApplicationWindow {
   }
 
   statusBar: StatusBar {
-    Text {
-      id: file_name_display
+    RowLayout {
+      Text {
+        id: file_name_display
 
-      text: app.text_file_name
+        text: app.text_file_name
 
-      anchors.bottom: parent.bottom
-      anchors.top:    parent.top
-      anchors.left:   parent.left
-
-      font.pixelSize: 12
-    }
-    Text {
-      id: dirty_display
-
-      text: {
-        if (app.is_text_dirty) {" *"} else {""}
+        font.pointSize: 12
       }
+      Text {
+        id: dirty_display
 
-      anchors.bottom: parent.bottom
-      anchors.top:    parent.top
-      anchors.left:   file_name_display.right
+        text: {
+          if (app.is_text_dirty) {" *"} else {""}
+        }
 
-      font.pixelSize: 12
+        font.pointSize: 12
+      }
     }
   }
 
