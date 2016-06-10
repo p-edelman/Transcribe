@@ -1,9 +1,11 @@
 #ifndef TRANSCRIBE_H
 #define TRANSCRIBE_H
 
+#include <QApplication>
 #include <QFileDialog>
 #include <QFileInfo>
-#include <QApplication>
+#include <QMessageBox>
+#include <QString>
 #include <QQmlProperty>
 #include <QTemporaryFile>
 
@@ -43,6 +45,11 @@ public:
 public slots:
   /** Save the text in the GUI to m_text_file. */
   void saveText();
+
+  /** Handle an audio error by closing all modal dialogs and displaying a
+   *  popup error.
+   *  @param message the message to display to the end user. */
+  void audioErrorDetected(QString& message);
 
 signals:
   void textDirtyChanged(bool is_dirty);

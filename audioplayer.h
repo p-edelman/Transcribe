@@ -5,6 +5,7 @@
 
 #include <QDebug>
 #include <QMediaPlayer>
+#include <QString>
 #include <QTimer>
 
 enum SeekDirection {FORWARD, BACKWARD};
@@ -59,6 +60,9 @@ public:
   void maybeStartPauseTimer();
 
 signals:
+  /** Signals that the audio failed to load or play.
+   *  @param message an error message that can be displayed to the user. */
+  void audioError(QString& message);
 
 public slots:
   /** Seek to the specified position in the stream. */
@@ -92,6 +96,10 @@ public slots:
   /** Callback for when the QMediaPlayer has finished loading a new audio file
    *  or the duration is changed. */
   void audioAvailabilityChanged();
+
+  /** Callback for when an error occurs during media loading by the
+   *  QMediaPlayer. */
+  void handleMediaError(QMediaPlayer::Error error);
 
 private slots:
   /** Callback for when the pause timer expires. */
@@ -143,6 +151,11 @@ private:
   /** The intervals for the two timers. */
   unsigned int m_pause_timeout  = 5000;
   unsigned int m_typing_timeout = 1000;
+
+  /** When the audio fails to load, oftentimes multiple error messages are
+   *  thrown by QMediaPlayer. We need to signal a problem just once to the end
+   *  user though, so we need to keep track of whether it is handled already. */
+  bool m_error_handled = false;
 };
 
 #endif // AUDIOPLAYER_H

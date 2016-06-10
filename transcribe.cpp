@@ -1,7 +1,10 @@
 #include "transcribe.h"
 
 Transcribe::Transcribe(int& argc, char** argv) : QApplication(argc, argv) {
-  m_player    = new AudioPlayer();
+  m_player = new AudioPlayer();
+  QObject::connect(m_player, SIGNAL(audioError(QString&)),
+                   this, SLOT(audioErrorDetected(QString&)));
+
   m_text_file = NULL;
 }
 
@@ -77,6 +80,22 @@ void Transcribe::saveText() {
     // TODO
     qDebug() << "File is open";
   }
+}
+
+void Transcribe::audioErrorDetected(QString& message) {
+  // Most likely, the text opener is now active. If it is (or any modal widget
+  // for that matter), close it, we have something important to say.
+  QWidget* modal = activeModalWidget();
+  if (modal != NULL) {
+    modal->close();
+  }
+
+  // Display the error box
+  QMessageBox box;
+  box.setText(message);
+  box.setStandardButtons(QMessageBox::Ok);
+  box.setIcon(QMessageBox::Critical);
+  box.exec();
 }
 
 void Transcribe::guiReady(QObject* root) {

@@ -28,6 +28,8 @@ void AudioPlayer::setAudioControls(QObject* controls) {
                      this, SLOT(audioPositionChanged(qint64)));
     QObject::connect(m_player, SIGNAL(audioAvailableChanged(bool)),
                      this, SLOT(audioAvailabilityChanged()));
+    QObject::connect(m_player, SIGNAL(error(QMediaPlayer::Error)),
+                     this, SLOT(handleMediaError(QMediaPlayer::Error)));
     QObject::connect(m_player, SIGNAL(durationChanged(qint64)),
                      this, SLOT(audioAvailabilityChanged()));
     QObject::connect(m_controls, SIGNAL(playingStateChanged(bool)),
@@ -44,6 +46,8 @@ void AudioPlayer::seek(SeekDirection direction, int seconds) {
 }
 
 void AudioPlayer::openAudioFile(const QString& path) {
+  m_error_handled = false;
+
   m_player->stop();
   m_player->setMedia(QUrl::fromLocalFile(path));
 }
@@ -64,6 +68,26 @@ void AudioPlayer::audioAvailabilityChanged() {
   QMetaObject::invokeMethod(m_controls, "setDuration",
                             Q_RETURN_ARG(QVariant, ret_val),
                             Q_ARG(QVariant, seconds));
+}
+
+void AudioPlayer::handleMediaError(QMediaPlayer::Error error) {
+  if (!m_error_handled) {
+    QString message;
+    switch (error) {
+      case QMediaPlayer::AccessDeniedError:
+        message = tr("Access denied to audio file");
+        break;
+      case QMediaPlayer::FormatError:
+      case QMediaPlayer::ServiceMissingError:
+        message = tr("This audio file cannot be decoded");
+        break;
+      default:
+        message = tr("For reasons unknown, this audio file cannot be played");
+    }
+
+    m_error_handled = true;
+    emit audioError(message);
+  }
 }
 
 void AudioPlayer::setAudioPosition(int seconds) {
