@@ -2,7 +2,7 @@
 #define TRANSCRIBE_H
 
 #include <QFileInfo>
-#include <QGuiApplication>
+#include <QApplication>
 #include <QQmlProperty>
 #include <QTemporaryFile>
 
@@ -10,7 +10,7 @@
 #include <keycatcher.h>
 
 /** The main application class. */
-class Transcribe : public QGuiApplication {
+class Transcribe : public QApplication {
 
   Q_OBJECT
 

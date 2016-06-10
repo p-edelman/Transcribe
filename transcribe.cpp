@@ -1,6 +1,6 @@
 #include "transcribe.h"
 
-Transcribe::Transcribe(int& argc, char** argv) : QGuiApplication(argc, argv) {
+Transcribe::Transcribe(int& argc, char** argv) : QApplication(argc, argv) {
   m_player    = new AudioPlayer();
   m_text_file = NULL;
 }
