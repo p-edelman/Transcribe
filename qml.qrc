@@ -2,7 +2,5 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file>MediaControls.qml</file>
-        <file>AudioFileChooser.qml</file>
-        <file>TextFileChooser.qml</file>
     </qresource>
 </RCC>

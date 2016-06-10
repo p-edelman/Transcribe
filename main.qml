@@ -14,18 +14,11 @@ ApplicationWindow {
   /** Indicates whether the GUI is useable for editing text files. */
   property bool is_editable
 
+  /** Signals that the user wants to open a new audio and text file. */
+  signal pickFiles()
+
   /** Signals that the user wants to save the text. */
   signal saveText()
-
-  AudioFileChooser {
-    id:         audio_file_chooser
-    objectName: "audio_file_chooser"
-  }
-
-  TextFileChooser {
-    id:         text_file_chooser
-    objectName: "text_file_chooser"
-  }
 
   menuBar: MenuBar {
     Menu {
@@ -33,15 +26,15 @@ ApplicationWindow {
       MenuItem {
         text: {
           if (app.is_text_dirty) {
-            qsTr("&Open audio (save text changes first)")
+            qsTr("&Open audio and text (save text changes first)")
           } else {
-            qsTr("&Open audio")
+            qsTr("&Open audio and text")
           }
         }
         enabled: {
           if (app.is_text_dirty) {false} else {true}
         }
-        onTriggered: audio_file_chooser.open()
+        onTriggered: pickFiles()
       }
       MenuItem {
         id:          save_text_menu_item

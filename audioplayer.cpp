@@ -43,15 +43,15 @@ void AudioPlayer::seek(SeekDirection direction, int seconds) {
   }
 }
 
-void AudioPlayer::openAudioFile(const QUrl& url) {
+void AudioPlayer::openAudioFile(const QString& path) {
   m_player->stop();
-  m_player->setMedia(QUrl(url));
+  m_player->setMedia(QUrl::fromLocalFile(path));
 }
 
 void AudioPlayer::audioAvailabilityChanged() {
   // Set the duration of the MediaControls to the duration of the loaded
   // media if it is availabe, or 0 if no media is available.
-  // Note thatthe reported duration might be -1 initially even though the
+  // Note that the reported duration might be -1 initially even though the
   // audio is available. That's why this method needs to be bound to the
   // durationChanged signal as well.
   QVariant seconds;

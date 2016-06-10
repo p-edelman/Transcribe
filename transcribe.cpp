@@ -94,34 +94,42 @@ void Transcribe::guiReady(QObject* root) {
   // Connect GUI events to their callbacks
   QObject::connect(m_app_root, SIGNAL(saveText()),
                    this, SLOT(saveText()));
-  QObject* audio_chooser = root->findChild<QObject*>("audio_file_chooser");
-  QObject::connect(audio_chooser, SIGNAL(audioFileOpenendSignal(QUrl)),
-                   this, SLOT(audioFilePicked(QUrl)));
-  QObject* text_file_chooser = root->findChild<QObject*>("text_file_chooser");
-  QObject::connect(text_file_chooser, SIGNAL(textFileChosenSignal(QUrl)),
-                   this, SLOT(textFilePicked(QUrl)));
+  QObject::connect(m_app_root, SIGNAL(pickFiles()),
+                   this, SLOT(pickFiles()));
 }
 
-void Transcribe::audioFilePicked(const QUrl &url) {
+void Transcribe::pickFiles() {
+  // Let the user pick an audio file
+  QString audio_file_path = QFileDialog::getOpenFileName(
+    NULL, tr("Open an audio file"), NULL,
+    tr("Audio files (*.wav *.mp3 *.aac *.amr *.aiff *.flac *.ogg *.wma)"));
+  if (audio_file_path == NULL) return;
+
   // Unload the current text file
   m_text_file = NULL;
   emit textFileNameChanged();
   QQmlProperty::write(m_app_root, "is_editable", QVariant(false));
 
   // Open the audio file
-  m_player->openAudioFile(url);
+  m_player->openAudioFile(audio_file_path);
 
-  // Let the user pick a text file for the transcript
-  QObject* file_chooser = m_app_root->findChild<QObject *>("text_file_chooser");
-  QQmlProperty::write(file_chooser, "folder", url.adjusted(QUrl::PreferLocalFile | QUrl::RemoveFilename));
-  QMetaObject::invokeMethod(file_chooser, "open");
+  // Let the user pick a text file for the transcript. As a file suggestion, we
+  // base a txt file on the current audio file.
+  QFileInfo info(audio_file_path);
+  QString suggestion = info.absolutePath() + "/" + info.baseName() + ".txt";
+  QString text_file_path = QFileDialog::getSaveFileName(
+    NULL, tr("Pick a text file for the transcript"),
+    suggestion, tr("Text files (*.txt)"), NULL,
+    QFileDialog::DontConfirmOverwrite);
+  if (text_file_path == NULL) return;
+
+  openTextFile(text_file_path);
 }
 
-void Transcribe::textFilePicked(const QUrl& url) {
-  m_text_file = new QFile(QUrl(url).path());
-
+void Transcribe::openTextFile(const QString& path) {
   // Because the way the UI works, we can assume that the text is not dirty
   // So if the file exists, we load the contents into the editor window.
+  m_text_file = new QFile(path);
   if (m_text_file->exists()) {
     if (m_text_file->open(QIODevice::ReadOnly | QIODevice::Text)) {
       QTextStream in_stream(m_text_file);

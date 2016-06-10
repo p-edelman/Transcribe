@@ -1,6 +1,7 @@
 #ifndef TRANSCRIBE_H
 #define TRANSCRIBE_H
 
+#include <QFileDialog>
 #include <QFileInfo>
 #include <QApplication>
 #include <QQmlProperty>
@@ -64,19 +65,19 @@ private:
   /** The text file where the transcript needs to be written to. */
   QFile* m_text_file;
 
+  /** Open the text file specified by the path. If it is an existing file, the
+   *  text will be loaded into the editor, otherwise a new file will be created.
+   */
+  void openTextFile(const QString& path);
+
 private slots:
   /** Callback for when the GUI is initialized and ready. It sets up all the
       bindings with the GUI. */
   void guiReady(QObject* root);
 
-  /** Callback for when the user has picked an audio file. It will be loaded
-   *  and the dialog for picking a text file will be displayed. */
-  void audioFilePicked(const QUrl& url);
-
-  /** Callback for when the user has picked a text file for the transcription
-   *  text. If it is an existing file, the text will be loaded into the editor,
-   *  otherwise a new file will be created. */
-  void textFilePicked(const QUrl &url);
+  /** Signal that the user wants to start with a new project. It will first open
+   *  the audio file dialog, and then open the text file dialog. */
+  void pickFiles();
 };
 
 #endif // TRANSCRIBE_H

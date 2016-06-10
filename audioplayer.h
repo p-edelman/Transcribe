@@ -40,8 +40,8 @@ public:
   void setAudioControls(QObject* controls);
 
   /** Open a new audio file.
-   *  @param url an as QUrl formatted QString of the new file location. */
-  void openAudioFile(const QUrl &url);
+   *  @param path the complete path to the new file. */
+  void openAudioFile(const QString &path);
 
   /** Skip a number of seconds backward or forward in the audio stream. */
   void seek(SeekDirection direction, int seconds);
