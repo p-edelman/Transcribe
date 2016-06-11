@@ -52,6 +52,10 @@ public slots:
    *  @param message the message to display to the end user. */
   void errorDetected(QString& message);
 
+  /** Shut diwn the application. If the text is dirty, ask the user if it should
+   *  be saved. */
+  void close();
+
 signals:
   void textDirtyChanged(bool is_dirty);
   void textFileNameChanged();

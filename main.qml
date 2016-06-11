@@ -17,6 +17,9 @@ ApplicationWindow {
   /** Signals that the user wants to open a new audio and text file. */
   signal pickFiles()
 
+  /** Signals that the user wants to quit the application. */
+  signal signalQuit()
+
   /** Signals that the user wants to save the text. */
   signal saveText()
 
@@ -46,7 +49,7 @@ ApplicationWindow {
       }
       MenuItem {
         text:        qsTr("Exit")
-        onTriggered: Qt.quit();
+        onTriggered: signalQuit()
       }
     }
   }
@@ -110,6 +113,12 @@ ApplicationWindow {
         }
       }
     }
+  }
+
+  onClosing: {
+    // Don't just close the window, but let the Transcribe app decide.
+    close.accepted = false
+    signalQuit()
   }
 
   Component.onCompleted: is_editable = false

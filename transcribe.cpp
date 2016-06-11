@@ -113,6 +113,33 @@ void Transcribe::errorDetected(QString& message) {
   box.exec();
 }
 
+void Transcribe::close() {
+  bool may_close = true;
+
+  if (m_is_text_dirty) {
+    QMessageBox box;
+    box.setText(tr("The latest edits are not saved."));
+    box.setInformativeText(tr("Do you want to save them now?"));
+    box.setStandardButtons(QMessageBox::Save |
+                           QMessageBox::Discard |
+                           QMessageBox::Cancel );
+    int action = box.exec();
+
+    switch (action) {
+      case QMessageBox::Save:
+        may_close = saveText();
+        break;
+      case QMessageBox::Cancel:
+        may_close = false;
+        break;
+    }
+  }
+
+  if (may_close) {
+    quit();
+  }
+}
+
 void Transcribe::guiReady(QObject* root) {
   m_app_root  = root;
   m_text_area = m_app_root->findChild<QObject *>("text_area");
@@ -130,6 +157,8 @@ void Transcribe::guiReady(QObject* root) {
                    this, SLOT(saveText()));
   QObject::connect(m_app_root, SIGNAL(pickFiles()),
                    this, SLOT(pickFiles()));
+  QObject::connect(m_app_root, SIGNAL(signalQuit()),
+                   this, SLOT(close()));
 }
 
 void Transcribe::pickFiles() {
