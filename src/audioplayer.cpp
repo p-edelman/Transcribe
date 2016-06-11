@@ -2,9 +2,17 @@
 
 AudioPlayer::AudioPlayer(QObject *parent) : QObject(parent) {
   m_state    = PlayerState::PAUSED;
-
-  m_player   = new QMediaPlayer;
   m_controls = NULL;
+
+  m_player = new QMediaPlayer;
+  QObject::connect(m_player, SIGNAL(positionChanged(qint64)),
+                   this, SLOT(audioPositionChanged(qint64)));
+  QObject::connect(m_player, SIGNAL(audioAvailableChanged(bool)),
+                   this, SLOT(audioAvailabilityChanged()));
+  QObject::connect(m_player, SIGNAL(durationChanged(qint64)),
+                   this, SLOT(audioAvailabilityChanged()));
+  QObject::connect(m_player, SIGNAL(error(QMediaPlayer::Error)),
+                   this, SLOT(handleMediaError()));
 
   // Initialize the timers to single shot timers and connect them to their
   // respective fallbacks;
@@ -39,14 +47,6 @@ void AudioPlayer::setAudioControls(QObject* controls) {
     // methods.
     QObject::connect(m_controls, SIGNAL(valueChanged(int)),
                      this, SLOT(setAudioPosition(int)));
-    QObject::connect(m_player, SIGNAL(positionChanged(qint64)),
-                     this, SLOT(audioPositionChanged(qint64)));
-    QObject::connect(m_player, SIGNAL(audioAvailableChanged(bool)),
-                     this, SLOT(audioAvailabilityChanged()));
-    QObject::connect(m_player, SIGNAL(error(QMediaPlayer::Error)),
-                     this, SLOT(handleMediaError()));
-    QObject::connect(m_player, SIGNAL(durationChanged(qint64)),
-                     this, SLOT(audioAvailabilityChanged()));
     QObject::connect(m_controls, SIGNAL(playingStateChanged(bool)),
                      this, SLOT(togglePlayPause(bool)));
   }

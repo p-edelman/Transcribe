@@ -52,7 +52,7 @@ public slots:
   /** Communicate an error to the end user by displaying an error dialog with
    *  the message. All other modal dialogs will be closed.
    *  @param message the message to display to the end user. */
-  void errorDetected(QString& message);
+  void errorDetected(const QString& message);
 
   /** Shut diwn the application. If the text is dirty, ask the user if it should
    *  be saved. */

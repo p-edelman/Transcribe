@@ -7,8 +7,8 @@ Transcribe::Transcribe(int &argc, char **argv) :
 
   // Initialize the audio player
   m_player = new AudioPlayer();
-  QObject::connect(m_player, SIGNAL(audioError(QString&)),
-                   this, SLOT(errorDetected(QString&)));
+  QObject::connect(m_player, SIGNAL(audioError(const QString&)),
+                   this, SLOT(errorDetected(const QString&)));
 
   QQmlApplicationEngine* engine = new QQmlApplicationEngine();
 
@@ -117,7 +117,7 @@ bool Transcribe::saveText() {
   return true;
 }
 
-void Transcribe::errorDetected(QString& message) {
+void Transcribe::errorDetected(const QString& message) {
   // Close any open modal windows. This is especially useful for an error with
   // audio loading, in which case the text file dialog is still active.
   QWidget* modal = activeModalWidget();

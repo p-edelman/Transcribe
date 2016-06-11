@@ -93,7 +93,7 @@ signals:
 
   /** Signals that the audio failed to load or play.
    *  @param message an error message that can be displayed to the user. */
-  void audioError(QString& message);
+  void audioError(const QString& message);
 
 public slots:
   /** Seek to the specified position in the stream. */
