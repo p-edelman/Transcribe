@@ -6,8 +6,10 @@
 #include <QFileInfo>
 #include <QMessageBox>
 #include <QString>
+#include <QQmlApplicationEngine>
 #include <QQmlProperty>
 #include <QTemporaryFile>
+#include <QtQml>
 
 #include <audioplayer.h>
 #include <keycatcher.h>

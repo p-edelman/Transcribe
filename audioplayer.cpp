@@ -16,6 +16,21 @@ AudioPlayer::AudioPlayer(QObject *parent) : QObject(parent) {
   connect(m_typing_timer, SIGNAL(timeout()), this, SLOT(typingTimeout()));
 }
 
+AudioPlayer::PlayerState AudioPlayer::getPlayerState() {
+  return m_state;
+}
+
+uint AudioPlayer::getDuration() {
+  if (m_player->duration() > 0) {
+    return (m_player->duration() / 1000);
+  }
+  return 0;
+}
+
+uint AudioPlayer::getPosition() {
+  return (m_player->position() / 1000);
+}
+
 void AudioPlayer::setAudioControls(QObject* controls) {
   if (controls != NULL) {
     m_controls = controls;
@@ -53,21 +68,11 @@ void AudioPlayer::openAudioFile(const QString& path) {
 }
 
 void AudioPlayer::audioAvailabilityChanged() {
-  // Set the duration of the MediaControls to the duration of the loaded
-  // media if it is availabe, or 0 if no media is available.
+  // Signal the MediaControls that the duration of the loaded media has changed.
   // Note that the reported duration might be -1 initially even though the
   // audio is available. That's why this method needs to be bound to the
   // durationChanged signal as well.
-  QVariant seconds;
-  QVariant ret_val;
-  if (m_player->isAudioAvailable()) {
-    seconds.setValue(round(m_player->duration() / 1000));
-  } else {
-    seconds.setValue(0);
-  }
-  QMetaObject::invokeMethod(m_controls, "setDuration",
-                            Q_RETURN_ARG(QVariant, ret_val),
-                            Q_ARG(QVariant, seconds));
+  emit durationChanged();
 }
 
 void AudioPlayer::handleMediaError() {
@@ -101,12 +106,7 @@ void AudioPlayer::setState(PlayerState state) {
       m_player->pause();
     }
 
-    // Signal the Controls that the audio has started or stopped playing.
-    QVariant is_playing(m_state);
-    QVariant ret_val;
-    QMetaObject::invokeMethod(m_controls, "setState",
-                              Q_RETURN_ARG(QVariant, ret_val),
-                              Q_ARG(QVariant, is_playing));
+    emit playerStateChanged(m_state);
   }
 }
 
@@ -127,9 +127,11 @@ void AudioPlayer::togglePlayPause(bool should_play) {
       setState(PlayerState::PLAYING);
     }
   } else {
-    // We can go to PAUSED from both PLAYING and WAITING state
-    if (m_state != PlayerState::PAUSED) {
-      setState(PlayerState::PAUSED);
+    if (!should_play) {
+      // We can go to PAUSED from both PLAYING and WAITING state
+      if (m_state != PlayerState::PAUSED) {
+        setState(PlayerState::PAUSED);
+      }
     }
   }
 }
@@ -146,13 +148,8 @@ void AudioPlayer::toggleWaiting(bool should_wait) {
   }
 }
 
-void AudioPlayer::audioPositionChanged(qint64 milliseconds) {
-  // Set the AudioControls slider to the new position
-  QVariant seconds(round(milliseconds / 1000));
-  QVariant ret_val;
-  QMetaObject::invokeMethod(m_controls, "setPosition",
-                            Q_RETURN_ARG(QVariant, ret_val),
-                            Q_ARG(QVariant, seconds));
+void AudioPlayer::audioPositionChanged(qint64) {
+  emit positionChanged();
 }
 
 void AudioPlayer::restartPauseTimer() {

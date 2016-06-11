@@ -27,44 +27,52 @@ Item {
 
   Text {
     id:      curr_time
-    text:    formatSeconds(0)
-    enabled: false
+    enabled: player.duration > 0 ? true : false
 
-
+    text: {
+      if (slider.pressed) {
+        formatSeconds(slider.value)
+      } else {
+        formatSeconds(player.position)
+      }
+    }
     anchors.left: parent.left
     anchors.top:  parent.top
   }
 
   Slider {
     id:      slider
-    enabled: false
+    enabled: player.duration > 0 ? true : false
 
     orientation:              Qt.Horizontal
     updateValueWhileDragging: true
     stepSize:                 1.0
+    maximumValue:             player.duration
+
+    Connections {
+      target: player
+      onPositionChanged: {
+        if (!slider.pressed) slider.value = player.position
+      }
+    }
 
     anchors.right: end_time.left
     anchors.top:   parent.top
     anchors.left:  curr_time.right
 
-    /* Sends a signal that the user changed the value on the slider.
-       Note that we can't use onValueChanged for this, as this also responds
-       to programmatic changes (thus to slider updates from the audio player).
-     */
-    onPressedChanged: {
-      if (!pressed) media_player.valueChanged(value)
-    }
-
-    /* Display the seek time if the user drags the slider. */
+    /* Sends a signal that the user changed the value on the slider. */
     onValueChanged: {
-      if (pressed) curr_time.text = formatSeconds(value)
+      // Note that we need to check if the slider is pressed, otherwise
+      // the signal will also be sent after programmatic changes (thus to
+      // slider updates from the audio player).
+      if (pressed) media_player.valueChanged(value)
     }
   }
 
   Text {
     id:      end_time
-    text:    formatSeconds(0)
-    enabled: false
+    text:    formatSeconds(player.duration)
+    enabled: player.duration > 0 ? true : false
 
     anchors.right: parent.right
     anchors.top:   parent.top
@@ -72,26 +80,29 @@ Item {
 
   Button {
     id:        play_pause_btn
-    text:      setText(false)
-    checked:   false
     checkable: true
-    enabled:   false
+    enabled: player.duration > 0 ? true : false
+    text:    player.player_state === PlayerState.PAUSED ? qsTr("Play") : qsTr("Pause")
 
     anchors.horizontalCenter: slider.horizontalCenter
     anchors.top:              slider.bottom
 
-    onClicked: {
-      media_player.playingStateChanged(checked)
+    // We cannot directly bind the checked state here because it can get
+    // overruled by the user, and then the binding is lost. So we need to
+    // explicitly respond to the signal here,
+    Connections {
+      target: player
+      onPlayerStateChanged: {
+        if (player.player_state === PlayerState.PAUSED) {
+          play_pause_btn.checked = false
+        } else {
+          play_pause_btn.checked = true
+        }
+      }
     }
 
-    /** Change the text on the button dependent on the playing status. */
-    function setText(status) {
-      if (status) {
-        text = qsTr("Pause")
-      } else {
-        text = qsTr("Play")
-      }
-
+    onClicked: {
+      media_player.playingStateChanged(checked)
     }
   }
 
@@ -100,53 +111,10 @@ Item {
     text: qsTr("Waiting")
 
     enabled: false
+    checked: player.player_state == PlayerState.WAITING ? true : false
 
     anchors.left:           play_pause_btn.right
     anchors.verticalCenter: play_pause_btn.verticalCenter
-  }
-
-  /** Set the duration for the media player to the specified amount of seconds
-      If seconds is 0 or smaller, the controls will be disabled (and vice
-      versa). */
-  function setDuration(seconds) {
-    end_time.text       = formatSeconds(seconds)
-    slider.maximumValue = seconds
-
-    var is_enabled = false
-    if (seconds > 0) {
-      is_enabled = true
-    }
-
-    curr_time.enabled      = is_enabled
-    end_time.enabled       = is_enabled
-    slider.enabled         = is_enabled
-    play_pause_btn.enabled = is_enabled
-  }
-
-  /** Set the position of the slider to the specified amount of seconds. */
-  function setPosition(seconds) {
-    if (!slider.pressed) { // Ignore if the user is dragging the slider
-      curr_time.text = formatSeconds(seconds)
-      slider.value   = seconds
-    }
-  }
-
-  /** Signal that the playing or waiting state has changed and that the GUI
-      should be updated to the new state.
-      @param state an AudioPlayer PlayerState state */
-  function setState(state) {
-    if ((state === PlayerState.PLAYING) || (state === PlayerState.WAITING)) {
-      play_pause_btn.checked = true
-      play_pause_btn.setText(true)
-    } else {
-      play_pause_btn.checked = false
-      play_pause_btn.setText(false)
-    }
-    if (state === PlayerState.WAITING) {
-      waiting_check.checked = true
-    } else {
-      waiting_check.checked = false
-    }
   }
 
   /** Internal function to convert seconds to h.mm:ss strings. */

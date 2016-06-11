@@ -1,11 +1,32 @@
 #include "transcribe.h"
 
-Transcribe::Transcribe(int& argc, char** argv) : QApplication(argc, argv) {
+Transcribe::Transcribe(int &argc, char **argv) :
+  QApplication(argc, argv) {
+
+  m_text_file = NULL;
+
+  // Initialize the audio player
   m_player = new AudioPlayer();
   QObject::connect(m_player, SIGNAL(audioError(QString&)),
                    this, SLOT(errorDetected(QString&)));
 
-  m_text_file = NULL;
+  QQmlApplicationEngine* engine = new QQmlApplicationEngine();
+
+  // Expose the Transcribe object to the gui for setting and getting properties
+  // and such
+  engine->rootContext()->setContextProperty("app",    this);
+  engine->rootContext()->setContextProperty("player", m_player);
+
+  // This is a bit of quirkiness of Qt; you can't declare an enum as a QML type,
+  // but you can declare a C++ with a public enum as a QML type, and than
+  // access the enum values as type properties. So we expose the
+  // "AudioPlayer" (the class) as "PlayerState" in QML.
+  qmlRegisterType<AudioPlayer>("AudioPlayer", 1, 0, "PlayerState");
+
+  // Load the GUI. When it is ready, the guiReady() method takes over.
+  QObject::connect(engine, SIGNAL(objectCreated(QObject*, QUrl)),
+                   this,   SLOT(guiReady(QObject*)));
+  engine->load(QUrl(QStringLiteral("qrc:/main.qml")));
 }
 
 void Transcribe::setTextDirty(bool is_dirty) {

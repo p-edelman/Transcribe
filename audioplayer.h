@@ -35,6 +35,25 @@ public:
   enum PlayerState {PLAYING, PAUSED, WAITING};
   Q_ENUMS(PlayerState)
 
+  /** The player state. */
+  Q_PROPERTY(PlayerState player_state
+             READ getPlayerState
+             NOTIFY playerStateChanged)
+
+  /** The duration of the loaded audio file in whole seconds. */
+  Q_PROPERTY(uint duration
+             READ getDuration
+             NOTIFY durationChanged)
+
+  /** The position in the audio playback in whole seconds. */
+  Q_PROPERTY(uint position
+             READ getPosition
+             NOTIFY positionChanged)
+
+  PlayerState getPlayerState();
+  uint getDuration();
+  uint getPosition();
+
   /** Associate a QML MediaControls element for interacting with the audio
    *  playback.
    *  @param controls a fully initialized QML MediaControls element. */
@@ -60,6 +79,18 @@ public:
   void maybeStartPauseTimer();
 
 signals:
+  /** Signals the the playing state has changed. */
+  void playerStateChanged(PlayerState state);
+
+  /** Signals that the duration of the audio has changed. This typically occurs
+   *  when a new audio file is loaded. */
+  void durationChanged();
+
+  /** Signals that the position in the audio playback is changed. This usually
+   *  occurs every millisecond, even though the position property is measured
+   *  in whole seconds. */
+  void positionChanged();
+
   /** Signals that the audio failed to load or play.
    *  @param message an error message that can be displayed to the user. */
   void audioError(QString& message);
@@ -89,9 +120,8 @@ public slots:
    *  @param should_wait indicates whether we should wait. */
   void toggleWaiting(bool should_wait);
 
-  /** Callback for when the position in the audio stream has changed to update
-   *  the AudioControls element. */
-  void audioPositionChanged(qint64 milliseconds);
+  /** Callback for when the position in the audio stream has changed. */
+  void audioPositionChanged(qint64);
 
   /** Callback for when the QMediaPlayer has finished loading a new audio file
    *  or the duration is changed. */
