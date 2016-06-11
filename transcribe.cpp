@@ -3,7 +3,7 @@
 Transcribe::Transcribe(int& argc, char** argv) : QApplication(argc, argv) {
   m_player = new AudioPlayer();
   QObject::connect(m_player, SIGNAL(audioError(QString&)),
-                   this, SLOT(audioErrorDetected(QString&)));
+                   this, SLOT(errorDetected(QString&)));
 
   m_text_file = NULL;
 }
@@ -27,12 +27,16 @@ QString Transcribe::getTextFileName() const {
   return QString(tr("No transcript file loaded"));
 }
 
-void Transcribe::saveText() {
+bool Transcribe::saveText() {
   if (!m_text_file) {
     // This shouldn't happen because of the GUI. We silently ignore it
     qDebug() << "There is no text file loaded";
-    return;
+    return false;
   }
+
+  // General error message for saving the file
+  QString general_msg =  tr("There was an error saving the text file.\n");
+  general_msg         += tr("The latest changes are not saved!");
 
   // We want the file saving process to be atomic or at least close, so we can't
   // loose any work. So we save the text to a temporary file first.
@@ -42,24 +46,25 @@ void Transcribe::saveText() {
     out_stream << QQmlProperty::read(m_text_area, "text").toString();
     temp_file.close();
   } else {
-    // TODO
+    errorDetected(general_msg);
     qDebug() << "Couldn't create temp file";
+    return false;
   }
 
   if (!m_text_file->isOpen()) {
     // Now move the existing file to a file with the .old extension, or .old1,
     // .old2, etc if it already exists
-    QString old_file_name;
+    QString old_file_name = NULL;
     if (m_text_file->exists()) {
       old_file_name = m_text_file->fileName() + ".old";
       unsigned int old_ext_counter = 1;
       while (QFile::exists(old_file_name)) {
-        qDebug() << "Searching for old file name";
         old_file_name + QString::number(old_ext_counter);
       }
       if (!QFile::rename(m_text_file->fileName(), old_file_name)) {
-        // TODO
+        errorDetected(general_msg);
         qDebug() << "Couldn't move file to .old file";
+        return false;
       }
     }
 
@@ -73,21 +78,31 @@ void Transcribe::saveText() {
         QFile::remove(old_file_name);
       }
     } else {
-      // TODO
+      QString msg = tr("There was an error saving the text file.\n");
+      if (old_file_name != NULL) {
+        msg += tr("Your text file is saved as '") + old_file_name + "'\n";
+      }
+      msg += tr("Your recent edits are not saved!");
+      errorDetected(msg);
       qDebug() << "Couldn't copy temp file " << temp_file.fileName() << " to " + m_text_file->fileName();
+      return false;
     }
   } else {
-    // TODO
+    errorDetected(general_msg);
     qDebug() << "File is open";
+    return false;
   }
+
+  return true;
 }
 
-void Transcribe::audioErrorDetected(QString& message) {
-  // Most likely, the text opener is now active. If it is (or any modal widget
-  // for that matter), close it, we have something important to say.
+void Transcribe::errorDetected(QString& message) {
+  // Close any open modal windows. This is especially useful for an error with
+  // audio loading, in which case the text file dialog is still active.
   QWidget* modal = activeModalWidget();
-  if (modal != NULL) {
+  while (modal != NULL) {
     modal->close();
+    modal = activeModalWidget();
   }
 
   // Display the error box
@@ -158,13 +173,16 @@ void Transcribe::openTextFile(const QString& path) {
       setTextDirty(false); // QML has signalled text is dirty because we changed
                            // text, so we need reset this.
     } else {
-      // Todo
+      QString msg = tr("The text file can't be read");
+      errorDetected(msg);
+      m_text_file = NULL;
+      return;
     }
   } else {
     // If the text file doesn't exist, empty the editor and create the file
     // by saving the text to it
     QQmlProperty::write(m_text_area, "text", QVariant(""));
-    saveText();
+    if (!saveText()) return;
   }
 
   // Update the gui

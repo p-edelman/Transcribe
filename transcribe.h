@@ -43,19 +43,25 @@ public:
   QString getTextFileName() const;
 
 public slots:
-  /** Save the text in the GUI to m_text_file. */
-  void saveText();
+  /** Save the text in the GUI to m_text_file.
+      @return true if the file is saved, false otherwise. */
+  bool saveText();
 
-  /** Handle an audio error by closing all modal dialogs and displaying a
-   *  popup error.
+  /** Communicate an error to the end user by displaying an error dialog with
+   *  the message. All other modal dialogs will be closed.
    *  @param message the message to display to the end user. */
-  void audioErrorDetected(QString& message);
+  void errorDetected(QString& message);
 
 signals:
   void textDirtyChanged(bool is_dirty);
   void textFileNameChanged();
 
 private:
+  /** Open the text file specified by the path. If it is an existing file, the
+   *  text will be loaded into the editor, otherwise a new file will be created.
+   */
+  void openTextFile(const QString& path);
+
   /** Whether the text is dirty, thus the current edits in the transcription
    *  text are not changed. */
   bool m_is_text_dirty = false;
@@ -71,11 +77,6 @@ private:
 
   /** The text file where the transcript needs to be written to. */
   QFile* m_text_file;
-
-  /** Open the text file specified by the path. If it is an existing file, the
-   *  text will be loaded into the editor, otherwise a new file will be created.
-   */
-  void openTextFile(const QString& path);
 
 private slots:
   /** Callback for when the GUI is initialized and ready. It sets up all the

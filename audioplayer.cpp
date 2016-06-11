@@ -29,7 +29,7 @@ void AudioPlayer::setAudioControls(QObject* controls) {
     QObject::connect(m_player, SIGNAL(audioAvailableChanged(bool)),
                      this, SLOT(audioAvailabilityChanged()));
     QObject::connect(m_player, SIGNAL(error(QMediaPlayer::Error)),
-                     this, SLOT(handleMediaError(QMediaPlayer::Error)));
+                     this, SLOT(handleMediaError()));
     QObject::connect(m_player, SIGNAL(durationChanged(qint64)),
                      this, SLOT(audioAvailabilityChanged()));
     QObject::connect(m_controls, SIGNAL(playingStateChanged(bool)),
@@ -70,22 +70,13 @@ void AudioPlayer::audioAvailabilityChanged() {
                             Q_ARG(QVariant, seconds));
 }
 
-void AudioPlayer::handleMediaError(QMediaPlayer::Error error) {
+void AudioPlayer::handleMediaError() {
   if (!m_error_handled) {
-    QString message;
-    switch (error) {
-      case QMediaPlayer::AccessDeniedError:
-        message = tr("Access denied to audio file");
-        break;
-      case QMediaPlayer::FormatError:
-      case QMediaPlayer::ServiceMissingError:
-        message = tr("This audio file cannot be decoded");
-        break;
-      default:
-        message = tr("For reasons unknown, this audio file cannot be played");
-    }
-
     m_error_handled = true;
+
+    QString message = tr("The audio file can't be loaded.\n");
+    message += m_player->errorString();
+
     emit audioError(message);
   }
 }

@@ -99,7 +99,7 @@ public slots:
 
   /** Callback for when an error occurs during media loading by the
    *  QMediaPlayer. */
-  void handleMediaError(QMediaPlayer::Error error);
+  void handleMediaError();
 
 private slots:
   /** Callback for when the pause timer expires. */
