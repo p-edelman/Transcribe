@@ -131,6 +131,10 @@ public slots:
    *  QMediaPlayer. */
   void handleMediaError();
 
+  /** Callback for when the media status changes. Needed to catch the end of
+   *  audio situation. */
+  void mediaStatusChanged(QMediaPlayer::MediaStatus status);
+
 private slots:
   /** Callback for when the pause timer expires. */
   void pauseTimeout();

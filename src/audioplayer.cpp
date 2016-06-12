@@ -13,6 +13,8 @@ AudioPlayer::AudioPlayer(QObject *parent) : QObject(parent) {
                    this, SLOT(audioAvailabilityChanged()));
   QObject::connect(m_player, SIGNAL(error(QMediaPlayer::Error)),
                    this, SLOT(handleMediaError()));
+  QObject::connect(m_player, SIGNAL(mediaStatusChanged(QMediaPlayer::MediaStatus)),
+                   this, SLOT(mediaStatusChanged(QMediaPlayer::MediaStatus)));
 
   // Initialize the timers to single shot timers and connect them to their
   // respective fallbacks;
@@ -86,11 +88,24 @@ void AudioPlayer::handleMediaError() {
   }
 }
 
+void AudioPlayer::mediaStatusChanged(QMediaPlayer::MediaStatus status) {
+  if (status == QMediaPlayer::EndOfMedia) {
+    // When the media ends, switch to the PAUSED state.
+    setState(PlayerState::PAUSED);
+  }
+}
+
 void AudioPlayer::setAudioPosition(int seconds) {
   m_player->setPosition(seconds * 1000);
 }
 
 void AudioPlayer::setState(PlayerState state) {
+  // Corner case: if we're at the end of the media, we can only be in paused
+  // state.
+  if (m_player->mediaStatus() == QMediaPlayer::EndOfMedia) {
+    state = PlayerState::PAUSED;
+  }
+
   if (state != m_state) {
     m_state = state;
 
@@ -98,7 +113,11 @@ void AudioPlayer::setState(PlayerState state) {
     if (m_state == PlayerState::PAUSED) {
       m_pause_timer->stop();
       m_typing_timer->stop();
-      m_player->pause();
+      // Corner case: if we're at the end of the media, don't call pause()
+      // because it will reset the audio to the start.
+      if (m_player->mediaStatus() != QMediaPlayer::EndOfMedia) {
+        m_player->pause();
+      }
     } else if (m_state == PlayerState::PLAYING) {
       m_player->play();
     } else if (m_state == PlayerState::WAITING) {
@@ -112,10 +131,10 @@ void AudioPlayer::setState(PlayerState state) {
 
 void AudioPlayer::togglePlayPause() {
   if (m_state == PlayerState::PAUSED) {
-    setState(PlayerState::PLAYING);
+    togglePlayPause(true);
   } else {
     // If either PLAYING or WAITING, go to PAUSED
-    setState(PlayerState::PAUSED);
+    togglePlayPause(false);
   }
 }
 
