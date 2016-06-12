@@ -1,8 +1,7 @@
 #include "audioplayer.h"
 
 AudioPlayer::AudioPlayer(QObject *parent) : QObject(parent) {
-  m_state    = PlayerState::PAUSED;
-  m_controls = NULL;
+  m_state = PlayerState::PAUSED;
 
   m_player = new QMediaPlayer;
   QObject::connect(m_player, SIGNAL(positionChanged(qint64)),
@@ -39,19 +38,6 @@ uint AudioPlayer::getDuration() {
 
 uint AudioPlayer::getPosition() {
   return (m_player->position() / 1000);
-}
-
-void AudioPlayer::setAudioControls(QObject* controls) {
-  if (controls != NULL) {
-    m_controls = controls;
-
-    // Connect the signals of QMediaPlayer and MediaControls to the callback
-    // methods.
-    QObject::connect(m_controls, SIGNAL(valueChanged(int)),
-                     this, SLOT(setAudioPosition(int)));
-    QObject::connect(m_controls, SIGNAL(playingStateChanged(bool)),
-                     this, SLOT(togglePlayPause(bool)));
-  }
 }
 
 void AudioPlayer::seek(SeekDirection direction, int seconds) {

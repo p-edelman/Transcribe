@@ -54,11 +54,6 @@ public:
   uint getDuration();
   uint getPosition();
 
-  /** Associate a QML MediaControls element for interacting with the audio
-   *  playback.
-   *  @param controls a fully initialized QML MediaControls element. */
-  void setAudioControls(QObject* controls);
-
   /** Open a new audio file.
    *  @param path the complete path to the new file. */
   void openAudioFile(const QString &path);
@@ -153,9 +148,6 @@ private:
 
   /** The main QMediaPlayer instance for playing and seeking audio files. */
   QMediaPlayer* m_player;
-
-  /** The visual controls. */
-  QObject* m_controls;
 
   /** We keep two timers to determine if we should wait the audio playback:
    *  - m_pause_timer  lets the audio run for just some amount of time

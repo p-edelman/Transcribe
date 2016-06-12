@@ -171,7 +171,10 @@ void Transcribe::guiReady(QObject* root) {
 
   // Attach audio controls to the AudioPlayer
   QObject* controls = root->findChild<QObject *>("media_controls");
-  m_player->setAudioControls(controls);
+  QObject::connect(controls, SIGNAL(valueChanged(int)),
+                   m_player, SLOT(setAudioPosition(int)));
+  QObject::connect(controls, SIGNAL(playingStateChanged(bool)),
+                   m_player, SLOT(togglePlayPause(bool)));
 
   // Connect GUI events to their callbacks
   QObject::connect(m_app_root, SIGNAL(saveText()),
