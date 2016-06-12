@@ -4,6 +4,7 @@ AudioPlayer::AudioPlayer(QObject *parent) : QObject(parent) {
   m_state = PlayerState::PAUSED;
 
   m_player = new QMediaPlayer;
+  m_player->setNotifyInterval(1000); // We're working with second precision
   QObject::connect(m_player, SIGNAL(positionChanged(qint64)),
                    this, SLOT(audioPositionChanged(qint64)));
   QObject::connect(m_player, SIGNAL(audioAvailableChanged(bool)),
@@ -41,11 +42,20 @@ uint AudioPlayer::getPosition() {
 }
 
 void AudioPlayer::seek(SeekDirection direction, int seconds) {
+  qint64 new_pos;
   if (direction == SeekDirection::FORWARD) {
-    m_player->setPosition(m_player->position() + seconds * 1000);
+    new_pos = m_player->position() + seconds * 1000;
+    if (new_pos > m_player->duration()) {
+      new_pos = m_player->duration();
+    }
   } else {
-    m_player->setPosition(m_player->position() - seconds * 1000);
+    new_pos = m_player->position() - seconds * 1000;
+    if (new_pos < 0) {
+      new_pos = 0;
+    }
   }
+  m_player->setPosition(new_pos);
+  emit positionChanged();
 }
 
 void AudioPlayer::openAudioFile(const QString& path) {
