@@ -80,7 +80,7 @@ public:
 
 signals:
   /** Signals the the playing state has changed. */
-  void playerStateChanged(PlayerState state);
+  void playerStateChanged();
 
   /** Signals that the duration of the audio has changed. This typically occurs
    *  when a new audio file is loaded. */

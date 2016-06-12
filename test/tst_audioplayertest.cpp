@@ -17,6 +17,7 @@ private:
 private Q_SLOTS:
   void initAudioPlayer();
   void loadFile();
+  void playerStateSignal();
   void stateTransitions();
 };
 
@@ -47,6 +48,23 @@ void AudioPlayerTest::loadFile() {
   QVERIFY(duration_spy.count() > 0);
   QCOMPARE((int)error_spy.count(), 0);
   QCOMPARE((int)player.getDuration(), 5);
+}
+
+/** Test for player state signal. */
+void AudioPlayerTest::playerStateSignal() {
+  AudioPlayer player;
+  player.openAudioFile(m_audio_file);
+  QTest::qWait(500);
+
+  QSignalSpy spy(&player, SIGNAL(playerStateChanged()));
+  player.togglePlayPause();
+  player.toggleWaiting(true);
+  player.toggleWaiting(false);
+  player.togglePlayPause(true); // Doesn't emit the signal as it's already
+                                // playing
+  player.togglePlayPause();
+
+  QCOMPARE(spy.count(), 4);
 }
 
 /** Test for the accepted state transmissions. */

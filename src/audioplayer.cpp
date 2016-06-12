@@ -106,7 +106,7 @@ void AudioPlayer::setState(PlayerState state) {
       m_player->pause();
     }
 
-    emit playerStateChanged(m_state);
+    emit playerStateChanged();
   }
 }
 
