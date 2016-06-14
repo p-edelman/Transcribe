@@ -5,11 +5,13 @@ Transcribe::Transcribe(int &argc, char **argv) :
 
   m_text_file = NULL;
 
-  // Initialize the audio player
   m_player = new AudioPlayer();
   QObject::connect(m_player, SIGNAL(audioError(const QString&)),
                    this, SLOT(errorDetected(const QString&)));
 
+  m_keeper = new TypingTimeLord(m_player);
+
+  // The Qt connection
   QQmlApplicationEngine* engine = new QQmlApplicationEngine();
 
   // Expose the Transcribe object to the gui for setting and getting properties
@@ -18,9 +20,9 @@ Transcribe::Transcribe(int &argc, char **argv) :
   engine->rootContext()->setContextProperty("player", m_player);
 
   // This is a bit of quirkiness of Qt; you can't declare an enum as a QML type,
-  // but you can declare a C++ with a public enum as a QML type, and than
-  // access the enum values as type properties. So we expose the
-  // "AudioPlayer" (the class) as "PlayerState" in QML.
+  // but you can declare a C++ class with a public enum as a QML library, and
+  // then access the enum values as properties. So we expose the "AudioPlayer"
+  // (the class) as "PlayerState" in QML.
   qmlRegisterType<AudioPlayer>("AudioPlayer", 1, 0, "PlayerState");
 
   // Load the GUI. When it is ready, the guiReady() method takes over.
@@ -167,6 +169,8 @@ void Transcribe::guiReady(QObject* root) {
 
   // Install the key filter
   KeyCatcher* catcher = new KeyCatcher(this, m_player, root);
+  QObject::connect(catcher, SIGNAL(keyTyped()),
+                   m_keeper, SLOT(keyTyped()));
   root->installEventFilter(catcher);
 
   // Attach audio controls to the AudioPlayer

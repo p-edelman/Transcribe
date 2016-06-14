@@ -11,8 +11,9 @@
 #include <QTemporaryFile>
 #include <QtQml>
 
-#include <audioplayer.h>
-#include <keycatcher.h>
+#include "audioplayer.h"
+#include "keycatcher.h"
+#include "typingtimelord.h"
 
 /** The main application class. */
 class Transcribe : public QApplication {
@@ -72,8 +73,12 @@ private:
    *  text are not changed. */
   bool m_is_text_dirty = false;
 
-  /** The main QMediaPlayer instance for playing and seeking audio files. */
+  /** The main AudioPlayer instance for playing and seeking audio files. */
   AudioPlayer* m_player;
+
+  /** A TypingTimeLord to let the typing of the user control the audio playback.
+   */
+  TypingTimeLord* m_keeper;
 
   /** The main ApplicationWindow */
   QObject* m_app_root;

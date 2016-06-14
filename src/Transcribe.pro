@@ -6,7 +6,8 @@ CONFIG += c++11
 SOURCES += main.cpp \
     transcribe.cpp \
     audioplayer.cpp \
-    keycatcher.cpp
+    keycatcher.cpp \
+    typingtimelord.cpp
 
 RESOURCES += qml.qrc
 
@@ -19,7 +20,8 @@ include(deployment.pri)
 HEADERS += \
     transcribe.h \
     audioplayer.h \
-    keycatcher.h
+    keycatcher.h \
+    typingtimelord.h
 
 DISTFILES += \
     README.md

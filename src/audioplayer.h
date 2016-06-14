@@ -61,18 +61,6 @@ public:
   /** Skip a number of seconds backward or forward in the audio stream. */
   void seek(SeekDirection direction, int seconds);
 
-  /** Cancel the pause timer if it is running and start it from the beginning.
-   *  This will be ignored if the player is not in PLAYING state. */
-  void restartPauseTimer();
-
-  /** Cancel the typing timer if it is running and start it from the beginning.
-   *  This will be ignored if the player is not in PLAYING of WAITING state. */
-  void restartTypingTimer();
-
-  /** Start the pause timer if it is not running and if the audio is in PLAYING
-   *  state. */
-  void maybeStartPauseTimer();
-
 signals:
   /** Signals the the playing state has changed. */
   void playerStateChanged();
@@ -130,13 +118,6 @@ public slots:
    *  audio situation. */
   void mediaStatusChanged(QMediaPlayer::MediaStatus status);
 
-private slots:
-  /** Callback for when the pause timer expires. */
-  void pauseTimeout();
-
-  /** Callback for when the typing timer expires. */
-  void typingTimeout();
-
 private:
   /** Set the PlayerState to the desired state and update the relevant timers
    *  and GUI.
@@ -148,35 +129,6 @@ private:
 
   /** The main QMediaPlayer instance for playing and seeking audio files. */
   QMediaPlayer* m_player;
-
-  /** We keep two timers to determine if we should wait the audio playback:
-   *  - m_pause_timer  lets the audio run for just some amount of time
-   *  - m_typing_timer monitors if the user stops typing
-   *
-   * The idea is that when the user keeps typing, the playback should wait until
-   * she stops typing before continuing. This can be achieved with the following
-   * set of conditions:
-   *
-   * When the user types a key (other than audio keys):
-   * - When PLAYING: if the pausing timer is not running, start it
-   * - When PLAYING or PAUSING: (re)start the typing timer
-   *
-   * On pausing timer expiration (the audio has run for some time and the user
-   * is still typing):
-   * - When PLAYING: switch to WAITING state and stop the pausing timer
-   *
-   * On typing timer expiration (the user has stopped typing):
-   * - When PLAYING: reset the pausing timer
-   * - When WAITING: switch to PLAYING state
-   *
-   * On switching to PAUSED state: stop both timers
-   */
-  QTimer* m_pause_timer;
-  QTimer* m_typing_timer;
-
-  /** The intervals for the two timers. */
-  unsigned int m_pause_timeout  = 5000;
-  unsigned int m_typing_timeout = 1000;
 
   /** When the audio fails to load, oftentimes multiple error messages are
    *  thrown by QMediaPlayer. We need to signal a problem just once to the end

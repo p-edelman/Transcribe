@@ -5,7 +5,8 @@
 #include <QEvent>
 #include <QKeyEvent>
 
-#include <audioplayer.h>
+#include "audioplayer.h"
+#include "typingtimelord.h"
 
 class Transcribe; // Forward declaration because we would otherwise get a
                   // circular dependancy.
@@ -21,6 +22,11 @@ public:
   KeyCatcher(Transcribe*  transcribe,
              AudioPlayer* audio_player,
              QObject*     parent = 0);
+
+signals:
+  /** Emitted when a key is typed into the editor. Control keys, like the media
+      keys or the menu shortcuts don't result in this signal. */
+  void keyTyped();
 
 protected:
   /** The raise d'etre of this class: catching keys. */

@@ -15,15 +15,6 @@ AudioPlayer::AudioPlayer(QObject *parent) : QObject(parent) {
                    this, SLOT(handleMediaError()));
   QObject::connect(m_player, SIGNAL(mediaStatusChanged(QMediaPlayer::MediaStatus)),
                    this, SLOT(mediaStatusChanged(QMediaPlayer::MediaStatus)));
-
-  // Initialize the timers to single shot timers and connect them to their
-  // respective fallbacks;
-  m_pause_timer  = new QTimer();
-  m_typing_timer = new QTimer();
-  m_pause_timer->setSingleShot(true);
-  m_typing_timer->setSingleShot(true);
-  connect(m_pause_timer, SIGNAL(timeout()), this, SLOT(pauseTimeout()));
-  connect(m_typing_timer, SIGNAL(timeout()), this, SLOT(typingTimeout()));
 }
 
 AudioPlayer::PlayerState AudioPlayer::getPlayerState() {
@@ -105,10 +96,8 @@ void AudioPlayer::setState(PlayerState state) {
   if (state != m_state) {
     m_state = state;
 
-    // Take care of the audio and timers
+    // Take care of the audio
     if (m_state == PlayerState::PAUSED) {
-      m_pause_timer->stop();
-      m_typing_timer->stop();
       // Corner case: if we're at the end of the media, don't call pause()
       // because it will reset the audio to the start.
       if (m_player->mediaStatus() != QMediaPlayer::EndOfMedia) {
@@ -117,7 +106,6 @@ void AudioPlayer::setState(PlayerState state) {
     } else if (m_state == PlayerState::PLAYING) {
       m_player->play();
     } else if (m_state == PlayerState::WAITING) {
-      m_pause_timer->stop();
       m_player->pause();
     }
 
@@ -167,43 +155,6 @@ void AudioPlayer::audioPositionChanged(qint64) {
   emit positionChanged();
 }
 
-void AudioPlayer::restartPauseTimer() {
-  if (m_state == PlayerState::PLAYING) {
-    m_pause_timer->stop();
-    m_pause_timer->start(m_pause_timeout);
-  }
-}
 
-void AudioPlayer::restartTypingTimer() {
-  if (m_state != PlayerState::PAUSED) {
-    m_typing_timer->stop();
-    m_typing_timer->start(m_typing_timeout);
-  }
-}
-
-void AudioPlayer::maybeStartPauseTimer() {
-  if (m_state == PlayerState::PLAYING) {
-    if (!m_pause_timer->isActive()) {
-      m_pause_timer->start(m_pause_timeout);
-    }
-  }
-}
-
-void AudioPlayer::pauseTimeout() {
-  toggleWaiting(true);
-}
-
-void AudioPlayer::typingTimeout() {
-  if (m_state == PlayerState::WAITING) {
-    setState(PlayerState::PLAYING);
-  } else if (m_state == PlayerState::PLAYING) {
-    restartPauseTimer();
-  }
-
-  // We're a signal of absence (of typing), so we should keep generating
-  // signals that we're still not typing (untill we are overridden by typing,
-  // of course)
-  restartTypingTimer();
-}
 
 
