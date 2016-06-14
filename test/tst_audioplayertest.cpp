@@ -17,11 +17,13 @@ private:
   AudioPlayer* m_player;
 
 private Q_SLOTS:
-  void initTestCase();
+  void init();
 
   void initAudioPlayer();
   void loadFile();
-  void seekAndSignal();
+  void positionChangedSignal();
+  void seek();
+  void timeRounding();
   void stateTransitions();
 };
 
@@ -33,12 +35,12 @@ AudioPlayerTest::AudioPlayerTest() {
   m_player->openAudioFile(m_audio_file);
 }
 
-void AudioPlayerTest::initTestCase() {
+void AudioPlayerTest::init() {
   // Stop the audio playback
   m_player->togglePlayPause(false);
 
   // Reset the audio position to start of stream
-  m_player->seek(SeekDirection::BACKWARD, 10);
+  m_player->seek(SeekDirection::BACKWARD, 500);
 }
 
 /** Test the initialization of the AudioPlayer. */
@@ -61,52 +63,83 @@ void AudioPlayerTest::loadFile() {
   QTest::qWait(200);
 
   QVERIFY(duration_spy.count() > 0);
-  QCOMPARE((int)error_spy.count(), 0);
-  QCOMPARE((int)player.getDuration(), 5);
+  QCOMPARE(error_spy.count(), 0);
+  QCOMPARE((int)player.getDuration(), 6);
+}
+
+/** Test if the positionChangedSignal is emitted during playback and if the
+ *  position is reported correctly. */
+void AudioPlayerTest::positionChangedSignal() {
+  QSignalSpy spy(m_player, SIGNAL(positionChanged()));
+  m_player->togglePlayPause(true);
+  QTest::qWait(100);
+  int num_signals = spy.count();
+  QVERIFY(num_signals > 1); // At least one signal because of play start
+
+  // Play for 1100 ms. This should emit exactly one signal since the 'starting
+  // signals'
+  QTest::qWait(1100);
+  QCOMPARE(spy.count(), num_signals + 1); // Position changed signal
+
+  m_player->togglePlayPause(false);
+  QCOMPARE(spy.count(), num_signals + 2); // Signal because of play stop
+  QCOMPARE((int)m_player->getPosition(), 1); // Position should be at 1 second
 }
 
 /** Test for seeking and position changed signal changed signal. */
-void AudioPlayerTest::seekAndSignal() {
+void AudioPlayerTest::seek() {
   // We can't reuse the general AudioPlayer here, because it relies on this
   // functionality to work correctly. So we need to create a separate instance.
   AudioPlayer player;
   player.openAudioFile(m_audio_file);
   QTest::qWait(200);
 
-
   QSignalSpy spy(&player, SIGNAL(positionChanged()));
-  player.togglePlayPause(true);
-  // Let it play for 1100 ms. This should emit at least one signal (the exact
-  // number is undetermined, as it might be emitted several times when
-  // starting).
-  QTest::qWait(1100);
-  player.togglePlayPause(false);
-  QVERIFY(spy.count() > 0);
-  QCOMPARE((int)player.getPosition(), 1);
 
   player.togglePlayPause(true);
-
-  // Make sure we can't seek before beginning
-  int num_signals = spy.count();
-  player.seek(SeekDirection::BACKWARD, 10);
-  QVERIFY(spy.count() > num_signals);
-  QCOMPARE((int)player.getPosition(), 0);
 
   // Seek forward
-  num_signals = spy.count();
+  int num_signals = spy.count();
   player.seek(SeekDirection::FORWARD, 2);
   QVERIFY(spy.count() > num_signals);
   QCOMPARE((int)player.getPosition(), 2);
+
+  // Make sure we can't seek before beginning
+  num_signals = spy.count();
+  player.seek(SeekDirection::BACKWARD, 10);
+  QVERIFY(spy.count() > num_signals);
+  QCOMPARE((int)player.getPosition(), 0);
 
   // Make sure we can't seek past the end
   num_signals = spy.count();
   player.seek(SeekDirection::FORWARD, 20);
   QVERIFY(spy.count() > num_signals);
-  QCOMPARE((int)player.getPosition(), 5);
+  QCOMPARE((int)player.getPosition(), 6);
   QTest::qWait(100);
   QCOMPARE(player.getPlayerState(), AudioPlayer::PAUSED);
 
   player.togglePlayPause(false);
+}
+
+void AudioPlayerTest::timeRounding() {
+  // Our test file takes 5.x seconds, which should round the result to 6
+  QCOMPARE((int)m_player->getDuration(), 6);
+
+  // Make sure we're rounded to the nearest number of seconds in our position
+  m_player->togglePlayPause(true);
+  QTest::qWait(600);
+  m_player->togglePlayPause(false);
+  QCOMPARE((int)m_player->getPosition(), 1);
+
+  m_player->togglePlayPause(true);
+  QTest::qWait(600);
+  m_player->togglePlayPause(false);
+  QCOMPARE((int)m_player->getPosition(), 1);
+
+  m_player->togglePlayPause(true);
+  QTest::qWait(600);
+  m_player->togglePlayPause(false);
+  QCOMPARE((int)m_player->getPosition(), 2);
 }
 
 /** Test for the accepted state transmissions. */

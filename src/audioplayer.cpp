@@ -32,13 +32,13 @@ AudioPlayer::PlayerState AudioPlayer::getPlayerState() {
 
 uint AudioPlayer::getDuration() {
   if (m_player->duration() > 0) {
-    return (m_player->duration() / 1000);
+    return ((m_player->duration() + 500) / 1000);
   }
   return 0;
 }
 
 uint AudioPlayer::getPosition() {
-  return (m_player->position() / 1000);
+  return ((m_player->position() + 500) / 1000);
 }
 
 void AudioPlayer::seek(SeekDirection direction, int seconds) {
