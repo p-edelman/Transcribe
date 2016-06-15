@@ -168,11 +168,17 @@ void Transcribe::guiReady(QObject* root) {
   m_text_area = m_app_root->findChild<QObject *>("text_area");
 
   // Install the key filter and connect its signals
-  KeyCatcher* catcher = new KeyCatcher(m_player, root);
+  KeyCatcher* catcher = new KeyCatcher(root);
   QObject::connect(catcher, SIGNAL(keyTyped()),
                    m_keeper, SLOT(keyTyped()));
   QObject::connect(catcher, SIGNAL(saveFile()),
                    this, SLOT(saveText()));
+  QObject::connect(catcher, SIGNAL(seekAudio(AudioPlayer::SeekDirection,int)),
+                   m_player, SLOT(seek(AudioPlayer::SeekDirection, int)));
+  QObject::connect(catcher, SIGNAL(togglePlayPause()),
+                   m_player, SLOT(togglePlayPause()));
+  QObject::connect(catcher, SIGNAL(togglePlayPause(bool)),
+                   m_player, SLOT(togglePlayPause(bool)));
   root->installEventFilter(catcher);
 
   // Attach audio controls to the AudioPlayer

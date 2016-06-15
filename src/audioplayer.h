@@ -8,8 +8,6 @@
 #include <QString>
 #include <QTimer>
 
-enum SeekDirection {FORWARD, BACKWARD};
-
 /** The 'back-end' class for playing audio files. It is complemented by a
  *  QML MediaControls element to interact with it. */
 class AudioPlayer : public QObject {
@@ -35,6 +33,9 @@ public:
   enum PlayerState {PLAYING, PAUSED, WAITING};
   Q_ENUMS(PlayerState)
 
+  enum SeekDirection {FORWARD, BACKWARD};
+  Q_ENUMS(SeekDirection)
+
   /** The player state. */
   Q_PROPERTY(PlayerState player_state
              READ getPlayerState
@@ -58,9 +59,6 @@ public:
    *  @param path the complete path to the new file. */
   void openAudioFile(const QString &path);
 
-  /** Skip a number of seconds backward or forward in the audio stream. */
-  void seek(SeekDirection direction, int seconds);
-
 signals:
   /** Signals the the playing state has changed. */
   void playerStateChanged();
@@ -81,6 +79,9 @@ signals:
 public slots:
   /** Seek to the specified position in the stream. */
   void setAudioPosition(int seconds);
+
+  /** Skip a number of seconds backward or forward in the audio stream. */
+  void seek(AudioPlayer::SeekDirection direction, int seconds);
 
   /** Switch between paused and playing states, depending on the current state:
    *  - if PLAYING of WAITING, switch to PAUSED
