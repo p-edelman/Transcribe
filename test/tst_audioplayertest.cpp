@@ -12,7 +12,7 @@ public:
 
 private:
   // The path to a wav file containing 5+ seconds of pink noise
-  QString m_audio_file;
+  QString m_noise_file, m_silence_file;
 
   AudioPlayer* m_player;
 
@@ -21,6 +21,8 @@ private Q_SLOTS:
 
   void initAudioPlayer();
   void loadFile();
+  void loadErrorneousFile();
+  void loadDifferentFile();
   void positionChangedSignal();
   void seek();
   void timeRounding();
@@ -28,11 +30,14 @@ private Q_SLOTS:
 };
 
 AudioPlayerTest::AudioPlayerTest() {
-  m_audio_file =  QString(SRCDIR);
-  m_audio_file += "files/noise.wav";
+  m_noise_file =  QString(SRCDIR);
+  m_noise_file += "files/noise.wav";
+
+  m_silence_file = QString(SRCDIR);
+  m_silence_file += "files/silence.wav";
 
   m_player = new AudioPlayer();
-  m_player->openAudioFile(m_audio_file);
+  m_player->openAudioFile(m_noise_file);
 }
 
 void AudioPlayerTest::init() {
@@ -40,7 +45,7 @@ void AudioPlayerTest::init() {
   m_player->togglePlayPause(false);
 
   // Reset the audio position to start of stream
-  m_player->seek(SeekDirection::BACKWARD, 500);
+  m_player->seek(AudioPlayer::BACKWARD, 500);
 }
 
 /** Test the initialization of the AudioPlayer. */
@@ -59,12 +64,61 @@ void AudioPlayerTest::loadFile() {
   QSignalSpy duration_spy(&player, SIGNAL(durationChanged()));
   QSignalSpy error_spy(&player, SIGNAL(audioError(const QString&)));
 
-  player.openAudioFile(m_audio_file);
+  player.openAudioFile(m_noise_file);
   QTest::qWait(200);
 
   QVERIFY(duration_spy.count() > 0);
   QCOMPARE(error_spy.count(), 0);
   QCOMPARE((int)player.getDuration(), 6);
+}
+
+/** When loading an empty file, the audioError() signal should be emitted. */
+void AudioPlayerTest::loadErrorneousFile() {
+  AudioPlayer player;
+  QSignalSpy spy(&player, SIGNAL(audioError(const QString&)));
+
+  QString empty_file = QString(SRCDIR);
+  empty_file += "files/empty.wav";
+
+  player.openAudioFile(empty_file);
+  QTest::qWait(200);
+
+  QCOMPARE(spy.count(), 1);
+  QList<QVariant> signal = spy.takeFirst();
+  QVERIFY(signal.at(0).toString().startsWith("The audio file can't be loaded."));
+
+  // We shouldn't be able to play the audio
+  QCOMPARE(player.getPlayerState(), AudioPlayer::PAUSED);
+  player.togglePlayPause(true);
+  QCOMPARE(player.getPlayerState(), AudioPlayer::PAUSED);
+}
+
+/** We should be able to load a different file. After loading, we should be in
+ *  the PAUSED state. */
+void AudioPlayerTest::loadDifferentFile() {
+  AudioPlayer player;
+  QSignalSpy spy(&player, SIGNAL(durationChanged()));
+
+  // Open the first audio file
+  player.openAudioFile(m_noise_file);
+  QTest::qWait(200);
+  QVERIFY(spy.count() > 0);               // durationChanged should have been emitted
+  QCOMPARE((int)player.getDuration(), 6); // noise.wav has a duration of 6 seconds
+  QCOMPARE(player.getPlayerState(),       // We should be initalized in paused state
+           AudioPlayer::PAUSED);
+
+  player.togglePlayPause(true);
+  QCOMPARE(player.getPlayerState(), AudioPlayer::PLAYING);
+
+  // Open alternative audio file
+  int num_signals = spy.count();
+  player.openAudioFile(m_silence_file);
+  QTest::qWait(200);
+
+  QVERIFY(spy.count() > num_signals);     // durationChanged should have been emitted
+  QCOMPARE((int)player.getDuration(), 7); // silence.wav has a duration of 7 seconds
+  QCOMPARE(player.getPlayerState(),       // We should be initalized in paused state
+           AudioPlayer::PAUSED);
 }
 
 /** Test if the positionChangedSignal is emitted during playback and if the
@@ -91,7 +145,7 @@ void AudioPlayerTest::seek() {
   // We can't reuse the general AudioPlayer here, because it relies on this
   // functionality to work correctly. So we need to create a separate instance.
   AudioPlayer player;
-  player.openAudioFile(m_audio_file);
+  player.openAudioFile(m_noise_file);
   QTest::qWait(200);
 
   QSignalSpy spy(&player, SIGNAL(positionChanged()));
@@ -100,19 +154,25 @@ void AudioPlayerTest::seek() {
 
   // Seek forward
   int num_signals = spy.count();
-  player.seek(SeekDirection::FORWARD, 2);
+  player.seek(AudioPlayer::FORWARD, 4);
+  QVERIFY(spy.count() > num_signals);
+  QCOMPARE((int)player.getPosition(), 4);
+
+  // Seek backward
+  num_signals = spy.count();
+  player.seek(AudioPlayer::BACKWARD, 2);
   QVERIFY(spy.count() > num_signals);
   QCOMPARE((int)player.getPosition(), 2);
 
   // Make sure we can't seek before beginning
   num_signals = spy.count();
-  player.seek(SeekDirection::BACKWARD, 10);
+  player.seek(AudioPlayer::BACKWARD, 10);
   QVERIFY(spy.count() > num_signals);
   QCOMPARE((int)player.getPosition(), 0);
 
   // Make sure we can't seek past the end
   num_signals = spy.count();
-  player.seek(SeekDirection::FORWARD, 20);
+  player.seek(AudioPlayer::FORWARD, 20);
   QVERIFY(spy.count() > num_signals);
   QCOMPARE((int)player.getPosition(), 6);
   QTest::qWait(100);
@@ -121,9 +181,16 @@ void AudioPlayerTest::seek() {
   player.togglePlayPause(false);
 }
 
+/** Test if durations and positions are properly rounded to whole seconds. */
 void AudioPlayerTest::timeRounding() {
-  // Our test file takes 5.x seconds, which should round the result to 6
+  // Our test file takes 5.8 seconds, which should round the result to 6
   QCOMPARE((int)m_player->getDuration(), 6);
+
+  // Load the silence file, which takes 7.0 seconds and should be rounded to 7
+  AudioPlayer player;
+  player.openAudioFile(m_silence_file);
+  QTest::qWait(200);
+  QCOMPARE((int)player.getDuration(), 7);
 
   // Make sure we're rounded to the nearest number of seconds in our position
   m_player->togglePlayPause(true);
@@ -147,7 +214,7 @@ void AudioPlayerTest::stateTransitions() {
   // We can't reuse the general AudioPlayer here, because it relies on this
   // functionality to work correctly. So we need to create a separate instance.
   AudioPlayer player;
-  player.openAudioFile(m_audio_file);
+  player.openAudioFile(m_noise_file);
   QTest::qWait(200);
   QSignalSpy spy(&player, SIGNAL(playerStateChanged()));
 

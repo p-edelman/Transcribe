@@ -52,7 +52,7 @@ void AudioPlayer::seek(SeekDirection direction, int seconds) {
 void AudioPlayer::openAudioFile(const QString& path) {
   m_error_handled = false;
 
-  m_player->stop();
+  setState(PlayerState::PAUSED);
   m_player->setMedia(QUrl::fromLocalFile(path));
 }
 
@@ -87,9 +87,10 @@ void AudioPlayer::setAudioPosition(int seconds) {
 }
 
 void AudioPlayer::setState(PlayerState state) {
-  // Corner case: if we're at the end of the media, we can only be in paused
-  // state.
-  if (m_player->mediaStatus() == QMediaPlayer::EndOfMedia) {
+  // If the media is not properly loaded or we're at the end of the media, we
+  // can only be in the paused state.
+  if ((m_player->mediaStatus() != QMediaPlayer::LoadedMedia) &&
+      (m_player->mediaStatus() != QMediaPlayer::BufferedMedia)) {
     state = PlayerState::PAUSED;
   }
 
