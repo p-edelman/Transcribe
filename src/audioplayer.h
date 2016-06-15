@@ -104,6 +104,7 @@ public slots:
    *  @param should_wait indicates whether we should wait. */
   void toggleWaiting(bool should_wait);
 
+private slots:
   /** Callback for when the position in the audio stream has changed. */
   void audioPositionChanged(qint64);
 
