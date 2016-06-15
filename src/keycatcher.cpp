@@ -1,11 +1,9 @@
 #include "keycatcher.h"
 #include "transcribe.h"
 
-KeyCatcher::KeyCatcher(Transcribe*  transcribe,
-                       AudioPlayer* audio_player,
+KeyCatcher::KeyCatcher(AudioPlayer* audio_player,
                        QObject*     parent) : QObject(parent) {
-  m_transcribe = transcribe;
-  m_player     = audio_player;
+  m_player = audio_player;
 }
 
 bool KeyCatcher::eventFilter(QObject* object, QEvent* event) {
@@ -54,7 +52,7 @@ bool KeyCatcher::eventFilter(QObject* object, QEvent* event) {
         break;
       case Qt::Key_S:
         if (key_event->modifiers() == Qt::ControlModifier) {
-          m_transcribe->saveText();
+          emit saveFile();
         } else {
           is_consumed = false;
         }
