@@ -6,7 +6,7 @@ Transcribe::Transcribe(int &argc, char **argv) :
   m_text_file = NULL;
 
   m_player = new AudioPlayer();
-  QObject::connect(m_player, SIGNAL(audioError(const QString&)),
+  QObject::connect(m_player, SIGNAL(error(const QString&)),
                    this, SLOT(errorDetected(const QString&)));
 
   m_keeper = new TypingTimeLord(m_player);
@@ -174,7 +174,7 @@ void Transcribe::guiReady(QObject* root) {
   QObject::connect(catcher, SIGNAL(saveFile()),
                    this, SLOT(saveText()));
   QObject::connect(catcher, SIGNAL(seekAudio(AudioPlayer::SeekDirection,int)),
-                   m_player, SLOT(seek(AudioPlayer::SeekDirection, int)));
+                   m_player, SLOT(skipSeconds(AudioPlayer::SeekDirection, int)));
   QObject::connect(catcher, SIGNAL(togglePlayPause()),
                    m_player, SLOT(togglePlayPause()));
   QObject::connect(catcher, SIGNAL(togglePlayPause(bool)),
@@ -184,7 +184,7 @@ void Transcribe::guiReady(QObject* root) {
   // Attach audio controls to the AudioPlayer
   QObject* controls = root->findChild<QObject *>("media_controls");
   QObject::connect(controls, SIGNAL(valueChanged(int)),
-                   m_player, SLOT(setAudioPosition(int)));
+                   m_player, SLOT(setPosition(int)));
   QObject::connect(controls, SIGNAL(playingStateChanged(bool)),
                    m_player, SLOT(togglePlayPause(bool)));
 
@@ -210,7 +210,7 @@ void Transcribe::pickFiles() {
   QQmlProperty::write(m_app_root, "is_editable", QVariant(false));
 
   // Open the audio file
-  m_player->openAudioFile(audio_file_path);
+  m_player->openFile(audio_file_path);
 
   // Let the user pick a text file for the transcript. As a file suggestion, we
   // base a txt file on the current audio file.

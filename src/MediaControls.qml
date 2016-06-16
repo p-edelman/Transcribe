@@ -82,7 +82,7 @@ Item {
     id:        play_pause_btn
     checkable: true
     enabled: player.duration > 0 ? true : false
-    text:    player.player_state === PlayerState.PAUSED ? qsTr("Play") : qsTr("Pause")
+    text:    player.state === PlayerState.PAUSED ? qsTr("Play") : qsTr("Pause")
 
     anchors.horizontalCenter: slider.horizontalCenter
     anchors.top:              slider.bottom
@@ -92,8 +92,8 @@ Item {
     // explicitly respond to the signal here,
     Connections {
       target: player
-      onPlayerStateChanged: {
-        if (player.player_state === PlayerState.PAUSED) {
+      onStateChanged: {
+        if (player.state === PlayerState.PAUSED) {
           play_pause_btn.checked = false
         } else {
           play_pause_btn.checked = true
@@ -111,7 +111,7 @@ Item {
     text: qsTr("Waiting")
 
     enabled: false
-    checked: player.player_state == PlayerState.WAITING ? true : false
+    checked: player.state === PlayerState.WAITING ? true : false
 
     anchors.left:           play_pause_btn.right
     anchors.verticalCenter: play_pause_btn.verticalCenter

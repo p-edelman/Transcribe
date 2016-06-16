@@ -4,7 +4,7 @@ TypingTimeLord::TypingTimeLord(AudioPlayer* player, QObject *parent) :
   QObject(parent) {
 
   m_player = player;
-  QObject::connect(m_player, SIGNAL(playerStateChanged()),
+  QObject::connect(m_player, SIGNAL(stateChanged()),
                    this, SLOT(playerStateChanged()));
 
   // Initialize the timers to single shot timers and connect them to their
@@ -18,21 +18,21 @@ TypingTimeLord::TypingTimeLord(AudioPlayer* player, QObject *parent) :
 }
 
 void TypingTimeLord::restartWaitTimer() {
-  if (m_player->getPlayerState() == AudioPlayer::PLAYING) {
+  if (m_player->getState() == AudioPlayer::PLAYING) {
     m_wait_timer->stop();
     m_wait_timer->start(m_wait_timeout);
   }
 }
 
 void TypingTimeLord::restartTypeTimer() {
-  if (m_player->getPlayerState() != AudioPlayer::PAUSED) {
+  if (m_player->getState() != AudioPlayer::PAUSED) {
     m_type_timer->stop();
     m_type_timer->start(m_type_timeout);
   }
 }
 
 void TypingTimeLord::keyTyped() {
-  if (m_player->getPlayerState() == AudioPlayer::PLAYING) {
+  if (m_player->getState() == AudioPlayer::PLAYING) {
     if (!m_wait_timer->isActive()) {
       m_wait_timer->start(m_wait_timeout);
     }
@@ -46,9 +46,9 @@ void TypingTimeLord::waitTimeout() {
 }
 
 void TypingTimeLord::typeTimeout() {
-  if (m_player->getPlayerState() == AudioPlayer::WAITING) {
+  if (m_player->getState() == AudioPlayer::WAITING) {
     m_player->toggleWaiting(false);
-  } else if (m_player->getPlayerState() == AudioPlayer::PLAYING) {
+  } else if (m_player->getState() == AudioPlayer::PLAYING) {
     restartWaitTimer();
   }
 
@@ -59,10 +59,10 @@ void TypingTimeLord::typeTimeout() {
 }
 
 void TypingTimeLord::playerStateChanged() {
-  if (m_player->getPlayerState() != AudioPlayer::PLAYING) {
+  if (m_player->getState() != AudioPlayer::PLAYING) {
     m_wait_timer->stop();
   }
-  if (m_player->getPlayerState() == AudioPlayer::PAUSED) {
+  if (m_player->getState() == AudioPlayer::PAUSED) {
     m_type_timer->stop();
   }
 }

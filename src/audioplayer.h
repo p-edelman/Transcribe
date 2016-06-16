@@ -37,9 +37,9 @@ public:
   Q_ENUMS(SeekDirection)
 
   /** The player state. */
-  Q_PROPERTY(PlayerState player_state
-             READ getPlayerState
-             NOTIFY playerStateChanged)
+  Q_PROPERTY(PlayerState state
+             READ getState
+             NOTIFY stateChanged)
 
   /** The duration of the loaded audio file in whole seconds. */
   Q_PROPERTY(uint duration
@@ -51,17 +51,17 @@ public:
              READ getPosition
              NOTIFY positionChanged)
 
-  PlayerState getPlayerState();
+  PlayerState getState();
   uint getDuration();
   uint getPosition();
 
   /** Open a new audio file.
    *  @param path the complete path to the new file. */
-  void openAudioFile(const QString &path);
+  void openFile(const QString &path);
 
 signals:
   /** Signals the the playing state has changed. */
-  void playerStateChanged();
+  void stateChanged();
 
   /** Signals that the duration of the audio has changed. This typically occurs
    *  when a new audio file is loaded. */
@@ -74,14 +74,14 @@ signals:
 
   /** Signals that the audio failed to load or play.
    *  @param message an error message that can be displayed to the user. */
-  void audioError(const QString& message);
+  void error(const QString& message);
 
 public slots:
   /** Seek to the specified position in the stream. */
-  void setAudioPosition(int seconds);
+  void setPosition(int seconds);
 
   /** Skip a number of seconds backward or forward in the audio stream. */
-  void seek(AudioPlayer::SeekDirection direction, int seconds);
+  void skipSeconds(AudioPlayer::SeekDirection direction, int seconds);
 
   /** Switch between paused and playing states, depending on the current state:
    *  - if PLAYING of WAITING, switch to PAUSED
@@ -105,24 +105,25 @@ public slots:
   void toggleWaiting(bool should_wait);
 
 private slots:
-  /** Callback for when the position in the audio stream has changed. */
-  void audioPositionChanged(qint64);
+  /** Callback for when QMediaPlayer reports that the position in the media
+   *  stream has changed. */
+  void handleMediaPositionChanged(qint64);
 
   /** Callback for when the QMediaPlayer has finished loading a new audio file
    *  or the duration is changed. */
-  void audioAvailabilityChanged();
+  void handleMediaAvailabilityChanged();
 
   /** Callback for when an error occurs during media loading by the
    *  QMediaPlayer. */
   void handleMediaError();
 
-  /** Callback for when the media status changes. Needed to catch the end of
-   *  audio situation. */
-  void mediaStatusChanged(QMediaPlayer::MediaStatus status);
+  /** Callback for when the QMediaPlayer reports changes in the media status.
+   *  Needed to catch the end of audio situation. */
+  void handleMediaStatusChanged(QMediaPlayer::MediaStatus status);
 
 private:
-  /** Set the PlayerState to the desired state and update the relevant timers
-   *  and GUI.
+  /** Set the PlayerState to the desired state. In response, the appriate
+   *  signals will be sent.
    *  @param state the desired state */
   void setState(PlayerState state);
 

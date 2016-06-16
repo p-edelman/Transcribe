@@ -6,18 +6,18 @@ AudioPlayer::AudioPlayer(QObject *parent) : QObject(parent) {
   m_player = new QMediaPlayer;
   m_player->setNotifyInterval(1000); // We're working with second precision
   QObject::connect(m_player, SIGNAL(positionChanged(qint64)),
-                   this, SLOT(audioPositionChanged(qint64)));
+                   this, SLOT(handleMediaPositionChanged(qint64)));
   QObject::connect(m_player, SIGNAL(audioAvailableChanged(bool)),
-                   this, SLOT(audioAvailabilityChanged()));
+                   this, SLOT(handleMediaAvailabilityChanged()));
   QObject::connect(m_player, SIGNAL(durationChanged(qint64)),
-                   this, SLOT(audioAvailabilityChanged()));
+                   this, SLOT(handleMediaAvailabilityChanged()));
   QObject::connect(m_player, SIGNAL(error(QMediaPlayer::Error)),
                    this, SLOT(handleMediaError()));
   QObject::connect(m_player, SIGNAL(mediaStatusChanged(QMediaPlayer::MediaStatus)),
-                   this, SLOT(mediaStatusChanged(QMediaPlayer::MediaStatus)));
+                   this, SLOT(handleMediaStatusChanged(QMediaPlayer::MediaStatus)));
 }
 
-AudioPlayer::PlayerState AudioPlayer::getPlayerState() {
+AudioPlayer::PlayerState AudioPlayer::getState() {
   return m_state;
 }
 
@@ -32,7 +32,7 @@ uint AudioPlayer::getPosition() {
   return ((m_player->position() + 500) / 1000);
 }
 
-void AudioPlayer::seek(SeekDirection direction, int seconds) {
+void AudioPlayer::skipSeconds(SeekDirection direction, int seconds) {
   qint64 new_pos;
   if (direction == SeekDirection::FORWARD) {
     new_pos = m_player->position() + seconds * 1000;
@@ -49,14 +49,14 @@ void AudioPlayer::seek(SeekDirection direction, int seconds) {
   emit positionChanged();
 }
 
-void AudioPlayer::openAudioFile(const QString& path) {
+void AudioPlayer::openFile(const QString& path) {
   m_error_handled = false;
 
   setState(PlayerState::PAUSED);
   m_player->setMedia(QUrl::fromLocalFile(path));
 }
 
-void AudioPlayer::audioAvailabilityChanged() {
+void AudioPlayer::handleMediaAvailabilityChanged() {
   // Signal the MediaControls that the duration of the loaded media has changed.
   // Note that the reported duration might be -1 initially even though the
   // audio is available. That's why this method needs to be bound to the
@@ -71,18 +71,18 @@ void AudioPlayer::handleMediaError() {
     QString message = tr("The audio file can't be loaded.\n");
     message += m_player->errorString();
 
-    emit audioError(message);
+    emit error(message);
   }
 }
 
-void AudioPlayer::mediaStatusChanged(QMediaPlayer::MediaStatus status) {
+void AudioPlayer::handleMediaStatusChanged(QMediaPlayer::MediaStatus status) {
   if (status == QMediaPlayer::EndOfMedia) {
     // When the media ends, switch to the PAUSED state.
     setState(PlayerState::PAUSED);
   }
 }
 
-void AudioPlayer::setAudioPosition(int seconds) {
+void AudioPlayer::setPosition(int seconds) {
   qint64 ms = seconds * 1000;
   if (ms > m_player->duration()) ms = m_player->duration(); // Cap
   m_player->setPosition(ms);
@@ -112,7 +112,7 @@ void AudioPlayer::setState(PlayerState state) {
       m_player->pause();
     }
 
-    emit playerStateChanged();
+    emit stateChanged();
   }
 }
 
@@ -154,7 +154,7 @@ void AudioPlayer::toggleWaiting(bool should_wait) {
   }
 }
 
-void AudioPlayer::audioPositionChanged(qint64) {
+void AudioPlayer::handleMediaPositionChanged(qint64) {
   emit positionChanged();
 }
 
