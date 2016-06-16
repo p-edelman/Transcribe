@@ -23,8 +23,12 @@ private Q_SLOTS:
   void loadFile();
   void loadErrorneousFile();
   void loadDifferentFile();
+  void togglePlayPause();
+  void togglePlayPauseWithArgument();
+  void toggleWaiting();
   void positionChangedSignal();
   void seek();
+  void setPosition();
   void timeRounding();
   void stateTransitions();
 };
@@ -121,6 +125,38 @@ void AudioPlayerTest::loadDifferentFile() {
            AudioPlayer::PAUSED);
 }
 
+/** Test if we can toggle between PLAYING and PAUSED state without setting the
+ *  desired state explicitely (the strict sense of 'toggle') */
+void AudioPlayerTest::togglePlayPause() {
+  QCOMPARE(m_player->getPlayerState(), AudioPlayer::PAUSED);
+  m_player->togglePlayPause();
+  QCOMPARE(m_player->getPlayerState(), AudioPlayer::PLAYING);
+  m_player->togglePlayPause();
+  QCOMPARE(m_player->getPlayerState(), AudioPlayer::PAUSED);
+}
+
+/** Test if we can toggle between PLAYING and PAUSED state by setting the
+ *  desired state explicitely (the strict sense of 'toggle') */
+void AudioPlayerTest::togglePlayPauseWithArgument() {
+  QCOMPARE(m_player->getPlayerState(), AudioPlayer::PAUSED);
+  m_player->togglePlayPause(true);
+  QCOMPARE(m_player->getPlayerState(), AudioPlayer::PLAYING);
+  m_player->togglePlayPause(false);
+  QCOMPARE(m_player->getPlayerState(), AudioPlayer::PAUSED);
+}
+
+/** Test if we can toggle between PLAYING and WAITING state. */
+void AudioPlayerTest::toggleWaiting() {
+  m_player->togglePlayPause(true);
+  QCOMPARE(m_player->getPlayerState(), AudioPlayer::PLAYING);
+
+  m_player->toggleWaiting(true);
+  QCOMPARE(m_player->getPlayerState(), AudioPlayer::WAITING);
+
+  m_player->toggleWaiting(false);
+  QCOMPARE(m_player->getPlayerState(), AudioPlayer::PLAYING);
+}
+
 /** Test if the positionChangedSignal is emitted during playback and if the
  *  position is reported correctly. */
 void AudioPlayerTest::positionChangedSignal() {
@@ -175,10 +211,56 @@ void AudioPlayerTest::seek() {
   player.seek(AudioPlayer::FORWARD, 20);
   QVERIFY(spy.count() > num_signals);
   QCOMPARE((int)player.getPosition(), 6);
-  QTest::qWait(100);
+  QTest::qWait(200);
   QCOMPARE(player.getPlayerState(), AudioPlayer::PAUSED);
 
   player.togglePlayPause(false);
+}
+
+/** Test for setting the audio position explicitely. */
+void AudioPlayerTest::setPosition() {
+  QCOMPARE((int)m_player->getPosition(), 0);
+
+  m_player->setAudioPosition(3);
+  QCOMPARE((int)m_player->getPosition(), 3);
+  QCOMPARE(m_player->getPlayerState(), AudioPlayer::PAUSED);
+
+  // Make sure we can't set negative time
+  m_player->setAudioPosition(-1);
+  QVERIFY(m_player->getPosition() == 0);
+  QCOMPARE(m_player->getPlayerState(), AudioPlayer::PAUSED);
+
+  // Make sure we can't set time past the end
+  m_player->setAudioPosition(100);
+  QCOMPARE((int)m_player->getPosition(), 6);
+  QCOMPARE(m_player->getPlayerState(), AudioPlayer::PAUSED);
+
+  // --- Now do the same while playing
+  m_player->togglePlayPause(true);
+
+  m_player->setAudioPosition(0);
+  QCOMPARE((int)m_player->getPosition(), 0);
+  QCOMPARE(m_player->getPlayerState(), AudioPlayer::PLAYING);
+
+  m_player->setAudioPosition(3);
+  QCOMPARE((int)m_player->getPosition(), 3);
+  QCOMPARE(m_player->getPlayerState(), AudioPlayer::PLAYING);
+
+  // Make sure we can't set negative time
+  m_player->setAudioPosition(-1);
+  QVERIFY(m_player->getPosition() == 0);
+  QCOMPARE(m_player->getPlayerState(), AudioPlayer::PLAYING);
+
+  // Make sure we can't set time past the end
+  m_player->setAudioPosition(100);
+  QTest::qWait(100);
+  QCOMPARE((int)m_player->getPosition(), 6);
+  QCOMPARE(m_player->getPlayerState(), AudioPlayer::PAUSED);
+
+  // Make sure we don't resume playing because just because of the seeking
+  m_player->setAudioPosition(3);
+  QVERIFY(m_player->getPosition() == 3);
+  QCOMPARE(m_player->getPlayerState(), AudioPlayer::PAUSED);
 }
 
 /** Test if durations and positions are properly rounded to whole seconds. */
@@ -209,7 +291,10 @@ void AudioPlayerTest::timeRounding() {
   QCOMPARE((int)m_player->getPosition(), 2);
 }
 
-/** Test for the accepted state transmissions. */
+/** Test for the accepted state transmissions.
+ *  This method re-tests some of the functionality previously verified. We
+ *  still keep the different tests though, as they aim for different concepts
+ *  which we now have out there in the open. */
 void AudioPlayerTest::stateTransitions() {
   // We can't reuse the general AudioPlayer here, because it relies on this
   // functionality to work correctly. So we need to create a separate instance.

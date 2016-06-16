@@ -83,7 +83,9 @@ void AudioPlayer::mediaStatusChanged(QMediaPlayer::MediaStatus status) {
 }
 
 void AudioPlayer::setAudioPosition(int seconds) {
-  m_player->setPosition(seconds * 1000);
+  qint64 ms = seconds * 1000;
+  if (ms > m_player->duration()) ms = m_player->duration(); // Cap
+  m_player->setPosition(ms);
 }
 
 void AudioPlayer::setState(PlayerState state) {
