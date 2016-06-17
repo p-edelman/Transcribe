@@ -31,6 +31,9 @@ private Q_SLOTS:
   void testCtrlS();
   void testAudioPlayPauseWithSpace();
   void testAudioSeekWithArrows();
+  void testAudioPlayPauseWithAudioKeys();
+  void testAudioSeekWithAudioKeys();
+  void testModifiersOnAudioAudioKeys();
 };
 
 #endif // TST_KEYCATCHERTEST_H

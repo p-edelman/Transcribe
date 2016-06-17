@@ -11,51 +11,49 @@ bool KeyCatcher::eventFilter(QObject* object, QEvent* event) {
     // along
     bool is_consumed = true;
 
-    switch (key_event->key()) {
-      case Qt::Key_MediaPlay:
-      case Qt::Key_MediaTogglePlayPause:
-        emit togglePlayPause();
-        break;
-      case Qt::Key_MediaStop:
-      case Qt::Key_MediaPause:
-        emit togglePlayPause(false);
-        break;
-      case Qt::Key_MediaNext:
-        emit seekAudio(AudioPlayer::FORWARD, 5);
-        break;
-      case Qt::Key_MediaPrevious:
-        emit seekAudio(AudioPlayer::BACKWARD, 5);
-        break;
-      case Qt::Key_Space:
-        if (key_event->modifiers() == Qt::ControlModifier) {
+    if (key_event->modifiers() == Qt::NoModifier) {
+      switch(key_event->key()) {
+        case Qt::Key_MediaPlay:
+        case Qt::Key_MediaTogglePlayPause:
           emit togglePlayPause();
-        } else {
-          is_consumed = false;
-        }
-        break;
-      case Qt::Key_Left:
-        if (key_event->modifiers() == Qt::AltModifier) {
-          emit seekAudio(AudioPlayer::BACKWARD, 5);
-        } else {
-          is_consumed = false;
-        }
-        break;
-      case Qt::Key_Right:
-        if (key_event->modifiers() == Qt::AltModifier) {
+          break;
+        case Qt::Key_MediaStop:
+        case Qt::Key_MediaPause:
+          emit togglePlayPause(false);
+          break;
+        case Qt::Key_MediaNext:
           emit seekAudio(AudioPlayer::FORWARD, 5);
-        } else {
+          break;
+        case Qt::Key_MediaPrevious:
+          emit seekAudio(AudioPlayer::BACKWARD, 5);
+          break;
+        default:
           is_consumed = false;
-        }
-        break;
-      case Qt::Key_S:
-        if (key_event->modifiers() == Qt::ControlModifier) {
+      }
+    } else if (key_event->modifiers() == Qt::ControlModifier) {
+      switch(key_event->key()) {
+        case Qt::Key_Space:
+          emit togglePlayPause();
+          break;
+        case Qt::Key_S:
           emit saveFile();
-        } else {
+          break;
+        default:
           is_consumed = false;
-        }
-        break;
-      default:
-        is_consumed = false;
+      }
+    } else if (key_event->modifiers() == Qt::AltModifier) {
+      switch(key_event->key()) {
+        case Qt::Key_Left:
+          emit seekAudio(AudioPlayer::BACKWARD, 5);
+          break;
+        case Qt::Key_Right:
+          emit seekAudio(AudioPlayer::FORWARD, 5);
+          break;
+        default:
+          is_consumed = false;
+      }
+    } else {
+      is_consumed = false;
     }
 
     // When the key is not consumed the user is typing in the window and

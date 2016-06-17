@@ -69,9 +69,11 @@ void KeyCatcherTest::testCtrlS() {
   }
 }
 
+/** Test if the audio playing and pausing can be controlled with Ctrl+Space. */
 void KeyCatcherTest::testAudioPlayPauseWithSpace() {
   QList<Qt::KeyboardModifiers> valid_modifiers;
   valid_modifiers.append(Qt::ControlModifier);
+  QList<Qt::KeyboardModifiers> invalid_modifiers = getInvalidModifiers(valid_modifiers);
 
   QSignalSpy spy(m_catcher, SIGNAL(togglePlayPause()));
 
@@ -83,7 +85,7 @@ void KeyCatcherTest::testAudioPlayPauseWithSpace() {
     QCOMPARE(m_key_typed_spy->count(), 0);
   }
 
-  QList<Qt::KeyboardModifiers> invalid_modifiers = getInvalidModifiers(valid_modifiers);
+  // Test if other modifiers are ignored
   int key_typed = 0;
   QList<Qt::KeyboardModifiers>::iterator imod;
   for (imod = invalid_modifiers.begin(); imod != invalid_modifiers.end(); imod++) {
@@ -94,9 +96,11 @@ void KeyCatcherTest::testAudioPlayPauseWithSpace() {
   }
 }
 
+/** Test is we can seek the audio with Alt+Left and Alt+Right. */
 void KeyCatcherTest::testAudioSeekWithArrows() {
   QList<Qt::KeyboardModifiers> valid_modifiers;
   valid_modifiers.append(Qt::AltModifier);
+  QList<Qt::KeyboardModifiers> invalid_modifiers = getInvalidModifiers(valid_modifiers);
 
   QSignalSpy spy(m_catcher, SIGNAL(seekAudio(AudioPlayer::SeekDirection, int)));
 
@@ -105,7 +109,7 @@ void KeyCatcherTest::testAudioSeekWithArrows() {
     QKeyEvent event(QEvent::KeyPress, Qt::Key_Left, *vmod);
     QApplication::sendEvent(m_root, &event);
     QCOMPARE(spy.count(), 1);
-    QCOMPARE(spy.at(0).at(0), QVariant(AudioPlayer::BACKWARD));
+    QCOMPARE(spy.last().at(0), QVariant(AudioPlayer::BACKWARD));
     QCOMPARE(m_key_typed_spy->count(), 0);
   }
 
@@ -113,11 +117,11 @@ void KeyCatcherTest::testAudioSeekWithArrows() {
     QKeyEvent event(QEvent::KeyPress, Qt::Key_Right, *vmod);
     QApplication::sendEvent(m_root, &event);
     QCOMPARE(spy.count(), 2);
-    QCOMPARE(spy.at(1).at(0), QVariant(AudioPlayer::FORWARD));
+    QCOMPARE(spy.last().at(0), QVariant(AudioPlayer::FORWARD));
     QCOMPARE(m_key_typed_spy->count(), 0);
   }
 
-  QList<Qt::KeyboardModifiers> invalid_modifiers = getInvalidModifiers(valid_modifiers);
+  // Test if other modifiers are ignored
   int key_typed = 0;
   QList<Qt::KeyboardModifiers>::iterator imod;
   for (imod = invalid_modifiers.begin(); imod != invalid_modifiers.end(); imod++) {
@@ -129,5 +133,84 @@ void KeyCatcherTest::testAudioSeekWithArrows() {
     QApplication::sendEvent(m_root, &event_right);
     QCOMPARE(spy.count(), 2);
     QCOMPARE(m_key_typed_spy->count(), ++key_typed);
+  }
+}
+
+/** Test if we can control the audio stopping and pausing with the hardware
+ *  audio keys. */
+void KeyCatcherTest::testAudioPlayPauseWithAudioKeys() {
+  QSignalSpy spy_noarg(m_catcher, SIGNAL(togglePlayPause()));
+  QSignalSpy spy_arg(m_catcher, SIGNAL(togglePlayPause(bool)));
+
+  QApplication::sendEvent(m_root,
+    new QKeyEvent(QEvent::KeyPress, Qt::Key_MediaTogglePlayPause, 0));
+  QCOMPARE(spy_noarg.count(), 1);
+  QCOMPARE(spy_arg.count(), 0);
+
+  // TODO: We now use MediaPlay as a toggle as this seems to be the correct
+  // interpretation, but we should look into this.
+  QApplication::sendEvent(m_root,
+    new QKeyEvent(QEvent::KeyPress, Qt::Key_MediaPlay, 0));
+  QCOMPARE(spy_noarg.count(), 2);
+  QCOMPARE(spy_arg.count(), 0);
+
+  QApplication::sendEvent(m_root,
+    new QKeyEvent(QEvent::KeyPress, Qt::Key_MediaPause, 0));
+  QCOMPARE(spy_noarg.count(), 2);
+  QCOMPARE(spy_arg.count(), 1);
+  QCOMPARE(spy_arg.last().at(0).toBool(), false);
+
+  QApplication::sendEvent(m_root,
+    new QKeyEvent(QEvent::KeyPress, Qt::Key_MediaStop, 0));
+  QCOMPARE(spy_noarg.count(), 2);
+  QCOMPARE(spy_arg.count(), 2);
+  QCOMPARE(spy_arg.last().at(0).toBool(), false);
+}
+
+/** Test if we can seek through the audio with the hardware previous and next
+ *  keys. */
+void KeyCatcherTest::testAudioSeekWithAudioKeys() {
+  QSignalSpy spy(m_catcher, SIGNAL(seekAudio(AudioPlayer::SeekDirection,int)));
+
+  QApplication::sendEvent(m_root,
+    new QKeyEvent(QEvent::KeyPress, Qt::Key_MediaPrevious, 0));
+  QCOMPARE(spy.count(), 1);
+  QCOMPARE(spy.last().at(0), QVariant(AudioPlayer::BACKWARD));
+
+  QApplication::sendEvent(m_root,
+    new QKeyEvent(QEvent::KeyPress, Qt::Key_MediaNext, 0));
+  QCOMPARE(spy.count(), 2);
+  QCOMPARE(spy.last().at(0), QVariant(AudioPlayer::FORWARD));
+}
+
+/** Test if modifiers on the hardware audio keys are ignored. */
+void KeyCatcherTest::testModifiersOnAudioAudioKeys() {
+  QSignalSpy spy_pp_noarg(m_catcher, SIGNAL(togglePlayPause()));
+  QSignalSpy spy_pp_arg(m_catcher, SIGNAL(togglePlayPause(bool)));
+  QSignalSpy spy_seek(m_catcher, SIGNAL(seekAudio(AudioPlayer::SeekDirection,int)));
+  QList<Qt::KeyboardModifiers> mods;
+  QList<Qt::KeyboardModifiers> invalid_mods = getInvalidModifiers(mods);
+
+  QList<Qt::Key> audio_keys;
+  audio_keys.append(Qt::Key_MediaPlay);
+  audio_keys.append(Qt::Key_MediaTogglePlayPause);
+  audio_keys.append(Qt::Key_MediaStop);
+  audio_keys.append(Qt::Key_MediaPause);
+  audio_keys.append(Qt::Key_MediaPrevious);
+  audio_keys.append(Qt::Key_MediaNext);
+
+  int key_typed = 0;
+  QList<Qt::Key>::iterator audio_key;
+  QList<Qt::KeyboardModifiers>::iterator imod;
+  for (audio_key = audio_keys.begin(); audio_key != audio_keys.end(); audio_key++) {
+    for (imod = invalid_mods.begin(); imod != invalid_mods.end(); imod++) {
+      QKeyEvent event(QEvent::KeyPress, *audio_key, *imod);
+      QApplication::sendEvent(m_root, &event);
+      QCOMPARE(spy_pp_noarg.count(), 0);
+      QCOMPARE(spy_pp_arg.count(), 0);
+      QCOMPARE(spy_seek.count(), 0);
+      // Every key that isn't consumed is regarded as normal typing
+      QCOMPARE(m_key_typed_spy->count(), ++key_typed);
+    }
   }
 }
