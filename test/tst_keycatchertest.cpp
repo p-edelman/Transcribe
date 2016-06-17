@@ -1,6 +1,8 @@
 #include "tst_keycatchertest.h"
 
 KeyCatcherTest::KeyCatcherTest() {
+  qRegisterMetaType<AudioPlayer::SeekDirection>();
+
   m_root    = new QObject();
   m_catcher = new KeyCatcher(m_root);
   m_root->installEventFilter(m_catcher);
@@ -63,6 +65,69 @@ void KeyCatcherTest::testCtrlS() {
     QKeyEvent event(QEvent::KeyPress, Qt::Key_S, *imod);
     QApplication::sendEvent(m_root, &event);
     QCOMPARE(spy.count(), 1);
+    QCOMPARE(m_key_typed_spy->count(), ++key_typed);
+  }
+}
+
+void KeyCatcherTest::testAudioPlayPauseWithSpace() {
+  QList<Qt::KeyboardModifiers> valid_modifiers;
+  valid_modifiers.append(Qt::ControlModifier);
+
+  QSignalSpy spy(m_catcher, SIGNAL(togglePlayPause()));
+
+  QList<Qt::KeyboardModifiers>::iterator vmod;
+  for (vmod = valid_modifiers.begin(); vmod != valid_modifiers.end(); vmod++) {
+    QKeyEvent event(QEvent::KeyPress, Qt::Key_Space, *vmod);
+    QApplication::sendEvent(m_root, &event);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(m_key_typed_spy->count(), 0);
+  }
+
+  QList<Qt::KeyboardModifiers> invalid_modifiers = getInvalidModifiers(valid_modifiers);
+  int key_typed = 0;
+  QList<Qt::KeyboardModifiers>::iterator imod;
+  for (imod = invalid_modifiers.begin(); imod != invalid_modifiers.end(); imod++) {
+    QKeyEvent event(QEvent::KeyPress, Qt::Key_Space, *imod);
+    QApplication::sendEvent(m_root, &event);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(m_key_typed_spy->count(), ++key_typed);
+  }
+}
+
+void KeyCatcherTest::testAudioSeekWithArrows() {
+  QList<Qt::KeyboardModifiers> valid_modifiers;
+  valid_modifiers.append(Qt::AltModifier);
+
+  QSignalSpy spy(m_catcher, SIGNAL(seekAudio(AudioPlayer::SeekDirection, int)));
+
+  QList<Qt::KeyboardModifiers>::iterator vmod;
+  for (vmod = valid_modifiers.begin(); vmod != valid_modifiers.end(); vmod++) {
+    QKeyEvent event(QEvent::KeyPress, Qt::Key_Left, *vmod);
+    QApplication::sendEvent(m_root, &event);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.at(0).at(0), QVariant(AudioPlayer::BACKWARD));
+    QCOMPARE(m_key_typed_spy->count(), 0);
+  }
+
+  for (vmod = valid_modifiers.begin(); vmod != valid_modifiers.end(); vmod++) {
+    QKeyEvent event(QEvent::KeyPress, Qt::Key_Right, *vmod);
+    QApplication::sendEvent(m_root, &event);
+    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy.at(1).at(0), QVariant(AudioPlayer::FORWARD));
+    QCOMPARE(m_key_typed_spy->count(), 0);
+  }
+
+  QList<Qt::KeyboardModifiers> invalid_modifiers = getInvalidModifiers(valid_modifiers);
+  int key_typed = 0;
+  QList<Qt::KeyboardModifiers>::iterator imod;
+  for (imod = invalid_modifiers.begin(); imod != invalid_modifiers.end(); imod++) {
+    QKeyEvent event_left(QEvent::KeyPress, Qt::Key_Left, *imod);
+    QApplication::sendEvent(m_root, &event_left);
+    QCOMPARE(spy.count(), 2);
+    QCOMPARE(m_key_typed_spy->count(), ++key_typed);
+    QKeyEvent event_right(QEvent::KeyPress, Qt::Key_Right, *imod);
+    QApplication::sendEvent(m_root, &event_right);
+    QCOMPARE(spy.count(), 2);
     QCOMPARE(m_key_typed_spy->count(), ++key_typed);
   }
 }

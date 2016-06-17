@@ -4,9 +4,13 @@
 #include <QtTest>
 #include <QSignalSpy>
 #include <QList>
+#include <QMetaType>
 
 #include "keycatcher.h"
 #include "transcribe.h"
+#include "audioplayer.h"
+
+Q_DECLARE_METATYPE(AudioPlayer::SeekDirection)
 
 class KeyCatcherTest : public QObject {
   Q_OBJECT
@@ -25,6 +29,8 @@ private Q_SLOTS:
   void init();
 
   void testCtrlS();
+  void testAudioPlayPauseWithSpace();
+  void testAudioSeekWithArrows();
 };
 
 #endif // TST_KEYCATCHERTEST_H
