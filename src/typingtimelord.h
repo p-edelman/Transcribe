@@ -47,14 +47,6 @@ public:
   unsigned int m_wait_timeout = 5000;
   unsigned int m_type_timeout = 1000;
 
-  /** Cancel the pause timer if it is running and start it from the beginning.
-   *  This will be ignored if the player is not in PLAYING state. */
-  void restartWaitTimer();
-
-  /** Cancel the typing timer if it is running and start it from the beginning.
-   *  This will be ignored if the player is not in PLAYING of WAITING state. */
-  void restartTypeTimer();
-
 public slots:
   /** Signal the time keeper that a key has been typed into the editor.
    *  This does two things:
@@ -64,6 +56,14 @@ public slots:
   void keyTyped();
 
 private:
+  /** Cancel the pause timer if it is running and start it from the beginning.
+   *  This will be ignored if the player is not in PLAYING state. */
+  void restartWaitTimer();
+
+  /** Cancel the typing timer if it is running and start it from the beginning.
+   *  This will be ignored if the player is not in PLAYING of WAITING state. */
+  void restartTypeTimer();
+
   QTimer* m_wait_timer;
   QTimer* m_type_timer;
 

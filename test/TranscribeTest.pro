@@ -7,19 +7,25 @@
 QT       += testlib multimedia
 QT       -= gui
 
-TARGET = tst_audioplayertest
+TARGET = TranscribeTest
 CONFIG += console
 CONFIG -= app_bundle
 CONFIG += c++11
 
-TEMPLATE = app
+#TEMPLATE = app
 
 INCLUDEPATH += ../src
-VPATH       += ../src
+#VPATH       += ../src
 
-SOURCES += tst_audioplayertest.cpp \
-           audioplayer.cpp
+SOURCES += main.cpp \
+           tst_audioplayertest.cpp \
+           tst_typingtimelordtest.cpp \
+           ../src/audioplayer.cpp \
+           ../src/typingtimelord.cpp
 
-HEADERS += audioplayer.h
+HEADERS += tst_audioplayertest.h \
+           tst_typingtimelordtest.h \
+           ../src/audioplayer.h \
+           ../src/typingtimelord.h
 
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
