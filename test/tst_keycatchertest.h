@@ -3,6 +3,7 @@
 
 #include <QtTest>
 #include <QSignalSpy>
+#include <QList>
 
 #include "keycatcher.h"
 #include "transcribe.h"
@@ -17,6 +18,8 @@ private:
   QObject*    m_root;
   KeyCatcher* m_catcher;
   QSignalSpy* m_key_typed_spy;
+
+  QList<Qt::KeyboardModifiers> getInvalidModifiers(QList<Qt::KeyboardModifiers>& valid_modifiers);
 
 private Q_SLOTS:
   void init();
