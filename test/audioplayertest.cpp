@@ -1,4 +1,4 @@
-#include "tst_audioplayertest.h"
+#include "audioplayertest.h"
 
 AudioPlayerTest::AudioPlayerTest() {
   m_noise_file =  QString(SRCDIR);

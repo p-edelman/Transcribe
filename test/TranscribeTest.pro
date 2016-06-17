@@ -15,17 +15,17 @@ CONFIG += c++11
 INCLUDEPATH += ../src
 
 SOURCES += main.cpp \
-           tst_audioplayertest.cpp \
-           tst_typingtimelordtest.cpp \
-           tst_keycatchertest.cpp \
+           audioplayertest.cpp \
+           typingtimelordtest.cpp \
+           keycatchertest.cpp \
            ../src/audioplayer.cpp \
            ../src/typingtimelord.cpp \
            ../src/keycatcher.cpp \
            ../src/transcribe.cpp
 
-HEADERS += tst_audioplayertest.h \
-           tst_typingtimelordtest.h \
-           tst_keycatchertest.h \
+HEADERS += audioplayertest.h \
+           typingtimelordtest.h \
+           keycatchertest.h \
            ../src/audioplayer.h \
            ../src/typingtimelord.h \
            ../src/keycatcher.h \

@@ -1,4 +1,4 @@
-#include "tst_typingtimelordtest.h"
+#include "typingtimelordtest.h"
 
 TypingTimeLordTest::TypingTimeLordTest() {
   QString silence_file =  SRCDIR;

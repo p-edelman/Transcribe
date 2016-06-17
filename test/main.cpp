@@ -1,8 +1,8 @@
 #include <QCoreApplication>
 
-#include "tst_audioplayertest.h"
-#include "tst_typingtimelordtest.h"
-#include "tst_keycatchertest.h"
+#include "audioplayertest.h"
+#include "typingtimelordtest.h"
+#include "keycatchertest.h"
 
 int main(int argc, char** argv) {
   QCoreApplication app(argc, argv);

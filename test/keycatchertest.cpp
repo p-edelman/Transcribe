@@ -1,4 +1,4 @@
-#include "tst_keycatchertest.h"
+#include "keycatchertest.h"
 
 KeyCatcherTest::KeyCatcherTest() {
   qRegisterMetaType<AudioPlayer::SeekDirection>();
