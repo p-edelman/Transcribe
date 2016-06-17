@@ -2,6 +2,7 @@ import QtQuick 2.4
 import QtQuick.Controls 1.4
 import QtQuick.Controls.Styles 1.4
 import QtQuick.Layouts 1.0
+import QtQml 2.2
 
 ApplicationWindow {
   id:    main_window
@@ -25,11 +26,11 @@ ApplicationWindow {
 
   menuBar: MenuBar {
     Menu {
-      title: qsTr("File")
+      title: qsTr("&File")
       MenuItem {
         text: {
           if (app.is_text_dirty) {
-            qsTr("&Open audio and text (save text changes first)")
+            qsTr("Open audio and text (save text changes first)")
           } else {
             qsTr("&Open audio and text")
           }
@@ -89,12 +90,36 @@ ApplicationWindow {
     anchors.bottom: parent.bottom
     anchors.left:   parent.left
 
+    // Text input seems to be somewhat borked at the moment on touch based
+    // platforms (or at least Android). Touch is registered as a mouse click,
+    // so the user can't drag/flick long text but ends up selecting it.
+    // To prevent this, we can set the ability to select by mouse to false on
+    // touch based platforms. This is of course a crude tool; it's now not
+    // possible to use an attached mouse to select text. Worse, it's also
+    // not possible to select text the proper touch based way, with a long
+    // press, only the keyboard will work.
+    selectByMouse: {
+      switch (Qt.platform.os) {
+        case "android":
+        case "blackberry":
+        case "ios":
+        case "winphone":
+          false
+          break
+        default:
+          true
+      }
+    }
+
     readOnly:            !main_window.is_editable
     focus:               true
-    font.pixelSize:      12
+    font.pointSize:      12
     textFormat:          Text.PlainText
     horizontalAlignment: Text.AlignLeft
     wrapMode:            TextEdit.WordWrap
+    flickableItem {
+      flickableDirection: Flickable.VerticalFlick
+    }
 
     // Set the text to dirty status whenever it changes
     onTextChanged: app.is_text_dirty = true

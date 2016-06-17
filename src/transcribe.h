@@ -55,7 +55,7 @@ public slots:
    *  @param message the message to display to the end user. */
   void errorDetected(const QString& message);
 
-  /** Shut diwn the application. If the text is dirty, ask the user if it should
+  /** Shut down the application. If the text is dirty, ask the user if it should
    *  be saved. */
   void close();
 
