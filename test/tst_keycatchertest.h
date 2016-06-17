@@ -16,8 +16,12 @@ public:
 private:
   QObject*    m_root;
   KeyCatcher* m_catcher;
+  QSignalSpy* m_key_typed_spy;
 
 private Q_SLOTS:
+  void init();
+
+  void testCtrlS();
 };
 
 #endif // TST_KEYCATCHERTEST_H
