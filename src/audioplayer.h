@@ -3,6 +3,8 @@
 
 #include <QObject>
 
+#include <QAudioOutput>
+#include <QAudioProbe>
 #include <QDebug>
 #include <QMediaPlayer>
 #include <QString>
@@ -103,6 +105,11 @@ public slots:
    *  @param should_wait indicates whether we should wait. */
   void toggleWaiting(bool should_wait);
 
+  /** Increase or decrease the boost factor of the audio by 0.1.
+   *  @param is_up if true, the boost factor is increased, if false it is
+   *               decreased. */
+  void boost(bool is_up);
+
 private slots:
   /** Callback for when QMediaPlayer reports that the position in the media
    *  stream has changed. */
@@ -120,6 +127,10 @@ private slots:
    *  Needed to catch the end of audio situation. */
   void handleMediaStatusChanged(QMediaPlayer::MediaStatus status);
 
+  /** Callback for when the QAudioProbe received a new buffer. It will make
+      play back this buffer, possibly altered, to the m_playback_device. */
+  void handleAudioBuffer(const QAudioBuffer& buffer);
+
 private:
   /** Set the PlayerState to the desired state. In response, the appriate
    *  signals will be sent.
@@ -129,8 +140,55 @@ private:
   /** The state that we're currently in. */
   PlayerState m_state;
 
+  /** Initialize the audio device to which the audio data will be sent for the
+   *  specific audio format. It needs to be called anytime the the audioformat
+   *  changes, which is dictated by the QMediaPlayer but generally only happens
+   *  when a new audio file is loaded. */
+  void initAudioDevice(const QAudioFormat& format);
+
+  /** The output channel we use to write raw audio data to. */
+  QIODevice* m_playback_device = NULL;
+
+  /** The audio format we're currently working with as a reference to see if
+   *  something has changed. */
+  QAudioFormat* m_audio_format;
+
+  /** The factor that audio data is multiplied with before playing. */
+  qreal m_boost = 1.0;
+
+  /** Amplified the audio by the m_boost factor and store the result in
+   *  m_modified_buffer. Check the return value to make sure the data in
+   *  m_modified_buffer is valid!
+   *  If the signal is boosted outside its bound, it will be clipped.
+   *  @tparam word_type the type of the audio data.
+   *  @param buffer the audio buffer.
+   *  @return true if the signal was modified, false otherwise. If false is
+                   returned, the data in m_modified_buffer is invalid! */
+  template<class word_type> bool boostAudio(const QAudioBuffer& buffer);
+
   /** The main QMediaPlayer instance for playing and seeking audio files. */
   QMediaPlayer* m_player;
+
+  /** We're using a bit of a dirty trick here to be able to modify the audio
+   *  signal before actually playing it. Normally, one would use the
+   *  QAudioDecoder class for this use case, but that doesn't allow seeking.
+   *  Instead we set the volume of the QMediaPlayer to 0 and attach a
+   *  QAudioProbe to the it, which hands out the raw audio data via the
+   *  audioBufferProbed() signal, which we'll intercept with
+   *  handleAudioBuffer(). This readonly data - QAudioProbe is meant to monitor
+   *  the audio data, not to modify it, so we write the modified signal to a new
+   *  buffer, m_modified buffer and play back that copy. */
+  QAudioProbe* m_probe;
+
+  /** Buffer for storing modified audio data. We declare it just once to avoid
+   *  the overhead of repeated memory operations. */
+  char*  m_modified_buffer = NULL;
+
+  /** Remember the size of the modified audio data buffer, so that we can
+   *  enlarge it if a new buffer arrives which requires more space. We never
+   *  reduce the size though, as audio buffers are fairly constant in size and
+   *  it wouldn't make much sense to reclaim the small amount of memory. */
+  int m_modified_buffer_size = 0;
 
   /** When the audio fails to load, oftentimes multiple error messages are
    *  thrown by QMediaPlayer. We need to signal a problem just once to the end

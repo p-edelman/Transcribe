@@ -148,6 +148,8 @@ void Transcribe::guiReady(QObject* root) {
           m_player, SLOT(togglePlayPause()));
   connect(catcher, SIGNAL(togglePlayPause(bool)),
           m_player, SLOT(togglePlayPause(bool)));
+  connect(catcher, SIGNAL(boost(bool)),
+          m_player, SLOT(boost(bool)));
   root->installEventFilter(catcher);
 
   // Attach audio controls to the AudioPlayer

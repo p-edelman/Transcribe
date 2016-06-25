@@ -49,6 +49,12 @@ bool KeyCatcher::eventFilter(QObject* object, QEvent* event) {
         case Qt::Key_Right:
           emit seekAudio(AudioPlayer::FORWARD, 5);
           break;
+        case Qt::Key_Up:
+          emit boost(true);
+          break;
+        case Qt::Key_Down:
+          emit boost(false);
+          break;
         default:
           is_consumed = false;
       }

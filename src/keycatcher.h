@@ -28,6 +28,10 @@ signals:
    *  be saved. */
   void saveFile();
 
+  /** Emitted when a key combination is typed that should increase or decrease
+   *  the boost factor. */
+  void boost(bool is_up);
+
 protected:
   /** The raise d'etre of this class: catching keys. */
   bool eventFilter(QObject* object, QEvent* event);

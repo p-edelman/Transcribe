@@ -3,6 +3,8 @@
 AudioPlayer::AudioPlayer(QObject *parent) : QObject(parent) {
   m_state = PlayerState::PAUSED;
 
+  m_audio_format = new QAudioFormat();
+
   m_player = new QMediaPlayer;
   m_player->setNotifyInterval(1000); // We're working with second precision
   QObject::connect(m_player, SIGNAL(positionChanged(qint64)),
@@ -15,6 +17,14 @@ AudioPlayer::AudioPlayer(QObject *parent) : QObject(parent) {
                    this, SLOT(handleMediaError()));
   QObject::connect(m_player, SIGNAL(mediaStatusChanged(QMediaPlayer::MediaStatus)),
                    this, SLOT(handleMediaStatusChanged(QMediaPlayer::MediaStatus)));
+
+  // Let the QAudioProbe 'intercept' the audio data.
+  m_player->setVolume(0);
+  m_probe = new QAudioProbe(parent);
+  m_probe->setSource(m_player);
+
+  connect(m_probe, SIGNAL(audioBufferProbed(QAudioBuffer)),
+          this, SLOT(handleAudioBuffer(QAudioBuffer)));
 }
 
 AudioPlayer::PlayerState AudioPlayer::getState() {
@@ -154,10 +164,84 @@ void AudioPlayer::toggleWaiting(bool should_wait) {
   }
 }
 
+void AudioPlayer::boost(bool is_up) {
+  if (is_up) {
+    m_boost += 0.1;
+  } else {
+    m_boost -= 0.1;
+    if (m_boost < 0.0) m_boost = 0.0;
+  }
+}
+
 void AudioPlayer::handleMediaPositionChanged(qint64) {
   emit positionChanged();
 }
 
+template<class word_type>
+bool AudioPlayer::boostAudio(const QAudioBuffer& buffer) {
+  if (m_boost != 1.0) {
+    const word_type* data = buffer.constData<word_type>();
+    word_type* new_buffer = (word_type*)m_modified_buffer;
+    for (int i = 0; i < buffer.frameCount(); i++) {
+      // qint32 should be sufficient as we only handle 8 and 16 bit data.
+      qint32 val = (qint32)(data[i] * m_boost);
 
+      // Cap the value if needed
+      if (val > std::numeric_limits<word_type>::max()) {
+        new_buffer[i] = std::numeric_limits<word_type>::max();
+      } else if (val < std::numeric_limits<word_type>::min()) {
+        new_buffer[i] = std::numeric_limits<word_type>::min();
+      } else {
+        new_buffer[i] = (word_type)val;
+      }
+    }
+    return true;
+  }
 
+  return false;
+}
 
+void AudioPlayer::initAudioDevice(const QAudioFormat& format) {
+  if (format != *m_audio_format) {
+    qDebug() << "Change of format";
+    m_audio_format = new QAudioFormat(format);
+    delete m_playback_device;
+  }
+
+  if (m_playback_device == NULL) {
+    QAudioOutput* device = new QAudioOutput(format, this);
+    device->setVolume(1.0);
+    m_playback_device = device->start();
+  }
+}
+
+void AudioPlayer::handleAudioBuffer(const QAudioBuffer& buffer) {
+  initAudioDevice(buffer.format());
+
+  if (buffer.isValid()) {
+    if (buffer.byteCount() > m_modified_buffer_size) {
+      m_modified_buffer_size = buffer.byteCount();
+      m_modified_buffer  = (char*)realloc(m_modified_buffer, m_modified_buffer_size);
+    }
+
+    bool is_modified = false;
+
+    if (buffer.format().sampleType() == QAudioFormat::SignedInt) {
+      if (buffer.format().bytesPerFrame() == 1) {
+        is_modified = boostAudio<int8_t>(buffer);
+      } else if (buffer.format().bytesPerFrame() == 2) {
+        is_modified = boostAudio<int16_t>(buffer);
+      }
+    } else {
+      // TODO: Unreadable
+      qDebug() << "Unsupported format";
+    }
+
+    // Finally, play the audio
+    if (is_modified) {
+      m_playback_device->write(m_modified_buffer, buffer.byteCount());
+    } else {
+      m_playback_device->write((char*)buffer.constData(), buffer.byteCount());
+    }
+  }
+}
