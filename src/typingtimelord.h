@@ -2,6 +2,7 @@
 #define TYPINGTIMEKEEPER_H
 
 #include <QObject>
+#include <QTimer>
 
 #include "audioplayer.h"
 

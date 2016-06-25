@@ -6,7 +6,6 @@
 #include <QDebug>
 #include <QMediaPlayer>
 #include <QString>
-#include <QTimer>
 
 /** The 'back-end' class for playing audio files. It is complemented by a
  *  QML MediaControls element to interact with it. */
