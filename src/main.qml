@@ -113,7 +113,7 @@ ApplicationWindow {
 
     readOnly:            !main_window.is_editable
     focus:               true
-    font.pointSize:      12
+    font.pointSize:      (Qt.platform.os == "android") ? 16 : 12
     textFormat:          Text.PlainText
     horizontalAlignment: Text.AlignLeft
     wrapMode:            TextEdit.WordWrap
