@@ -92,7 +92,7 @@ bool Transcribe::saveText() {
     }
 
     // Now we can move the temp file to our actual target file
-    if (QFile::rename(temp_file.fileName(), m_text_file->fileName())) {
+    if (temp_file.rename(m_text_file->fileName())) {
       // Indicate that the text is not dirty anymore
       setTextDirty(false);
 
