@@ -34,3 +34,5 @@ DISTFILES += \
     ../resources/android/gradlew.bat
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/../resources/android
+
+RC_ICONS = ../resources/icon/windows/icon.ico
