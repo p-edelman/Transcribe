@@ -1,19 +1,19 @@
 # Transcribe
 
-A tool for people who need to transcribe audio files to text (especially when they are slow typers with sticky fingers).
+A tool for people who need to transcribe audio recordings to text (more specifically, people that are slow typists and have sticky fingers ;)
 
-The app allows you to load an audio file and play it while typing out the text, so you don't have to switch constantly between audio player and text editor. Crucially, the app provides key bindings so that:
-* you can type without interfering with the playback of the audio, and conversily
-* you can control audio starting, stopping and seeking without interfering with the text editing, and
-* you don't accidentaly type something that resets the audio, skips to the next song, etc.
+The app is quite simple; it allows you to load an audio file and play it while typing out the text, so you don't have to switch constantly between audio player and text editor. Crucially, the app:
+* Provides key bindings so that:
+	* you can type without interfering with the playback of the audio, and conversely
+	* you can control the audio (starting, stopping and seeking) without interfering with the text editing, and
+	* you don't accidentally type something that resets the audio, skips to the next song, etc.
+* Pauses the audio playback whenever you're frantically typing to keep up
 
-Furthermore, if you're frantically typing to keep up with the audio, the app will pause every few seconds until you're there.
-
-The app is written using het Qt framework runs on Android and Linux. It should also work on Mac an Windows when someone compiles it on those platforms.
+The app is written using het Qt framework and is tested on Android and Linux. It should be possible to compile it on Windows and Mac without much trouble.
 
 ## Status
 
-It works, but it's very rough around the edges and lacks quality controls, so there's no released version yet. You're of course free to checkout the repository.
+The first stable release, codenamed 'Amy' is totally usable, though somewhat rough around the edges. You can find the Android version [in the Play Store](https://play.google.com/store/apps/details?id=org.mrpi.transcribe), or use the tag 'amy' to check out the Git repository.
 
 ## The very short manual
 
