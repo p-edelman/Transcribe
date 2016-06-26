@@ -61,11 +61,12 @@ Item {
     anchors.left:  curr_time.right
 
     /* Sends a signal that the user changed the value on the slider. */
-    onValueChanged: {
-      // Note that we need to check if the slider is pressed, otherwise
-      // the signal will also be sent after programmatic changes (thus to
-      // slider updates from the audio player).
-      if (pressed) media_player.valueChanged(value)
+    onPressedChanged: {
+      // Note that we can't use onValueChanged, because that signal is also sent
+      // after programmatic changes (thus to slider updates from the audio
+      // player). So we need to check if the slider is actually pressed and
+      // released.
+      if (!pressed) media_player.valueChanged(value)
     }
   }
 
