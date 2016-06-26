@@ -6,7 +6,7 @@ import QtQml 2.2
 
 ApplicationWindow {
   id:    main_window
-  title: qsTr("Transcriber")
+  title: qsTr("Transcribe")
 
   visible: true
   width:   640

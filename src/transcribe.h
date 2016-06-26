@@ -6,6 +6,7 @@
 #include <QFileInfo>
 #include <QMessageBox>
 #include <QString>
+#include <QWindow>
 #include <QQmlApplicationEngine>
 #include <QQmlProperty>
 #include <QTemporaryFile>

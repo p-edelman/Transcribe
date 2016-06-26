@@ -167,6 +167,9 @@ void Transcribe::guiReady(QObject* root) {
   m_app_root  = root;
   m_text_area = m_app_root->findChild<QObject *>("text_area");
 
+  // Set the icon, which, strangely enough, cannot be done from QML
+  ((QWindow*)root)->setIcon(QIcon("://window_icon"));
+
   // Install the key filter and connect its signals
   KeyCatcher* catcher = new KeyCatcher(root);
   QObject::connect(catcher, SIGNAL(keyTyped()),

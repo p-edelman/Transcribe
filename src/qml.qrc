@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file>MediaControls.qml</file>
+        <file alias="window_icon">../resources/icon/window/icon.png</file>
     </qresource>
 </RCC>
