@@ -64,6 +64,7 @@ bool Transcribe::saveText() {
   // We want the file saving process to be atomic or at least close, so we can't
   // loose any work. So we save the text to a temporary file first.
   QTemporaryFile temp_file;
+  temp_file.setAutoRemove(false);
   if (temp_file.open()) {
     QTextStream out_stream(&temp_file);
     out_stream << QQmlProperty::read(m_text_area, "text").toString();
@@ -82,7 +83,7 @@ bool Transcribe::saveText() {
       old_file_name = m_text_file->fileName() + ".old";
       unsigned int old_ext_counter = 1;
       while (QFile::exists(old_file_name)) {
-        old_file_name + QString::number(old_ext_counter);
+        old_file_name += QString::number(old_ext_counter);
       }
       if (!QFile::rename(m_text_file->fileName(), old_file_name)) {
         errorDetected(general_msg);
