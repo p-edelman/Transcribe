@@ -3,7 +3,7 @@
     package="org.mrpi.transcribe"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:versionName="Amy"
-    android:versionCode="1"
+    android:versionCode="101"
     android:installLocation="auto">
     <application
         android:hardwareAccelerated="true"
@@ -76,4 +76,6 @@
     <!-- %%INSERT_FEATURES -->
 
 <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 </manifest>
