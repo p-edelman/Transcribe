@@ -6,8 +6,8 @@ Transcribe::Transcribe(int &argc, char **argv) :
   m_text_file = NULL;
 
   m_player = new AudioPlayer();
-  QObject::connect(m_player, SIGNAL(error(const QString&)),
-                   this, SLOT(errorDetected(const QString&)));
+  connect(m_player, SIGNAL(error(const QString&)),
+          this, SLOT(errorDetected(const QString&)));
 
   m_keeper = new TypingTimeLord(m_player);
 
@@ -48,6 +48,16 @@ QString Transcribe::getTextFileName() const {
     return info.fileName();
   }
   return QString(tr("No transcript file loaded"));
+}
+
+void Transcribe::openAudioFile(const QString& path) {
+  // Unload the current text file
+  m_text_file = NULL;
+  emit textFileNameChanged();
+  QQmlProperty::write(m_app_root, "is_editable", QVariant(false));
+
+  // Open the audio file
+  m_player->openFile(path);
 }
 
 bool Transcribe::saveText() {
@@ -173,60 +183,72 @@ void Transcribe::guiReady(QObject* root) {
 
   // Install the key filter and connect its signals
   KeyCatcher* catcher = new KeyCatcher(root);
-  QObject::connect(catcher, SIGNAL(keyTyped()),
-                   m_keeper, SLOT(keyTyped()));
-  QObject::connect(catcher, SIGNAL(saveFile()),
-                   this, SLOT(saveText()));
-  QObject::connect(catcher, SIGNAL(seekAudio(AudioPlayer::SeekDirection,int)),
-                   m_player, SLOT(skipSeconds(AudioPlayer::SeekDirection, int)));
-  QObject::connect(catcher, SIGNAL(togglePlayPause()),
-                   m_player, SLOT(togglePlayPause()));
-  QObject::connect(catcher, SIGNAL(togglePlayPause(bool)),
-                   m_player, SLOT(togglePlayPause(bool)));
+  connect(catcher, SIGNAL(keyTyped()),
+          m_keeper, SLOT(keyTyped()));
+  connect(catcher, SIGNAL(saveFile()),
+          this, SLOT(saveText()));
+  connect(catcher, SIGNAL(seekAudio(AudioPlayer::SeekDirection,int)),
+          m_player, SLOT(skipSeconds(AudioPlayer::SeekDirection, int)));
+  connect(catcher, SIGNAL(togglePlayPause()),
+          m_player, SLOT(togglePlayPause()));
+  connect(catcher, SIGNAL(togglePlayPause(bool)),
+          m_player, SLOT(togglePlayPause(bool)));
   root->installEventFilter(catcher);
 
   // Attach audio controls to the AudioPlayer
   QObject* controls = root->findChild<QObject *>("media_controls");
-  QObject::connect(controls, SIGNAL(valueChanged(int)),
-                   m_player, SLOT(setPosition(int)));
-  QObject::connect(controls, SIGNAL(playingStateChanged(bool)),
-                   m_player, SLOT(togglePlayPause(bool)));
+  connect(controls, SIGNAL(valueChanged(int)),
+          m_player, SLOT(setPosition(int)));
+  connect(controls, SIGNAL(playingStateChanged(bool)),
+          m_player, SLOT(togglePlayPause(bool)));
 
   // Connect GUI events to their callbacks
-  QObject::connect(m_app_root, SIGNAL(saveText()),
-                   this, SLOT(saveText()));
-  QObject::connect(m_app_root, SIGNAL(pickFiles()),
-                   this, SLOT(pickFiles()));
-  QObject::connect(m_app_root, SIGNAL(signalQuit()),
-                   this, SLOT(close()));
+  connect(m_app_root, SIGNAL(saveText()),
+          this, SLOT(saveText()));
+  connect(m_app_root, SIGNAL(pickFiles()),
+          this, SLOT(pickFiles()));
+  connect(m_app_root, SIGNAL(signalQuit()),
+          this, SLOT(close()));
 }
 
 void Transcribe::pickFiles() {
+  QFileDialog dlg;
+
+  // Unfortunately, QFileDialog on Android looks horrible, but we can make it
+  // a bit better by maximizing it.
+  if (QSysInfo::productType() == "android") {
+    dlg.setWindowState(Qt::WindowMaximized);
+    dlg.setViewMode(QFileDialog::List);
+  }
+
   // Let the user pick an audio file
-  QString audio_file_path = QFileDialog::getOpenFileName(
-    NULL, tr("Open an audio file"), NULL,
-    tr("Audio files (*.wav *.mp3 *.aac *.amr *.aiff *.flac *.ogg *.wma)"));
-  if (audio_file_path == NULL) return;
+  dlg.setWindowTitle(tr("Open an audio file"));
+  dlg.setNameFilter(tr("Audio files (*.wav *.mp3 *.aac *.amr *.aiff *.flac *.ogg *.wma)"));
+  dlg.setFileMode(QFileDialog::ExistingFile);
+  dlg.setAcceptMode(QFileDialog::AcceptOpen);
+  if (dlg.exec() == QDialog::Rejected || dlg.selectedFiles().count() != 1) {
+    return;
+  }
 
-  // Unload the current text file
-  m_text_file = NULL;
-  emit textFileNameChanged();
-  QQmlProperty::write(m_app_root, "is_editable", QVariant(false));
+  openAudioFile(dlg.selectedFiles().at(0));
 
-  // Open the audio file
-  m_player->openFile(audio_file_path);
-
-  // Let the user pick a text file for the transcript. As a file suggestion, we
-  // base a txt file on the current audio file.
-  QFileInfo info(audio_file_path);
+  // Recycle the file dialog to let the user pick a text file for the
+  // transcript. As a file suggestion, we base a txt file on the current audio
+  // file.
+  QFileInfo info(dlg.selectedFiles().at(0));
   QString suggestion = info.absolutePath() + "/" + info.baseName() + ".txt";
-  QString text_file_path = QFileDialog::getSaveFileName(
-    NULL, tr("Pick a text file for the transcript"),
-    suggestion, tr("Text files (*.txt)"), NULL,
-    QFileDialog::DontConfirmOverwrite);
-  if (text_file_path == NULL) return;
+  dlg.setWindowTitle(tr("Pick a text file for the transcript"));
+  dlg.setNameFilter(tr("Text files (*.txt)"));
+  dlg.setFileMode(QFileDialog::AnyFile);
+  dlg.setAcceptMode(QFileDialog::AcceptSave);
+  dlg.setOption(QFileDialog::DontConfirmOverwrite, true);
+  dlg.setLabelText(QFileDialog::Accept, tr("Open/Create"));
+  dlg.selectFile(suggestion);
+  if (dlg.exec() == QDialog::Rejected || dlg.selectedFiles().count() != 1) {
+    return;
+  }
 
-  openTextFile(text_file_path);
+  openTextFile(dlg.selectedFiles().at(0));
 }
 
 void Transcribe::openTextFile(const QString& path) {

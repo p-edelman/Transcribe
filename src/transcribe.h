@@ -6,11 +6,14 @@
 #include <QFileInfo>
 #include <QMessageBox>
 #include <QString>
+#include <QSysInfo>
 #include <QWindow>
 #include <QQmlApplicationEngine>
 #include <QQmlProperty>
+#include <QScreen>
 #include <QTemporaryFile>
 #include <QtQml>
+#include <QQuickView>
 
 #include "audioplayer.h"
 #include "keycatcher.h"
@@ -37,6 +40,15 @@ class Transcribe : public QApplication {
 
 public:
   Transcribe(int &argc, char **argv);
+
+  /** Open the audio file specified by the path. This will unload the text file
+   *  from the editor. */
+  void openAudioFile(const QString& path);
+
+  /** Open the text file specified by the path. If it is an existing file, the
+   *  text will be loaded into the editor, otherwise a new file will be created.
+   */
+  void openTextFile(const QString& path);
 
   /** Indicate that the text is dirty, thus that the current edits are not
    *  saved. If it changes, the textDirtyChanged() signal will be emitted. */
@@ -65,11 +77,6 @@ signals:
   void textFileNameChanged();
 
 private:
-  /** Open the text file specified by the path. If it is an existing file, the
-   *  text will be loaded into the editor, otherwise a new file will be created.
-   */
-  void openTextFile(const QString& path);
-
   /** Whether the text is dirty, thus the current edits in the transcription
    *  text are not changed. */
   bool m_is_text_dirty = false;
