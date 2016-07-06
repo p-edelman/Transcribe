@@ -10,8 +10,8 @@
 #include <QWindow>
 #include <QQmlApplicationEngine>
 #include <QQmlProperty>
+#include <QSaveFile>
 #include <QScreen>
-#include <QTemporaryFile>
 #include <QtQml>
 #include <QQuickView>
 
