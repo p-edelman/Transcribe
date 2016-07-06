@@ -18,6 +18,7 @@ SOURCES += main.cpp \
            audioplayertest.cpp \
            typingtimelordtest.cpp \
            keycatchertest.cpp \
+           transcribetest.cpp \
            ../src/audioplayer.cpp \
            ../src/typingtimelord.cpp \
            ../src/keycatcher.cpp \
@@ -26,9 +27,12 @@ SOURCES += main.cpp \
 HEADERS += audioplayertest.h \
            typingtimelordtest.h \
            keycatchertest.h \
+           transcribetest.h \
            ../src/audioplayer.h \
            ../src/typingtimelord.h \
            ../src/keycatcher.h \
            ../src/transcribe.h
+
+RESOURCES += ../src/qml.qrc
 
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
