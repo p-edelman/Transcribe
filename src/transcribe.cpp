@@ -67,67 +67,22 @@ bool Transcribe::saveText() {
     return false;
   }
 
-  // General error message for saving the file
+  QSaveFile file(m_text_file->fileName());
+  if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+    QTextStream out_stream(&file);
+    out_stream << QQmlProperty::read(m_text_area, "text").toString();
+    if (file.commit()) {
+      setTextDirty(false);
+      return true;
+    }
+  }
+
+  // Notify that the file could not be saved
   QString general_msg =  tr("There was an error saving the text file.\n");
   general_msg         += tr("The latest changes are not saved!");
 
-  // We want the file saving process to be atomic or at least close, so we can't
-  // loose any work. So we save the text to a temporary file first.
-  QTemporaryFile temp_file;
-  temp_file.setAutoRemove(false);
-  if (temp_file.open()) {
-    QTextStream out_stream(&temp_file);
-    out_stream << QQmlProperty::read(m_text_area, "text").toString();
-    temp_file.close();
-  } else {
-    errorDetected(general_msg);
-    qDebug() << "Couldn't create temp file";
-    return false;
-  }
-
-  if (!m_text_file->isOpen()) {
-    // Now move the existing file to a file with the .old extension, or .old1,
-    // .old2, etc if it already exists
-    QString old_file_name = NULL;
-    if (m_text_file->exists()) {
-      old_file_name = m_text_file->fileName() + ".old";
-      unsigned int old_ext_counter = 1;
-      while (QFile::exists(old_file_name)) {
-        old_file_name += QString::number(old_ext_counter);
-      }
-      if (!QFile::rename(m_text_file->fileName(), old_file_name)) {
-        errorDetected(general_msg);
-        qDebug() << "Couldn't move file to .old file";
-        return false;
-      }
-    }
-
-    // Now we can move the temp file to our actual target file
-    if (temp_file.rename(m_text_file->fileName())) {
-      // Indicate that the text is not dirty anymore
-      setTextDirty(false);
-
-      // Remove the .old file
-      if (QFile::exists(old_file_name)) {
-        QFile::remove(old_file_name);
-      }
-    } else {
-      QString msg = tr("There was an error saving the text file.\n");
-      if (old_file_name != NULL) {
-        msg += tr("Your text file is saved as '") + old_file_name + "'\n";
-      }
-      msg += tr("Your recent edits are not saved!");
-      errorDetected(msg);
-      qDebug() << "Couldn't copy temp file " << temp_file.fileName() << " to " + m_text_file->fileName();
-      return false;
-    }
-  } else {
-    errorDetected(general_msg);
-    qDebug() << "File is open";
-    return false;
-  }
-
-  return true;
+  errorDetected(general_msg);
+  return false;
 }
 
 void Transcribe::errorDetected(const QString& message) {
