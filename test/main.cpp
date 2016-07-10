@@ -1,4 +1,4 @@
-#include <QApplication>
+#include <QCoreApplication>
 
 #include "audioplayertest.h"
 #include "typingtimelordtest.h"
@@ -6,11 +6,11 @@
 #include "transcribetest.h"
 
 int main(int argc, char** argv) {
-  QApplication app(argc, argv);
+  QCoreApplication app(argc, argv);
   QTest::qExec(new AudioPlayerTest(), argc, argv);
   QTest::qExec(new TypingTimeLordTest(), argc, argv);
   QTest::qExec(new KeyCatcherTest(), argc, argv);
   QTest::qExec(new TranscribeTest(), argc, argv);
 
- return 0;
+ return app.exec();
 }
