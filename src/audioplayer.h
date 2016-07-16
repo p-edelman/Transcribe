@@ -190,6 +190,16 @@ private:
    *  it wouldn't make much sense to reclaim the small amount of memory. */
   int m_modified_buffer_size = 0;
 
+  /** To figure out by how much we can boost an audio sample without clipping it
+   *  too much, we have to count how many of each sample point there are.
+   *  We use int for this as the QAudioFormat::sampleCount() method uses this as
+   *  the return type, thus the actual count fits into an int. */
+  int* m_spectrogram = NULL;
+
+  /** Remember the size of the spectrogram buffer, so we can enlarge it if a
+   *  sample size is picked that uses larger values. */
+  int m_spectrogram_size = 0;
+
   /** When the audio fails to load, oftentimes multiple error messages are
    *  thrown by QMediaPlayer. We need to signal a problem just once to the end
    *  user though, so we need to keep track of whether it is handled already. */

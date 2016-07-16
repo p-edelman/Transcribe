@@ -182,10 +182,50 @@ template<class word_type>
 bool AudioPlayer::boostAudio(const QAudioBuffer& buffer) {
   if (m_boost != 1.0) {
     const word_type* data = buffer.constData<word_type>();
+    qreal actual_boost = m_boost;
+
+    // If we amplify the audio signal, we need to check if the amount of clipped
+    // samples is acceptible (smaller than ten percent).
+    if (m_boost > 1.0) {
+      // Resize the spectrogram size if needed.
+      if (abs(std::numeric_limits<word_type>::min()) > m_spectrogram_size) {
+        m_spectrogram_size = abs(std::numeric_limits<word_type>::min());
+        m_spectrogram = (int*)realloc(m_spectrogram, m_spectrogram_size * sizeof(int));
+      }
+      if (std::numeric_limits<word_type>::max() > m_spectrogram_size) {
+        m_spectrogram_size = std::numeric_limits<word_type>::max();
+        m_spectrogram = (int*)realloc(m_spectrogram, m_spectrogram_size * sizeof(int));
+      }
+
+      // Calculate the value at which samples will be clipped
+      word_type boost_cutoff = std::numeric_limits<word_type>::max() / actual_boost;
+
+      // Create a reverse cumulative count of the number of samples for the
+      // relevant part of the spectrum (everything between the cutoff and the
+      // max allowable value.
+      for (int i = boost_cutoff; i < std::numeric_limits<word_type>::max(); i++) {
+        m_spectrogram[i] = 0;
+      }
+      for (int i = 0; i < buffer.sampleCount(); i++) {
+        m_spectrogram[abs(data[i])]++;
+      }
+      for (int i = std::numeric_limits<word_type>::max() - 1; i > boost_cutoff - 1; i--) {
+        m_spectrogram[i] += m_spectrogram[i + 1];
+      }
+
+      // Now we can stepwise scale down the boost factor until the number of
+      // clipped samples falls below ten percent.
+      int fraction = buffer.sampleCount() / 10;
+      while (m_spectrogram[boost_cutoff] >= fraction) {
+        actual_boost -= 0.1;
+        boost_cutoff = std::numeric_limits<word_type>::max() / actual_boost;
+      }
+    }
+
     word_type* new_buffer = (word_type*)m_modified_buffer;
     for (int i = 0; i < buffer.sampleCount(); i++) {
       // qint32 should be sufficient as we only handle 8 and 16 bit data.
-      qint32 val = static_cast<qint32>(data[i]) * m_boost;
+      qint32 val = static_cast<qint32>(data[i]) * actual_boost;
 
       // Cap the value if needed
       if (val > std::numeric_limits<word_type>::max()) {
