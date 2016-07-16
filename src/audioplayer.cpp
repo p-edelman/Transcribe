@@ -205,7 +205,7 @@ void AudioPlayer::initAudioDevice(const QAudioFormat& format) {
   if (format != *m_audio_format) {
     qDebug() << "Change of format";
     m_audio_format = new QAudioFormat(format);
-    delete m_playback_device;
+    delete m_playback_device; m_playback_device = NULL;
   }
 
   if (m_playback_device == NULL) {
