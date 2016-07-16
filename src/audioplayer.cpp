@@ -171,6 +171,7 @@ void AudioPlayer::boost(bool is_up) {
     m_boost -= 0.1;
     if (m_boost < 0.0) m_boost = 0.0;
   }
+  qDebug() << "Boost factor is now " << m_boost;
 }
 
 void AudioPlayer::handleMediaPositionChanged(qint64) {
@@ -182,9 +183,9 @@ bool AudioPlayer::boostAudio(const QAudioBuffer& buffer) {
   if (m_boost != 1.0) {
     const word_type* data = buffer.constData<word_type>();
     word_type* new_buffer = (word_type*)m_modified_buffer;
-    for (int i = 0; i < buffer.frameCount(); i++) {
+    for (int i = 0; i < buffer.sampleCount(); i++) {
       // qint32 should be sufficient as we only handle 8 and 16 bit data.
-      qint32 val = (qint32)(data[i] * m_boost);
+      qint32 val = static_cast<qint32>(data[i]) * m_boost;
 
       // Cap the value if needed
       if (val > std::numeric_limits<word_type>::max()) {
@@ -192,7 +193,7 @@ bool AudioPlayer::boostAudio(const QAudioBuffer& buffer) {
       } else if (val < std::numeric_limits<word_type>::min()) {
         new_buffer[i] = std::numeric_limits<word_type>::min();
       } else {
-        new_buffer[i] = (word_type)val;
+        new_buffer[i] = static_cast<word_type>(val);
       }
     }
     return true;
@@ -220,17 +221,20 @@ void AudioPlayer::handleAudioBuffer(const QAudioBuffer& buffer) {
 
   if (buffer.isValid()) {
     if (buffer.byteCount() > m_modified_buffer_size) {
+      qDebug() << "Resizing buffer";
       m_modified_buffer_size = buffer.byteCount();
-      m_modified_buffer  = (char*)realloc(m_modified_buffer, m_modified_buffer_size);
+      m_modified_buffer      = (char*)realloc(m_modified_buffer, m_modified_buffer_size);
     }
 
     bool is_modified = false;
 
     if (buffer.format().sampleType() == QAudioFormat::SignedInt) {
-      if (buffer.format().bytesPerFrame() == 1) {
+      if (buffer.format().sampleSize() == 8) {
         is_modified = boostAudio<int8_t>(buffer);
-      } else if (buffer.format().bytesPerFrame() == 2) {
+      } else if (buffer.format().sampleSize() == 16) {
         is_modified = boostAudio<int16_t>(buffer);
+      } else {
+        qDebug() << "Unsupported bit depth: " << buffer.format().sampleSize();
       }
     } else {
       // TODO: Unreadable
