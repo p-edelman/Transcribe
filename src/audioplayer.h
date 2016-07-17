@@ -9,6 +9,8 @@
 #include <QMediaPlayer>
 #include <QString>
 
+#include "sonicbooster.h"
+
 /** The 'back-end' class for playing audio files. It is complemented by a
  *  QML MediaControls element to interact with it. */
 class AudioPlayer : public QObject {
@@ -153,19 +155,6 @@ private:
    *  something has changed. */
   QAudioFormat* m_audio_format;
 
-  /** The factor that audio data is multiplied with before playing. */
-  qreal m_boost = 1.0;
-
-  /** Amplified the audio by the m_boost factor and store the result in
-   *  m_modified_buffer. Check the return value to make sure the data in
-   *  m_modified_buffer is valid!
-   *  If the signal is boosted outside its bound, it will be clipped.
-   *  @tparam word_type the type of the audio data.
-   *  @param buffer the audio buffer.
-   *  @return true if the signal was modified, false otherwise. If false is
-                   returned, the data in m_modified_buffer is invalid! */
-  template<class word_type> bool boostAudio(const QAudioBuffer& buffer);
-
   /** The main QMediaPlayer instance for playing and seeking audio files. */
   QMediaPlayer* m_player;
 
@@ -180,25 +169,8 @@ private:
    *  buffer, m_modified buffer and play back that copy. */
   QAudioProbe* m_probe;
 
-  /** Buffer for storing modified audio data. We declare it just once to avoid
-   *  the overhead of repeated memory operations. */
-  char*  m_modified_buffer = NULL;
-
-  /** Remember the size of the modified audio data buffer, so that we can
-   *  enlarge it if a new buffer arrives which requires more space. We never
-   *  reduce the size though, as audio buffers are fairly constant in size and
-   *  it wouldn't make much sense to reclaim the small amount of memory. */
-  int m_modified_buffer_size = 0;
-
-  /** To figure out by how much we can boost an audio sample without clipping it
-   *  too much, we have to count how many of each sample point there are.
-   *  We use int for this as the QAudioFormat::sampleCount() method uses this as
-   *  the return type, thus the actual count fits into an int. */
-  int* m_spectrogram = NULL;
-
-  /** Remember the size of the spectrogram buffer, so we can enlarge it if a
-   *  sample size is picked that uses larger values. */
-  int m_spectrogram_size = 0;
+  /** The SonicBooster instance for amplifying the audio signal. */
+  SonicBooster* m_sonic_booster = NULL;
 
   /** When the audio fails to load, oftentimes multiple error messages are
    *  thrown by QMediaPlayer. We need to signal a problem just once to the end
