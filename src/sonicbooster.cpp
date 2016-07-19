@@ -5,39 +5,73 @@ SonicBooster::SonicBooster(QObject *parent) : QObject(parent) {
 }
 
 SonicBooster::~SonicBooster() {
-  delete m_modified_buffer;
+  delete m_data;
+}
+
+bool SonicBooster::canBoost(const QAudioFormat& format) {
+  switch (format.sampleType()) {
+    case QAudioFormat::SignedInt:
+    case QAudioFormat::UnSignedInt:
+      break;
+    default:
+      return false;
+  }
+
+  switch (format.sampleSize()) {
+    case 8:
+    case 16:
+      break;
+    default:
+      return false;
+  }
+
+  return true;
 }
 
 bool SonicBooster::boost(const QAudioBuffer& buffer) {
-  m_is_last_modified = false;
+  if (!(canBoost(buffer.format()) && buffer.isValid())) {
+    return false;
+  }
 
-  if (buffer.isValid()) {
-    adjustModifiedBufferSize(buffer);
+  adjustDataBufferSize(buffer);
 
-    if (buffer.format().sampleType() == QAudioFormat::SignedInt) {
-      if (buffer.format().sampleSize() == 8) {
-        m_is_last_modified = boostAudioBuffer<int8_t>(buffer);
-      } else if (buffer.format().sampleSize() == 16) {
-        m_is_last_modified = boostAudioBuffer<int16_t>(buffer);
-      } else {
-        qDebug() << "Unsupported bit depth: " << buffer.format().sampleSize();
-      }
-    } else {
-      // TODO: Unreadable
-      qDebug() << "Unsupported format";
+  char* data = (char*)buffer.constData();
+  int   size = buffer.sampleCount();
+
+  // If format is unsigned, make a signed copy of the data and use that for the
+  // actual amplification.
+  if (buffer.format().sampleType() == QAudioFormat::UnSignedInt) {
+    if (buffer.format().sampleSize() == 8) {
+      switchSignedness((uint8_t*)data, (int8_t*)m_data, size);
+    } else if (buffer.format().sampleSize() == 16) {
+      switchSignedness((uint16_t*)data, (int16_t*)m_data, size);
+    }
+    data = m_data;
+  }
+
+  // Boost the signal
+  bool is_modified = false;
+  if (buffer.format().sampleSize() == 8) {
+    is_modified = boostAudioBuffer((int8_t*)data, size);
+  } else if (buffer.format().sampleSize() == 16) {
+    is_modified = boostAudioBuffer((int16_t*)data, size);
+  }
+
+  // If needed, convert the modified buffer back to unsigned
+  if (buffer.format().sampleType() == QAudioFormat::UnSignedInt) {
+    if (buffer.format().sampleSize() == 8) {
+      switchSignedness((int8_t*)m_data, (uint8_t*)m_data, size);
+    } else if (buffer.format().sampleSize() == 16) {
+      switchSignedness((int16_t*)m_data, (uint16_t*)m_data, size);
     }
   }
 
-  return m_is_last_modified;
+  return is_modified;
 }
 
 const char* SonicBooster::getBoostedBuffer(int& size) {
-  if (m_is_last_modified) {
-    size = m_modified_buffer_size;
-  } else {
-    size = 0;
-  }
-  return m_modified_buffer;
+  size = m_boosted_data_bytes;
+  return m_data;
 }
 
 qreal SonicBooster::getFactor() {
@@ -59,42 +93,46 @@ void SonicBooster::setFactor(qreal factor) {
   qDebug() << "Boost factor is now " << m_factor;
 }
 
-template<class word_type>
-bool SonicBooster::boostAudioBuffer(const QAudioBuffer& buffer) {
+template<typename word_type>
+bool SonicBooster::boostAudioBuffer(const word_type* data, int num_samples) {
+
+  m_boosted_data_bytes = 0;
+
   if (m_factor != 1.0) {
     // If we amplify the audio signal, we need to check if the amount of clipped
     // samples is acceptible (smaller than ten percent).
     qreal factor = m_factor;
-    if (m_factor> 1.0) {
-      factor = getMaxFactor<word_type>(buffer);
+    if (m_factor > 1.0) {
+      factor = getMaxFactor<word_type>(data, num_samples);
       if (factor != m_factor) {
         qDebug() << "Using actual factor of " << factor;
       }
     }
 
-    const word_type* data = buffer.constData<word_type>();
-    word_type* new_buffer = (word_type*)m_modified_buffer;
-    for (int i = 0; i < buffer.sampleCount(); i++) {
+    word_type* new_buffer = (word_type*)m_data;
+    for (int i = 0; i < num_samples; i++) {
       // qint32 should be sufficient as we only handle 8 and 16 bit data.
       qint32 val = static_cast<qint32>(data[i]) * factor;
 
       // Cap the value if needed
       if (val > std::numeric_limits<word_type>::max()) {
-        new_buffer[i] = std::numeric_limits<word_type>::max();
+        val = std::numeric_limits<word_type>::max();
       } else if (val < std::numeric_limits<word_type>::min()) {
-        new_buffer[i] = std::numeric_limits<word_type>::min();
-      } else {
-        new_buffer[i] = static_cast<word_type>(val);
+        val = std::numeric_limits<word_type>::min();
       }
+      new_buffer[i] = static_cast<word_type>(val);
     }
+    m_boosted_data_bytes = num_samples * sizeof(word_type);
     return true;
   }
 
   return false;
 }
 
-template<class word_type>
-qreal SonicBooster::getMaxFactor(const QAudioBuffer& buffer) {
+template<typename word_type>
+qreal SonicBooster::getMaxFactor(const word_type* data, int num_samples) {
+  qreal factor = m_factor;
+
   // Resize the spectrogram size if needed.
   if (abs(std::numeric_limits<word_type>::min()) > m_spectrogram->size()) {
     m_spectrogram->resize(abs(std::numeric_limits<word_type>::min()));
@@ -104,7 +142,6 @@ qreal SonicBooster::getMaxFactor(const QAudioBuffer& buffer) {
   }
 
   // Calculate the value at which samples will be clipped
-  qreal factor = m_factor;
   word_type cutoff = std::numeric_limits<word_type>::max() / factor;
 
   // Create a reverse cumulative count of the number of samples for the
@@ -113,8 +150,7 @@ qreal SonicBooster::getMaxFactor(const QAudioBuffer& buffer) {
   for (int i = cutoff; i < std::numeric_limits<word_type>::max(); i++) {
     m_spectrogram->data()[i] = 0;
   }
-  const word_type* data = buffer.constData<word_type>();
-  for (int i = 0; i < buffer.sampleCount(); i++) {
+  for (int i = 0; i < num_samples; i++) {
     m_spectrogram->data()[abs(data[i])]++;
   }
   for (int i = std::numeric_limits<word_type>::max() - 1; i > cutoff - 1; i--) {
@@ -123,8 +159,8 @@ qreal SonicBooster::getMaxFactor(const QAudioBuffer& buffer) {
 
   // Now we can stepwise scale down the boost factor until the number of
   // clipped samples falls below ten percent.
-  int fraction = buffer.sampleCount() / 10;
-  while (m_spectrogram->data()[cutoff] >= fraction) {
+  int fraction = num_samples / 10;
+  while (m_spectrogram->data()[cutoff] > fraction) {
     factor -= 0.1;
     cutoff = std::numeric_limits<word_type>::max() / factor;
   }
@@ -132,10 +168,26 @@ qreal SonicBooster::getMaxFactor(const QAudioBuffer& buffer) {
   return factor;
 }
 
-void SonicBooster::adjustModifiedBufferSize(const QAudioBuffer& buffer) {
-  if (buffer.byteCount() > m_modified_buffer_size) {
+template<typename from_type, typename to_type>
+void SonicBooster::switchSignedness(const from_type* in_buffer,
+                                    to_type* out_buffer,
+                                    int num_samples) {
+  qint32 sign_offset = (1 << (sizeof(to_type) * 8 - 1));
+  bool to_signed = std::numeric_limits<to_type>::is_signed;
+  for (int i = 0; i < num_samples; i++) {
+    if (to_signed) {
+      out_buffer[i] = in_buffer[i] - sign_offset;
+    } else {
+      out_buffer[i] = in_buffer[i] + sign_offset;
+    }
+  }
+}
+
+void SonicBooster::adjustDataBufferSize(const QAudioBuffer& buffer) {
+  if (buffer.byteCount() > m_data_max_bytes) {
     qDebug() << "Resizing buffer";
-    m_modified_buffer_size = buffer.byteCount();
-    m_modified_buffer      = (char*)realloc(m_modified_buffer, m_modified_buffer_size);
+    m_data_max_bytes = buffer.byteCount();
+    m_data           = (char*)realloc(m_data,
+                                      m_data_max_bytes);
   }
 }

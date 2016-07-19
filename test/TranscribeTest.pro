@@ -19,19 +19,23 @@ SOURCES += main.cpp \
            typingtimelordtest.cpp \
            keycatchertest.cpp \
            transcribetest.cpp \
+           sonicboostertest.cpp \
            ../src/audioplayer.cpp \
            ../src/typingtimelord.cpp \
            ../src/keycatcher.cpp \
-           ../src/transcribe.cpp
+           ../src/transcribe.cpp \
+           ../src/sonicbooster.cpp
 
 HEADERS += audioplayertest.h \
            typingtimelordtest.h \
            keycatchertest.h \
            transcribetest.h \
+           sonicboostertest.h \
            ../src/audioplayer.h \
            ../src/typingtimelord.h \
            ../src/keycatcher.h \
-           ../src/transcribe.h
+           ../src/transcribe.h \
+           ../src/sonicbooster.h
 
 RESOURCES += ../src/qml.qrc
 
