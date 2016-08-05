@@ -89,8 +89,16 @@ void AudioDecoder::setMedia(const QUrl& path) {
   }
 }
 
+void AudioDecoder::pause() {
+  if (m_is_native_wav) {
+    m_is_paused = true;
+  }
+  QMediaPlayer::pause();
+}
+
 void AudioDecoder::play() {
   if (m_is_native_wav) {
+    m_is_paused = false;
     if (m_audio_out != NULL) {
       // We simply start the playback by checking if we need to write data to
       // the buffer.
@@ -101,8 +109,24 @@ void AudioDecoder::play() {
   }
 }
 
+void AudioDecoder::setPosition(qint64 position) {
+  if (m_is_native_wav) {
+    if (position > m_duration) { // Cap
+      position = m_duration;
+    }
+
+    // Set the position in the file to the desired location
+    int file_pos = m_data_offset + m_format.bytesForDuration(position * 1000);
+    m_file->seek(file_pos);
+
+    m_time = position;
+    emit positionChanged(position);
+  }
+  QMediaPlayer::setPosition(position);
+}
+
 void AudioDecoder::checkBuffer() {
-  if (m_audio_out != NULL) {
+  if (m_audio_out != NULL && !m_is_paused) {
     if (m_audio_out->bytesFree() >= m_audio_out->periodSize()) {
       // We can append data to the buffer again, so send some new data
       QByteArray data = m_file->read(m_audio_out->periodSize());
