@@ -4,12 +4,11 @@
 #include <QObject>
 
 #include <QAudioOutput>
-#include <QAudioProbe>
 #include <QDebug>
-#include <QMediaPlayer>
 #include <QString>
 
 #include "sonicbooster.h"
+#include "audiodecoder.h"
 
 /** The 'back-end' class for playing audio files. It is complemented by a
  *  QML MediaControls element to interact with it. */
@@ -54,13 +53,13 @@ public:
              READ getPosition
              NOTIFY positionChanged)
 
-  PlayerState getState();
-  uint getDuration();
-  uint getPosition();
-
   /** Open a new audio file.
    *  @param path the complete path to the new file. */
   void openFile(const QString &path);
+
+  PlayerState getState();
+  uint getDuration();
+  uint getPosition();
 
 signals:
   /** Signals the the playing state has changed. */
@@ -148,29 +147,11 @@ private:
    *  when a new audio file is loaded. */
   void initAudioDevice(const QAudioFormat& format);
 
-  /** The output channel we use to write raw audio data to. */
-  QIODevice* m_playback_device = NULL;
-
-  /** The audio format we're currently working with as a reference to see if
-   *  something has changed. */
-  QAudioFormat* m_audio_format;
-
-  /** The main QMediaPlayer instance for playing and seeking audio files. */
-  QMediaPlayer* m_player;
-
-  /** We're using a bit of a dirty trick here to be able to modify the audio
-   *  signal before actually playing it. Normally, one would use the
-   *  QAudioDecoder class for this use case, but that doesn't allow seeking.
-   *  Instead we set the volume of the QMediaPlayer to 0 and attach a
-   *  QAudioProbe to the it, which hands out the raw audio data via the
-   *  audioBufferProbed() signal, which we'll intercept with
-   *  handleAudioBuffer(). This readonly data - QAudioProbe is meant to monitor
-   *  the audio data, not to modify it, so we write the modified signal to a new
-   *  buffer, m_modified buffer and play back that copy. */
-  QAudioProbe* m_probe;
+  /** The main AudioDecoder instance for playing and seeking audio files. */
+  AudioDecoder m_decoder;
 
   /** The SonicBooster instance for amplifying the audio signal. */
-  SonicBooster* m_sonic_booster = NULL;
+  SonicBooster m_sonic_booster;
 
   /** When the audio fails to load, oftentimes multiple error messages are
    *  thrown by QMediaPlayer. We need to signal a problem just once to the end
