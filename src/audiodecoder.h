@@ -82,18 +82,10 @@ private:
    *                        when we're decoding wav files directly. */
   void initAudioOutput(const QAudioFormat& format, bool connect_notify);
 
-  /** Parse the header of a WAV/RAIFF file.
+  /** Parse the header of a WAV file.
    *  @return bool if everything checks out, false if there was something wrong.
    */
   bool parseHeader();
-
-  /** Helper method for parseHeader() to extract the parameters of a WAV file.
-   */
-  bool extractWAVEParams();
-
-  /** Helper method for parseHeader() to extract the parameters of an AIFF file.
-   */
-  bool extractAIFFParams();
 
   /** Search for a specified subchunk in m_file. If the subchunk is found, the
    *  file position is set to the start of the chunk. The file position should
@@ -103,15 +95,14 @@ private:
    *  @return true if the subchunk was found, false otherwise. */
   bool findSubChunk(const QString identifier);
 
-  /** Read a word in the specified endinannes from m_file and return it. This
+  /** Read a word in little endian format from m_file and return it. This
    *  operation advances the m_file position by sizeof(word) bytes.
    *  This operation uses a little hack for reporting failure; when parsing
    *  headers, only positive values are expected but all variables are signed,
    *  so we report an error by returning -1.
-   *  @param a bool to indicate if the operation was successful.
    *  @return the length, or -1 on error. */
   template <typename word>
-  word readNumber(QAudioFormat::Endian endianness);
+  word readNumber();
 
   QAudioOutput* m_audio_out        = NULL;
   QIODevice*    m_audio_out_device = NULL;
@@ -130,7 +121,7 @@ private:
   /** The format parameters of the audio file, if we parsed it natively. */
   QAudioFormat m_format;
 
-  /** The wav/aiff file that we've opened. */
+  /** The wav file that we've opened. */
   QFile* m_file = NULL;
 
   /** The starting position in m_file of the raw audio data in a wav file, if we
@@ -144,15 +135,11 @@ private:
   /** The duration of the loaded file if we parsed it natively. */
   qint64 m_duration = 0;
 
-  /** Markers for the chunks and suchunks of WAV and AIFF files. */
+  /** Markers for the chunks and suchunks of WAV files. */
   const QString RIFF = "RIFF";
-  const QString FORM = "FORM";
   const QString WAVE = "WAVE";
-  const QString AIFF = "AIFF";
   const QString FMT  = "fmt ";
-  const QString COMM = "COMM";
   const QString DATA = "data";
-  const QString SSND = "SSND";
 };
 
 #endif // AUDIODECODER_H

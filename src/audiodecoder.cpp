@@ -156,15 +156,13 @@ bool AudioDecoder::parseHeader() {
   if (bytes.length() != 4) return false;
   if (bytes == RIFF) { // WAV file
     m_format.setByteOrder(QAudioFormat::LittleEndian);
-  } else if (bytes == FORM) { // AIFF file
-    m_format.setByteOrder(QAudioFormat::BigEndian);
   } else {
     // Not an actual wave file
     return false;
   }
 
   // Sanity check for the lenght of the file
-  qint32 remainder = readNumber<qint32>(m_format.byteOrder());
+  qint32 remainder = readNumber<qint32>();
   if (m_file->size() != remainder + 8) {
     return false;
   }
@@ -172,43 +170,27 @@ bool AudioDecoder::parseHeader() {
   // Last part of the signature
   bytes = m_file->read(4);
   if (bytes.length() != 4) return false;
-  if ((m_format.byteOrder() == QAudioFormat::LittleEndian && bytes != WAVE) ||
-      (m_format.byteOrder() == QAudioFormat::BigEndian    && bytes != AIFF)) {
-    return false;
-  }
+  if (bytes != WAVE) return false;
 
-  if (m_format.byteOrder() == QAudioFormat::LittleEndian) {
-    return extractWAVEParams();
-  } else {
-    return extractAIFFParams();
-  }
-
-  return false;
-}
-
-bool AudioDecoder::extractWAVEParams() {
   if (findSubChunk(FMT)) {
     m_file->seek(m_file->pos() + 4);
 
-    if (readNumber<qint32>(QAudioFormat::LittleEndian) != 16) {
+    if (readNumber<qint32>() != 16) {
       // No PCM data
       return false;
     } else {
       m_format.setCodec("audio/pcm");
     }
-    if (readNumber<qint16>(QAudioFormat::LittleEndian) != 1) {
-      // Compressed
-      return false;
-    }
+    if (readNumber<qint16>() != 1) return false; // Compressed
 
-    qint16 num_channels = readNumber<qint16>(QAudioFormat::LittleEndian);
+    qint16 num_channels = readNumber<qint16>();
     if (num_channels == -1) {
       return false;
     } else {
       m_format.setChannelCount(num_channels);
     }
 
-    qint32 sample_rate = readNumber<qint32>(QAudioFormat::LittleEndian);
+    qint32 sample_rate = readNumber<qint32>();
     if (sample_rate == -1) {
       return false;
     } else {
@@ -218,7 +200,7 @@ bool AudioDecoder::extractWAVEParams() {
     m_file->seek(m_file->pos() + 6); // These bytes aren't that interesting,
                                      // they are products of the other
                                      // parameters.
-    qint16 bits_per_sample = readNumber<qint16>(QAudioFormat::LittleEndian);
+    qint16 bits_per_sample = readNumber<qint16>();
     if (bits_per_sample == -1) {
       return false;
     } else {
@@ -238,67 +220,8 @@ bool AudioDecoder::extractWAVEParams() {
 
       // Calculate the length of the file
       m_file->seek(m_data_offset - 4);
-      qint32 num_bytes = readNumber<qint32>(QAudioFormat::LittleEndian);
+      qint32 num_bytes = readNumber<qint32>();
       m_duration = (num_bytes * 1000) / (num_channels * sample_rate * (bits_per_sample / 8));
-      return true;
-    }
-  }
-  return false;
-}
-
-bool AudioDecoder::extractAIFFParams() {
-  if (findSubChunk(COMM)) {
-    m_file->seek(m_file->pos() + 4);
-
-    // Always the same for AIFF
-    m_format.setCodec("audio/pcm");
-    m_format.setSampleType(QAudioFormat::SignedInt);
-
-    qint32 remainder = readNumber<qint32>(QAudioFormat::BigEndian);
-
-    qint16 num_channels = readNumber<qint16>(QAudioFormat::BigEndian);
-    if (num_channels == -1) {
-      return false;
-    } else {
-      m_format.setChannelCount(num_channels);
-    }
-
-    m_file->seek(m_file->pos() + 4); // Number of sample frames
-
-    qint16 bits_per_sample = readNumber<qint16>(QAudioFormat::BigEndian);
-    if (bits_per_sample == 8 || bits_per_sample == 16) {
-      m_format.setSampleSize(bits_per_sample);
-    } else {
-      return false;
-    }
-
-    // The fraction is somehow stored as a 10 byte extended real. There doesn't
-    // seem a reliable cross-platform way to access this data type however, so
-    // we have to parse it manually.
-    QByteArray bytes = m_file->read(10);
-    if (bytes.length() != 10) return false;
-    if (((bytes[0] >> 7) & (1 << 7)) != 0) return false; // Negative number;
-    // Bit 1..15 contains the exponent
-    qint16 exponent = qFromBigEndian(reinterpret_cast<qint16*>(bytes.data())[0]);
-    exponent = exponent & ~(1 << 15); // Shift of first bit
-    exponent -= 16383;                // Subtract bias
-    if ((bytes[2] & (1 << 7)) == 0) return false; // Non-normalized number, we can't handle it;
-    // Bit 17..79 contain the fraction (the bits after the comma)
-    quint64 fraction = qFromBigEndian(reinterpret_cast<quint64*>(bytes.data() + 2)[0]);
-    fraction = ((fraction << 1) >> 1); // Shift of the first bit
-    // We can now calculate the actual value with (1.fraction * 2^exponent)
-    // This is the same as 2^exponent + fraction * 2^-63 * 2^exponent, or
-    // 2^exponent + fraction * 2^exponent-63
-    qreal rate = (2 << (exponent - 1)) + fraction * pow(2, exponent - 63);
-    m_format.setSampleRate(round(rate));
-
-    // In principle the subchunk should be finished now, but it is possible that
-    // it is longer so we should skip to the end of it.
-    m_file->seek(m_file->pos() + (remainder - 18));
-
-    // Now find the data chunk and set the file position to it
-    if (findSubChunk(SSND)) {
-      m_data_offset = m_file->pos() + 6;
       return true;
     }
   }
@@ -313,7 +236,7 @@ bool AudioDecoder::findSubChunk(const QString identifier) {
   while (bytes != identifier) {
     // Seek to the next subchunk and read its signature, or return false if
     // we're at the end
-    qint32 remainder = readNumber<qint32>(m_format.byteOrder());
+    qint32 remainder = readNumber<qint32>();
     if (remainder == -1) return false;
     m_file->seek(m_file->pos() + remainder);
     bytes = m_file->read(4);
@@ -326,17 +249,13 @@ bool AudioDecoder::findSubChunk(const QString identifier) {
 }
 
 template <typename word>
-word AudioDecoder::readNumber(QAudioFormat::Endian endianness) {
+word AudioDecoder::readNumber() {
   QByteArray bytes = m_file->read(sizeof(word));
   if (bytes.length() != sizeof(word)) {
     return -1;
   }
 
   const word* interpreted = reinterpret_cast<const word*>(bytes.constData());
-  if (endianness == QAudioFormat::BigEndian) {
-    return qFromBigEndian(interpreted[0]);
-  } else {
-    return qFromLittleEndian(interpreted[0]);
-  }
+  return qFromLittleEndian(interpreted[0]);
 }
 
