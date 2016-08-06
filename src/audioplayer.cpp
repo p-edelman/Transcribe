@@ -157,9 +157,9 @@ void AudioPlayer::toggleWaiting(bool should_wait) {
 
 void AudioPlayer::boost(bool is_up) {
   if (is_up) {
-    m_sonic_booster.increaseFactor();
+    m_sonic_booster.increaseLevel();
   } else {
-    m_sonic_booster.decreaseFactor();
+    m_sonic_booster.decreaseLevel();
   }
 }
 

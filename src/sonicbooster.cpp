@@ -74,39 +74,19 @@ const char* SonicBooster::getBoostedBuffer(int& size) {
   return m_data;
 }
 
-qreal SonicBooster::getFactor() {
-  return m_factor;
-}
-
-void SonicBooster::increaseFactor() {
-  setFactor(m_factor + 0.1);
-}
-
-void SonicBooster::decreaseFactor() {
-  setFactor(m_factor - 0.1);
-}
-
-void SonicBooster::setFactor(qreal factor) {
-  if (factor > 0) {
-    m_factor = factor;
-  }
-  qDebug() << "Boost factor is now " << m_factor;
-}
-
 template<typename word_type>
 bool SonicBooster::boostAudioBuffer(const word_type* data, int num_samples) {
 
   m_boosted_data_bytes = 0;
 
-  if (m_factor != 1.0) {
+  // Calculate the amplification factor for the samples
+  qreal factor = qPow(10, m_level / 20);
+
+  if (factor != 1.0) {
     // If we amplify the audio signal, we need to check if the amount of clipped
     // samples is acceptible (smaller than ten percent).
-    qreal factor = m_factor;
-    if (m_factor > 1.0) {
-      factor = getMaxFactor<word_type>(data, num_samples);
-      if (factor != m_factor) {
-        qDebug() << "Using actual factor of " << factor;
-      }
+    if (factor > 1.0) {
+      factor = getMaxFactor<word_type>(factor, data, num_samples);
     }
 
     word_type* new_buffer = (word_type*)m_data;
@@ -130,9 +110,8 @@ bool SonicBooster::boostAudioBuffer(const word_type* data, int num_samples) {
 }
 
 template<typename word_type>
-qreal SonicBooster::getMaxFactor(const word_type* data, int num_samples) {
-  qreal factor = m_factor;
-
+qreal SonicBooster::getMaxFactor(qreal factor,
+                                 const word_type* data, int num_samples) {
   // Resize the spectrogram size if needed.
   if (abs(std::numeric_limits<word_type>::min()) > m_spectrogram->size()) {
     m_spectrogram->resize(abs(std::numeric_limits<word_type>::min()));

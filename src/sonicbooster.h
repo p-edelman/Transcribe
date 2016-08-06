@@ -29,11 +29,6 @@ public:
   SonicBooster(QObject* parent = 0);
   ~SonicBooster();
 
-  /** Return the user specified boost factor.
-   *  Note that the actual boost factor may be adjusted to a lower value if the
-   *  amount of clipping in a buffer would get too high. */
-  qreal getFactor();
-
   /** Indicate if the signal with the given audio format can be amplified. */
   bool canBoost(const QAudioFormat& format);
 
@@ -53,14 +48,11 @@ public:
   const char* getBoostedBuffer(int& size);
 
 public slots:
-  /** Increase of decrease the boost factor by 0.1 */
-  void increaseFactor();
-  void decreaseFactor();
+  /** Increase of decrease the boost factor by 1 dB */
+  void increaseLevel() {m_level += 1.0;}
+  void decreaseLevel() {m_level -= 1.0;}
 
 private:
-  /** Set the boost factor. Negative values will be clipped at 0. */
-  void setFactor(qreal factor);
-
   /** Amplify the audio by the m_boost factor and store the result in the
    *  supplied data buffer. Check the return value to make sure the data in
    *  buffer is valid before using!
@@ -74,8 +66,13 @@ private:
 
   /** Calculate the max boost factor that can be applied to the buffer without
    *  too much clipping (where 'too much' is defined at ten per cent of the
-   *  samples. */
-  template<typename word_type> qreal getMaxFactor(const word_type* data,
+   *  samples.
+   *  @param factor the target boost factor
+   *  @param data the actual data
+   *  @param num_samples the number of samples in data
+   */
+  template<typename word_type> qreal getMaxFactor(qreal factor,
+                                                  const word_type* data,
                                                   int num_samples);
 
   /** Rewrite unsigned data in in_buffer to signed data in out_buffer, or vice
@@ -97,8 +94,9 @@ private:
    *  decrease it. */
   void adjustDataBufferSize(const QAudioBuffer& buffer);
 
-  /** The factor that audio data is multiplied with before playing. */
-  qreal m_factor = 1.0;
+  /** The targeted audio level in dB, where 0.0 is the nominal, unboosted
+   *  audio. */
+  qreal m_level = 0.0;
 
   /** Due to restrictions with the QMediaPlayer/QAudioProbe setup we can only
    *  get const audio data. The result of all operations is thus copied to
@@ -114,7 +112,7 @@ private:
   int m_data_max_bytes = 0;
 
   /** Keep track of the number of bytes in m_data after the last boost()
-   *  operation. If the boost() operation didn't succeed, this number will b
+   *  operation. If the boost() operation didn't succeed, this number will be
    *  zero. */
   int m_boosted_data_bytes = 0;
 
