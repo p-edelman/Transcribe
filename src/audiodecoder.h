@@ -42,7 +42,7 @@ public:
   qint64 duration() const;
   qint64 position() const;
 
-  QMediaPlayer::MediaStatus mediaStatus() const;
+  MediaStatus mediaStatus() const;
 
   /** Return an opened QIODevice where raw audio data can be written to to play
    *  it back. */

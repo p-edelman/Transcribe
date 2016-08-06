@@ -37,10 +37,10 @@ qint64 AudioDecoder::position() const {
 QMediaPlayer::MediaStatus AudioDecoder::mediaStatus() const {
   if (m_is_native_wav) {
     if (m_file->pos() == m_file->size()) {
-      return QMediaPlayer::EndOfMedia;
+      return EndOfMedia;
     }
-    return QMediaPlayer::LoadedMedia;  // If the m_is_native_wav flag is set,
-                                       // we actually loaded a file.
+    return LoadedMedia;  // If the m_is_native_wav flag is set, we have actually
+                         // loaded a file.
   }
   return QMediaPlayer::mediaStatus();
 }
@@ -74,15 +74,8 @@ void AudioDecoder::setMedia(const QUrl& path) {
         m_file->seek(m_data_offset);
         initAudioOutput(m_format, true);
         emit durationChanged(m_duration);
-        emit mediaStatusChanged(QMediaPlayer::LoadedMedia);
-        qDebug() << "Media loaded";
-      } else {
-        qDebug() << "Header not parsed";
-        // TODO: emit an error
+        emit mediaStatusChanged(LoadedMedia);
       }
-    } else {
-      qDebug() << "Couldn't open file";
-      // TODO: emit an error
     }
   }
 
@@ -145,7 +138,7 @@ void AudioDecoder::checkBuffer() {
         emit positionChanged(m_time); // TODO: Fire less often
       }
       if (data.length() < m_audio_out->periodSize()) {
-        emit mediaStatusChanged(QMediaPlayer::EndOfMedia);
+        emit mediaStatusChanged(EndOfMedia);
       }
     }
   }
