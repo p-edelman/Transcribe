@@ -72,6 +72,7 @@ void AudioDecoder::setMedia(const QUrl& path) {
       if (parseHeader()) {
         m_is_native_wav = true;
         m_file->seek(m_data_offset);
+        emit positionChanged(0);
         initAudioOutput(m_format, true);
         emit durationChanged(m_duration);
         emit mediaStatusChanged(LoadedMedia);
@@ -246,7 +247,7 @@ bool AudioDecoder::parseHeader() {
 
       // Calculate the length of the file
       m_file->seek(m_data_offset - 4);
-      qint32 num_bytes = readNumber<qint32>();
+      qint64 num_bytes = (qint64)readNumber<qint32>();
       m_duration = (num_bytes * 1000) / (num_channels * sample_rate * (bits_per_sample / 8));
       return true;
     }
