@@ -5,17 +5,17 @@ AudioPlayer::AudioPlayer(QObject *parent) : QObject(parent) {
 
   m_decoder.setNotifyInterval(1000); // We're working with second precision
   connect(&m_decoder, SIGNAL(positionChanged(qint64)),
-          this,      SLOT(handleMediaPositionChanged(qint64)));
+          this,       SLOT(handleMediaPositionChanged(qint64)));
   connect(&m_decoder, SIGNAL(durationChanged(qint64)),
-          this,      SLOT(handleMediaAvailabilityChanged()));
+          this,       SLOT(handleMediaAvailabilityChanged()));
   connect(&m_decoder, SIGNAL(audioAvailableChanged(bool)),
-          this,      SLOT(handleMediaAvailabilityChanged()));
+          this,       SLOT(handleMediaAvailabilityChanged()));
   connect(&m_decoder, SIGNAL(error(QMediaPlayer::Error)),
-          this,      SLOT(handleMediaError()));
+          this,       SLOT(handleMediaError()));
   connect(&m_decoder, SIGNAL(mediaStatusChanged(QMediaPlayer::MediaStatus)),
-          this,      SLOT(handleMediaStatusChanged(QMediaPlayer::MediaStatus)));
+          this,       SLOT(handleMediaStatusChanged(QMediaPlayer::MediaStatus)));
   connect(&m_decoder, SIGNAL(bufferReady(QAudioBuffer)),
-          this,      SLOT(handleAudioBuffer(QAudioBuffer)));
+          this,       SLOT(handleAudioBuffer(QAudioBuffer)));
 }
 
 void AudioPlayer::openFile(const QString& path) {

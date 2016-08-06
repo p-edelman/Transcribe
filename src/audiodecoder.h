@@ -135,11 +135,6 @@ private:
   /** The duration of the loaded file if we parsed it natively. */
   qint64 m_duration = 0;
 
-  /** Indicate that the playback should be paused if we're playing natively.
-   *  This has the effect that checkBuffer() stops sending data, so the notify()
-   *  signal of QAudioOutput stops. */
-  bool m_is_paused = false;
-
   /** Markers for the chunks and suchunks of WAV files. */
   const QString RIFF = "RIFF";
   const QString WAVE = "WAVE";

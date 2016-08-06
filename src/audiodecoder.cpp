@@ -35,8 +35,12 @@ qint64 AudioDecoder::position() const {
 }
 
 QMediaPlayer::MediaStatus AudioDecoder::mediaStatus() const {
-  if (m_is_native_wav) { // This flag is only set if we actually loaded media
-    return QMediaPlayer::LoadedMedia;
+  if (m_is_native_wav) {
+    if (m_file->pos() == m_file->size()) {
+      return QMediaPlayer::EndOfMedia;
+    }
+    return QMediaPlayer::LoadedMedia;  // If the m_is_native_wav flag is set,
+                                       // we actually loaded a file.
   }
   return QMediaPlayer::mediaStatus();
 }
@@ -91,18 +95,22 @@ void AudioDecoder::setMedia(const QUrl& path) {
 
 void AudioDecoder::pause() {
   if (m_is_native_wav) {
-    m_is_paused = true;
+    m_audio_out->suspend();
   }
   QMediaPlayer::pause();
 }
 
 void AudioDecoder::play() {
   if (m_is_native_wav) {
-    m_is_paused = false;
     if (m_audio_out != NULL) {
-      // We simply start the playback by checking if we need to write data to
-      // the buffer.
-      checkBuffer();
+      if (m_audio_out->state() == QAudio::SuspendedState) {
+        // We're unpausing
+        m_audio_out->resume();
+      } else {
+        // We start the playback by simply checking if we need to write data to
+        // the buffer.
+        checkBuffer();
+      }
     }
   } else {
     QMediaPlayer::play();
@@ -126,7 +134,7 @@ void AudioDecoder::setPosition(qint64 position) {
 }
 
 void AudioDecoder::checkBuffer() {
-  if (m_audio_out != NULL && !m_is_paused) {
+  if (m_audio_out != NULL) {
     if (m_audio_out->bytesFree() >= m_audio_out->periodSize()) {
       // We can append data to the buffer again, so send some new data
       QByteArray data = m_file->read(m_audio_out->periodSize());
@@ -135,7 +143,8 @@ void AudioDecoder::checkBuffer() {
         m_time += (m_format.durationForBytes(data.length()) / 1000);
         emit bufferReady(buffer);
         emit positionChanged(m_time); // TODO: Fire less often
-      } else {
+      }
+      if (data.length() < m_audio_out->periodSize()) {
         emit mediaStatusChanged(QMediaPlayer::EndOfMedia);
       }
     }
