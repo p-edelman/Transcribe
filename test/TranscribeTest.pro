@@ -24,7 +24,8 @@ SOURCES += main.cpp \
            ../src/typingtimelord.cpp \
            ../src/keycatcher.cpp \
            ../src/transcribe.cpp \
-           ../src/sonicbooster.cpp
+           ../src/sonicbooster.cpp \
+           ../src/audiodecoder.cpp
 
 HEADERS += audioplayertest.h \
            typingtimelordtest.h \
@@ -35,7 +36,8 @@ HEADERS += audioplayertest.h \
            ../src/typingtimelord.h \
            ../src/keycatcher.h \
            ../src/transcribe.h \
-           ../src/sonicbooster.h
+           ../src/sonicbooster.h \
+           ../src/audiodecoder.h
 
 RESOURCES += ../src/qml.qrc
 

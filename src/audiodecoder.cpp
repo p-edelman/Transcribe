@@ -9,15 +9,15 @@ AudioDecoder::AudioDecoder(QObject* parent) : QMediaPlayer(parent) {
     setVolume(0);
   } else {
     // If we cannot set up a probe, we will play wav files natively.
-    delete m_probe; m_probe = NULL;
+    m_probe->deleteLater(); m_probe = NULL;
     m_prefer_native_wav = true;
   }
 }
 
 AudioDecoder::~AudioDecoder() {
-  delete m_file;
-  delete m_audio_out;
-  delete m_probe;
+  m_file->deleteLater();
+  m_audio_out->deleteLater();
+  m_probe->deleteLater();
 }
 
 qint64 AudioDecoder::duration() const {
@@ -46,12 +46,16 @@ QMediaPlayer::MediaStatus AudioDecoder::mediaStatus() const {
 }
 
 void AudioDecoder::setMedia(const QUrl& path) {
+  pause();
+
   m_is_native_wav = false;
 
   // Reset the audio device
-  delete m_audio_out;
-  m_audio_out = NULL;
-  m_audio_out_device = NULL;
+  if (m_audio_out) {
+    m_audio_out->deleteLater();
+    m_audio_out = NULL;
+    m_audio_out_device = NULL;
+  }
 
   // Try to load native wav
   if (m_prefer_native_wav) {
@@ -63,7 +67,7 @@ void AudioDecoder::setMedia(const QUrl& path) {
       if (m_file->isOpen()) {
         m_file->close();
       }
-      delete m_file; m_file = NULL;
+      m_file->deleteLater(); m_file = NULL;
     }
 
     // Open the file
@@ -156,8 +160,7 @@ void AudioDecoder::handleBufferProbed(const QAudioBuffer& buffer) {
 
 void AudioDecoder::initAudioOutput(const QAudioFormat& format,
                                 bool connect_notify) {
-  delete m_audio_out;
-
+  m_audio_out->deleteLater();
   m_audio_out = new QAudioOutput(format);
   m_audio_out_device = m_audio_out->start();
 

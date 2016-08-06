@@ -107,7 +107,7 @@ private:
   QAudioOutput* m_audio_out        = NULL;
   QIODevice*    m_audio_out_device = NULL;
 
-  QAudioProbe* m_probe;
+  QAudioProbe* m_probe = NULL;
 
   /** Indicite if we prefer to parse wav files ourselves. This will become true
    *  if QAudioProbe cannot connect to the QMediaPlayer (so we cannot intercept
