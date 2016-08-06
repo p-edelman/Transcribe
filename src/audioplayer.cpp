@@ -3,18 +3,26 @@
 AudioPlayer::AudioPlayer(QObject *parent) : QObject(parent) {
   m_state = PlayerState::PAUSED;
 
-  m_player = new QMediaPlayer;
-  m_player->setNotifyInterval(1000); // We're working with second precision
-  QObject::connect(m_player, SIGNAL(positionChanged(qint64)),
-                   this, SLOT(handleMediaPositionChanged(qint64)));
-  QObject::connect(m_player, SIGNAL(audioAvailableChanged(bool)),
-                   this, SLOT(handleMediaAvailabilityChanged()));
-  QObject::connect(m_player, SIGNAL(durationChanged(qint64)),
-                   this, SLOT(handleMediaAvailabilityChanged()));
-  QObject::connect(m_player, SIGNAL(error(QMediaPlayer::Error)),
-                   this, SLOT(handleMediaError()));
-  QObject::connect(m_player, SIGNAL(mediaStatusChanged(QMediaPlayer::MediaStatus)),
-                   this, SLOT(handleMediaStatusChanged(QMediaPlayer::MediaStatus)));
+  m_decoder.setNotifyInterval(1000); // We're working with second precision
+  connect(&m_decoder, SIGNAL(positionChanged(qint64)),
+          this,       SLOT(handleMediaPositionChanged(qint64)));
+  connect(&m_decoder, SIGNAL(durationChanged(qint64)),
+          this,       SLOT(handleMediaAvailabilityChanged()));
+  connect(&m_decoder, SIGNAL(audioAvailableChanged(bool)),
+          this,       SLOT(handleMediaAvailabilityChanged()));
+  connect(&m_decoder, SIGNAL(error(QMediaPlayer::Error)),
+          this,       SLOT(handleMediaError()));
+  connect(&m_decoder, SIGNAL(mediaStatusChanged(QMediaPlayer::MediaStatus)),
+          this,       SLOT(handleMediaStatusChanged(QMediaPlayer::MediaStatus)));
+  connect(&m_decoder, SIGNAL(bufferReady(QAudioBuffer)),
+          this,       SLOT(handleAudioBuffer(QAudioBuffer)));
+}
+
+void AudioPlayer::openFile(const QString& path) {
+  m_error_handled = false;
+
+  setState(PlayerState::PAUSED);
+  m_decoder.setMedia(QUrl::fromLocalFile(path));
 }
 
 AudioPlayer::PlayerState AudioPlayer::getState() {
@@ -22,38 +30,31 @@ AudioPlayer::PlayerState AudioPlayer::getState() {
 }
 
 uint AudioPlayer::getDuration() {
-  if (m_player->duration() > 0) {
-    return ((m_player->duration() + 500) / 1000);
+  if (m_decoder.duration() > 0) {
+    return ((m_decoder.duration() + 500) / 1000);
   }
   return 0;
 }
 
 uint AudioPlayer::getPosition() {
-  return ((m_player->position() + 500) / 1000);
+  return ((m_decoder.position() + 500) / 1000);
 }
 
 void AudioPlayer::skipSeconds(SeekDirection direction, int seconds) {
   qint64 new_pos;
   if (direction == SeekDirection::FORWARD) {
-    new_pos = m_player->position() + seconds * 1000;
-    if (new_pos > m_player->duration()) {
-      new_pos = m_player->duration();
+    new_pos = m_decoder.position() + seconds * 1000;
+    if (new_pos > m_decoder.duration()) {
+      new_pos = m_decoder.duration();
     }
   } else {
-    new_pos = m_player->position() - seconds * 1000;
+    new_pos = m_decoder.position() - seconds * 1000;
     if (new_pos < 0) {
       new_pos = 0;
     }
   }
-  m_player->setPosition(new_pos);
+  m_decoder.setPosition(new_pos);
   emit positionChanged();
-}
-
-void AudioPlayer::openFile(const QString& path) {
-  m_error_handled = false;
-
-  setState(PlayerState::PAUSED);
-  m_player->setMedia(QUrl::fromLocalFile(path));
 }
 
 void AudioPlayer::handleMediaAvailabilityChanged() {
@@ -69,7 +70,7 @@ void AudioPlayer::handleMediaError() {
     m_error_handled = true;
 
     QString message = tr("The audio file can't be loaded.\n");
-    message += m_player->errorString();
+    message += m_decoder.errorString();
 
     emit error(message);
   }
@@ -84,15 +85,15 @@ void AudioPlayer::handleMediaStatusChanged(QMediaPlayer::MediaStatus status) {
 
 void AudioPlayer::setPosition(int seconds) {
   qint64 ms = seconds * 1000;
-  if (ms > m_player->duration()) ms = m_player->duration(); // Cap
-  m_player->setPosition(ms);
+  if (ms > m_decoder.duration()) ms = m_decoder.duration(); // Cap
+  m_decoder.setPosition(ms);
 }
 
 void AudioPlayer::setState(PlayerState state) {
   // If the media is not properly loaded or we're at the end of the media, we
   // can only be in the paused state.
-  if ((m_player->mediaStatus() != QMediaPlayer::LoadedMedia) &&
-      (m_player->mediaStatus() != QMediaPlayer::BufferedMedia)) {
+  if ((m_decoder.mediaStatus() != QMediaPlayer::LoadedMedia) &&
+      (m_decoder.mediaStatus() != QMediaPlayer::BufferedMedia)) {
     state = PlayerState::PAUSED;
   }
 
@@ -103,13 +104,13 @@ void AudioPlayer::setState(PlayerState state) {
     if (m_state == PlayerState::PAUSED) {
       // Corner case: if we're at the end of the media, don't call pause()
       // because it will reset the audio to the start.
-      if (m_player->mediaStatus() != QMediaPlayer::EndOfMedia) {
-        m_player->pause();
+      if (m_decoder.mediaStatus() != QMediaPlayer::EndOfMedia) {
+        m_decoder.pause();
       }
     } else if (m_state == PlayerState::PLAYING) {
-      m_player->play();
+      m_decoder.play();
     } else if (m_state == PlayerState::WAITING) {
-      m_player->pause();
+      m_decoder.pause();
     }
 
     emit stateChanged();
@@ -154,10 +155,29 @@ void AudioPlayer::toggleWaiting(bool should_wait) {
   }
 }
 
+void AudioPlayer::boost(bool is_up) {
+  if (is_up) {
+    m_sonic_booster.increaseLevel();
+  } else {
+    m_sonic_booster.decreaseLevel();
+  }
+}
+
 void AudioPlayer::handleMediaPositionChanged(qint64) {
   emit positionChanged();
 }
 
+void AudioPlayer::handleAudioBuffer(const QAudioBuffer& buffer) {
+  if (buffer.isValid()) {
+    bool is_modified = m_sonic_booster.boost(buffer);
 
-
-
+    // Finally, play the audio
+    if (is_modified) {
+      int         boosted_buffer_size;
+      const char* boosted_buffer = m_sonic_booster.getBoostedBuffer(boosted_buffer_size);
+      m_decoder.playbackDevice()->write(boosted_buffer, boosted_buffer_size);
+    } else {
+      m_decoder.playbackDevice()->write((char*)buffer.constData(), buffer.byteCount());
+    }
+  }
+}

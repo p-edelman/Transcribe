@@ -7,7 +7,9 @@ SOURCES += main.cpp \
     transcribe.cpp \
     audioplayer.cpp \
     keycatcher.cpp \
-    typingtimelord.cpp
+    typingtimelord.cpp \
+    sonicbooster.cpp \
+    audiodecoder.cpp
 
 RESOURCES += qml.qrc
 
@@ -21,7 +23,9 @@ HEADERS += \
     transcribe.h \
     audioplayer.h \
     keycatcher.h \
-    typingtimelord.h
+    typingtimelord.h \
+    sonicbooster.h \
+    audiodecoder.h
 
 DISTFILES += \
     README.md \
