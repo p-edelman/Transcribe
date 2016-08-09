@@ -16,7 +16,7 @@ class AudioPlayer : public QObject {
   Q_OBJECT
 
 public:
-  explicit AudioPlayer(QObject *parent = 0);
+  explicit AudioPlayer(QObject* parent = 0);
 
   /** The player can be in one of three states:
    *  - PLAYING  means that the audio is playing; sound comes out of the speaker
@@ -157,6 +157,22 @@ private:
    *  thrown by QMediaPlayer. We need to signal a problem just once to the end
    *  user though, so we need to keep track of whether it is handled already. */
   bool m_error_handled = false;
+
+  /** Message to display to the user if he tries to boost the audio, but this
+   *  isn't possible.
+   *  Unfortunately this check is somewhat complicated, because it depends on
+   *  two factors; one, is the AudioDecoder sending raw audio data (vs. playing
+   *  directly), and two, can the SonicBooster amplify this format. The second
+   *  question can only be answered when we're receiving a QAudioBuffer, but
+   *  this doesn't happen at all if the first condition isn't met. So we're
+   *  checking in two places: the boost() method when the user adjusts the
+   *  boost factor for the first condition, and the handleAudioBuffer() method
+   *  for the second factor. The we can use this message to report the error. */
+#ifdef Q_OS_ANDROID
+  const QString BOOST_UNSUPPORTED_MSG = tr("Sorry, but only .wav files can be amplified.");
+#else
+  const QString BOOST_UNSUPPORTED_MSG = tr("Sorry, but this audio format can't be amplified.");
+#endif
 };
 
 #endif // AUDIOPLAYER_H

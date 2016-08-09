@@ -19,6 +19,8 @@ AudioPlayer::AudioPlayer(QObject *parent) : QObject(parent) {
 }
 
 void AudioPlayer::openFile(const QString& path) {
+  m_sonic_booster.resetLevel();
+
   m_error_handled = false;
 
   setState(PlayerState::PAUSED);
@@ -156,10 +158,14 @@ void AudioPlayer::toggleWaiting(bool should_wait) {
 }
 
 void AudioPlayer::boost(bool is_up) {
-  if (is_up) {
-    m_sonic_booster.increaseLevel();
+  if (m_decoder.isIntercepting()) {
+    if (is_up) {
+      m_sonic_booster.increaseLevel();
+    } else {
+      m_sonic_booster.decreaseLevel();
+    }
   } else {
-    m_sonic_booster.decreaseLevel();
+    emit error(BOOST_UNSUPPORTED_MSG);
   }
 }
 
@@ -169,6 +175,12 @@ void AudioPlayer::handleMediaPositionChanged(qint64) {
 
 void AudioPlayer::handleAudioBuffer(const QAudioBuffer& buffer) {
   if (buffer.isValid()) {
+    if (m_sonic_booster.level() != 0) {
+      if (!m_sonic_booster.canBoost(buffer.format())) {
+        emit error(BOOST_UNSUPPORTED_MSG);
+        m_sonic_booster.resetLevel();
+      }
+    }
     bool is_modified = m_sonic_booster.boost(buffer);
 
     // Finally, play the audio

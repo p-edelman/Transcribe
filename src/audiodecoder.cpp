@@ -45,6 +45,13 @@ QMediaPlayer::MediaStatus AudioDecoder::mediaStatus() const {
   return QMediaPlayer::mediaStatus();
 }
 
+bool AudioDecoder::isIntercepting() {
+  if (m_probe || m_is_native_wav) {
+    return true;
+  }
+  return false;
+}
+
 void AudioDecoder::setMedia(const QUrl& path) {
   pause();
 
@@ -159,8 +166,10 @@ void AudioDecoder::handleBufferProbed(const QAudioBuffer& buffer) {
 }
 
 void AudioDecoder::initAudioOutput(const QAudioFormat& format,
-                                bool connect_notify) {
-  m_audio_out->deleteLater();
+                                   bool connect_notify) {
+  if (m_audio_out) {
+    m_audio_out->deleteLater();
+  }
   m_audio_out = new QAudioOutput(format);
   m_audio_out_device = m_audio_out->start();
 

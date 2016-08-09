@@ -86,6 +86,9 @@ bool Transcribe::saveText() {
 }
 
 void Transcribe::errorDetected(const QString& message) {
+  // Pause the audio
+  m_player->togglePlayPause(false);
+
   // Close any open modal windows. This is especially useful for an error with
   // audio loading, in which case the text file dialog is still active.
   QWidget* modal = activeModalWidget();

@@ -28,6 +28,10 @@ bool SonicBooster::canBoost(const QAudioFormat& format) {
   return true;
 }
 
+int SonicBooster::level() {
+  return round(m_level);
+}
+
 bool SonicBooster::boost(const QAudioBuffer& buffer) {
   if (!(canBoost(buffer.format()) && buffer.isValid())) {
     return false;

@@ -10,6 +10,7 @@
 
 #include <cstdint>
 #include <limits>
+#include <math.h>
 
 /** Boost an audio buffer, so that it plays more loudly. This class is a 'slave'
  *  class to an audio player; it should constantly be fed short QAudioBuffers as
@@ -32,6 +33,9 @@ public:
   /** Indicate if the signal with the given audio format can be amplified. */
   bool canBoost(const QAudioFormat& format);
 
+  /** Return the currently set boost factor, in dB. */
+  int level();
+
   /** Boost the given audio buffer. If succesful, the boosted audio data is
    *  available through the getBoostedBuffer() method. The return value should
    *  always be used to check if this buffer is available!
@@ -51,6 +55,9 @@ public slots:
   /** Increase of decrease the boost factor by 1 dB */
   void increaseLevel() {m_level += 1.0;}
   void decreaseLevel() {m_level -= 1.0;}
+
+  /** Reset the amplification level to 0 dB. */
+  void resetLevel() {m_level = 0.0;}
 
 private:
   /** Amplify the audio by the m_boost factor and store the result in the

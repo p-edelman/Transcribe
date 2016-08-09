@@ -48,6 +48,10 @@ public:
    *  it back. */
   QIODevice* playbackDevice() {return m_audio_out_device;}
 
+  /** Indicate whether we're sending raw audio with the bufferReady() signal, or
+   *  whether audio is played directly. */
+  bool isIntercepting();
+
 public slots:
   /** Load the specified file. This method returns immediately, but it sends out
    *  the durationChanged() and mediaStatusChanged() signals on success, or the
@@ -118,7 +122,8 @@ private:
    *  natively. Otherwise QMediaPlayer is playing the current file. */
   bool m_is_native_wav = false;
 
-  /** The format parameters of the audio file, if we parsed it natively. */
+  /** The format parameters of the audio file, if we parsed a wav file natively.
+   */
   QAudioFormat m_format;
 
   /** The wav file that we've opened. */
