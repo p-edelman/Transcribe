@@ -1,47 +1,45 @@
 #include "typingtimelord.h"
 
 TypingTimeLord::TypingTimeLord(AudioPlayer* player, QObject *parent) :
-  QObject(parent) {
+  QObject(parent),
+  m_player(player) {
 
-  m_player = player;
   QObject::connect(m_player, SIGNAL(stateChanged()),
                    this, SLOT(playerStateChanged()));
 
   // Initialize the timers to single shot timers and connect them to their
   // respective fallbacks;
-  m_wait_timer  = new QTimer();
-  m_type_timer = new QTimer();
-  m_wait_timer->setSingleShot(true);
-  m_type_timer->setSingleShot(true);
-  connect(m_wait_timer, SIGNAL(timeout()), this, SLOT(waitTimeout()));
-  connect(m_type_timer, SIGNAL(timeout()), this, SLOT(typeTimeout()));
+  m_wait_timer.setSingleShot(true);
+  m_type_timer.setSingleShot(true);
+  connect(&m_wait_timer, SIGNAL(timeout()), this, SLOT(waitTimeout()));
+  connect(&m_type_timer, SIGNAL(timeout()), this, SLOT(typeTimeout()));
 }
 
 void TypingTimeLord::restartWaitTimer() {
   if (m_player->getState() == AudioPlayer::PLAYING) {
-    m_wait_timer->stop();
-    m_wait_timer->start(m_wait_timeout);
+    m_wait_timer.stop();
+    m_wait_timer.start(m_wait_timeout);
   }
 }
 
 void TypingTimeLord::restartTypeTimer() {
   if (m_player->getState() != AudioPlayer::PAUSED) {
-    m_type_timer->stop();
-    m_type_timer->start(m_type_timeout);
+    m_type_timer.stop();
+    m_type_timer.start(m_type_timeout);
   }
 }
 
 void TypingTimeLord::keyTyped() {
   if (m_player->getState() == AudioPlayer::PLAYING) {
-    if (!m_wait_timer->isActive()) {
-      m_wait_timer->start(m_wait_timeout);
+    if (!m_wait_timer.isActive()) {
+      m_wait_timer.start(m_wait_timeout);
     }
   }
   restartTypeTimer();
 }
 
 void TypingTimeLord::waitTimeout() {
-  m_wait_timer->stop();
+  m_wait_timer.stop();
   m_player->toggleWaiting(true);
 }
 
@@ -60,9 +58,9 @@ void TypingTimeLord::typeTimeout() {
 
 void TypingTimeLord::playerStateChanged() {
   if (m_player->getState() != AudioPlayer::PLAYING) {
-    m_wait_timer->stop();
+    m_wait_timer.stop();
   }
   if (m_player->getState() == AudioPlayer::PAUSED) {
-    m_type_timer->stop();
+    m_type_timer.stop();
   }
 }

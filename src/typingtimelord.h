@@ -65,8 +65,8 @@ private:
    *  This will be ignored if the player is not in PLAYING of WAITING state. */
   void restartTypeTimer();
 
-  QTimer* m_wait_timer;
-  QTimer* m_type_timer;
+  QTimer m_wait_timer;
+  QTimer m_type_timer;
 
   /** The AudioPlayer that we're controlling. */
   AudioPlayer* m_player;

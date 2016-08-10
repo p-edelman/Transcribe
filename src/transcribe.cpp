@@ -1,23 +1,17 @@
 #include "transcribe.h"
 
 Transcribe::Transcribe(int &argc, char **argv) :
-  QApplication(argc, argv) {
+  QApplication(argc, argv),
+  m_keeper(&m_player),
+  m_engine(this) {
 
-  m_text_file = NULL;
-
-  m_player = new AudioPlayer();
-  connect(m_player, SIGNAL(error(const QString&)),
-          this, SLOT(errorDetected(const QString&)));
-
-  m_keeper = new TypingTimeLord(m_player);
-
-  // The Qt connection
-  QQmlApplicationEngine* engine = new QQmlApplicationEngine();
+  connect(&m_player, SIGNAL(error(const QString&)),
+          this,      SLOT(errorDetected(const QString&)));
 
   // Expose the Transcribe object to the gui for setting and getting properties
   // and such
-  engine->rootContext()->setContextProperty("app",    this);
-  engine->rootContext()->setContextProperty("player", m_player);
+  m_engine.rootContext()->setContextProperty("app",    this);
+  m_engine.rootContext()->setContextProperty("player", &m_player);
 
   // This is a bit of quirkiness of Qt; you can't declare an enum as a QML type,
   // but you can declare a C++ class with a public enum as a QML library, and
@@ -26,9 +20,13 @@ Transcribe::Transcribe(int &argc, char **argv) :
   qmlRegisterType<AudioPlayer>("AudioPlayer", 1, 0, "PlayerState");
 
   // Load the GUI. When it is ready, the guiReady() method takes over.
-  QObject::connect(engine, SIGNAL(objectCreated(QObject*, QUrl)),
-                   this,   SLOT(guiReady(QObject*)));
-  engine->load(QUrl(QStringLiteral("qrc:/main.qml")));
+  QObject::connect(&m_engine, SIGNAL(objectCreated(QObject*, QUrl)),
+                   this,      SLOT(guiReady(QObject*)));
+  m_engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
+}
+
+Transcribe::~Transcribe() {
+  m_text_file->deleteLater();
 }
 
 void Transcribe::setTextDirty(bool is_dirty) {
@@ -57,7 +55,7 @@ void Transcribe::openAudioFile(const QString& path) {
   QQmlProperty::write(m_app_root, "is_editable", QVariant(false));
 
   // Open the audio file
-  m_player->openFile(path);
+  m_player.openFile(path);
 }
 
 bool Transcribe::saveText() {
@@ -87,7 +85,7 @@ bool Transcribe::saveText() {
 
 void Transcribe::errorDetected(const QString& message) {
   // Pause the audio
-  m_player->togglePlayPause(false);
+  m_player.togglePlayPause(false);
 
   // Close any open modal windows. This is especially useful for an error with
   // audio loading, in which case the text file dialog is still active.
@@ -141,26 +139,26 @@ void Transcribe::guiReady(QObject* root) {
 
   // Install the key filter and connect its signals
   KeyCatcher* catcher = new KeyCatcher(root);
-  connect(catcher, SIGNAL(keyTyped()),
-          m_keeper, SLOT(keyTyped()));
+  connect(catcher,   SIGNAL(keyTyped()),
+          &m_keeper, SLOT(keyTyped()));
   connect(catcher, SIGNAL(saveFile()),
-          this, SLOT(saveText()));
-  connect(catcher, SIGNAL(seekAudio(AudioPlayer::SeekDirection,int)),
-          m_player, SLOT(skipSeconds(AudioPlayer::SeekDirection, int)));
-  connect(catcher, SIGNAL(togglePlayPause()),
-          m_player, SLOT(togglePlayPause()));
-  connect(catcher, SIGNAL(togglePlayPause(bool)),
-          m_player, SLOT(togglePlayPause(bool)));
-  connect(catcher, SIGNAL(boost(bool)),
-          m_player, SLOT(boost(bool)));
+          this,    SLOT(saveText()));
+  connect(catcher,   SIGNAL(seekAudio(AudioPlayer::SeekDirection,int)),
+          &m_player, SLOT(skipSeconds(AudioPlayer::SeekDirection, int)));
+  connect(catcher,   SIGNAL(togglePlayPause()),
+          &m_player, SLOT(togglePlayPause()));
+  connect(catcher,   SIGNAL(togglePlayPause(bool)),
+          &m_player, SLOT(togglePlayPause(bool)));
+  connect(catcher,   SIGNAL(boost(bool)),
+          &m_player, SLOT(boost(bool)));
   root->installEventFilter(catcher);
 
   // Attach audio controls to the AudioPlayer
   QObject* controls = root->findChild<QObject *>("media_controls");
-  connect(controls, SIGNAL(valueChanged(int)),
-          m_player, SLOT(setPosition(int)));
-  connect(controls, SIGNAL(playingStateChanged(bool)),
-          m_player, SLOT(togglePlayPause(bool)));
+  connect(controls,  SIGNAL(valueChanged(int)),
+          &m_player, SLOT(setPosition(int)));
+  connect(controls,  SIGNAL(playingStateChanged(bool)),
+          &m_player, SLOT(togglePlayPause(bool)));
 
   // Connect GUI events to their callbacks
   connect(m_app_root, SIGNAL(saveText()),
@@ -214,6 +212,9 @@ void Transcribe::pickFiles() {
 void Transcribe::openTextFile(const QString& path) {
   // Because the way the UI works, we can assume that the text is not dirty
   // So if the file exists, we load the contents into the editor window.
+  if (m_text_file) {
+    m_text_file->deleteLater();
+  }
   m_text_file = new QFile(path);
   if (m_text_file->exists()) {
     if (m_text_file->open(QIODevice::ReadOnly | QIODevice::Text)) {

@@ -1,11 +1,10 @@
 #include "sonicbooster.h"
 
-SonicBooster::SonicBooster(QObject *parent) : QObject(parent) {
-  m_spectrogram = new QVector<int>;
-}
+SonicBooster::SonicBooster(QObject* parent) : QObject(parent) {}
 
 SonicBooster::~SonicBooster() {
   delete m_data;
+  delete m_spectrogram;
 }
 
 bool SonicBooster::canBoost(const QAudioFormat& format) {

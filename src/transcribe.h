@@ -40,6 +40,7 @@ class Transcribe : public QApplication {
 
 public:
   Transcribe(int &argc, char **argv);
+  ~Transcribe();
 
   /** Open the audio file specified by the path. This will unload the text file
    *  from the editor. */
@@ -82,11 +83,14 @@ private:
   bool m_is_text_dirty = false;
 
   /** The main AudioPlayer instance for playing and seeking audio files. */
-  AudioPlayer* m_player;
+  AudioPlayer m_player;
 
   /** A TypingTimeLord to let the typing of the user control the audio playback.
    */
-  TypingTimeLord* m_keeper;
+  TypingTimeLord m_keeper;
+
+  /** The QML connection. */
+  QQmlApplicationEngine m_engine;
 
   /** The main ApplicationWindow */
   QObject* m_app_root;
@@ -95,7 +99,7 @@ private:
   QObject* m_text_area;
 
   /** The text file where the transcript needs to be written to. */
-  QFile* m_text_file;
+  QFile* m_text_file = NULL;
 
 private slots:
   /** Callback for when the GUI is initialized and ready. It sets up all the

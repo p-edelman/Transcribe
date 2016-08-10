@@ -126,8 +126,9 @@ private:
   /** To figure out by how much we can boost an audio sample without clipping it
    *  too much, we have to count how many of each sample point there are.
    *  We use int for this as the QAudioFormat::sampleCount() method uses this as
-   *  the return type, thus the actual count fits into an int. */
-  QVector<int>* m_spectrogram = NULL;
+   *  the return type, thus the actual count fits into an int.
+   *  Declared on the heap because of the potentially large size. */
+  QVector<int>* m_spectrogram = new QVector<int>;
 };
 
 #endif // SONICBOOSTER_H
