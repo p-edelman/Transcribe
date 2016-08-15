@@ -1,11 +1,12 @@
 #include "typingtimelord.h"
 
-TypingTimeLord::TypingTimeLord(AudioPlayer* player, QObject *parent) :
+TypingTimeLord::TypingTimeLord(std::shared_ptr<AudioPlayer> player,
+                               QObject* parent) :
   QObject(parent),
   m_player(player) {
 
-  QObject::connect(m_player, SIGNAL(stateChanged()),
-                   this, SLOT(playerStateChanged()));
+  QObject::connect(m_player.get(), SIGNAL(stateChanged()),
+                   this,           SLOT(playerStateChanged()));
 
   // Initialize the timers to single shot timers and connect them to their
   // respective fallbacks;

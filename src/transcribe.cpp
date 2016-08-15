@@ -2,16 +2,17 @@
 
 Transcribe::Transcribe(int &argc, char **argv) :
   QApplication(argc, argv),
-  m_keeper(&m_player),
+  m_player(new AudioPlayer(this), std::mem_fn(&AudioPlayer::deleteLater)),
+  m_keeper(m_player),
   m_engine(this) {
 
-  connect(&m_player, SIGNAL(error(const QString&)),
-          this,      SLOT(errorDetected(const QString&)));
+  connect(m_player.get(), SIGNAL(error(const QString&)),
+          this,           SLOT(errorDetected(const QString&)));
 
   // Expose the Transcribe object to the gui for setting and getting properties
   // and such
   m_engine.rootContext()->setContextProperty("app",    this);
-  m_engine.rootContext()->setContextProperty("player", &m_player);
+  m_engine.rootContext()->setContextProperty("player", m_player.get());
 
   // This is a bit of quirkiness of Qt; you can't declare an enum as a QML type,
   // but you can declare a C++ class with a public enum as a QML library, and
@@ -55,7 +56,7 @@ void Transcribe::openAudioFile(const QString& path) {
   QQmlProperty::write(m_app_root, "is_editable", QVariant(false));
 
   // Open the audio file
-  m_player.openFile(path);
+  m_player->openFile(path);
 }
 
 bool Transcribe::saveText() {
@@ -85,7 +86,7 @@ bool Transcribe::saveText() {
 
 void Transcribe::errorDetected(const QString& message) {
   // Pause the audio
-  m_player.togglePlayPause(false);
+  m_player->togglePlayPause(false);
 
   // Close any open modal windows. This is especially useful for an error with
   // audio loading, in which case the text file dialog is still active.
@@ -143,22 +144,22 @@ void Transcribe::guiReady(QObject* root) {
           &m_keeper, SLOT(keyTyped()));
   connect(catcher, SIGNAL(saveFile()),
           this,    SLOT(saveText()));
-  connect(catcher,   SIGNAL(seekAudio(AudioPlayer::SeekDirection,int)),
-          &m_player, SLOT(skipSeconds(AudioPlayer::SeekDirection, int)));
-  connect(catcher,   SIGNAL(togglePlayPause()),
-          &m_player, SLOT(togglePlayPause()));
-  connect(catcher,   SIGNAL(togglePlayPause(bool)),
-          &m_player, SLOT(togglePlayPause(bool)));
-  connect(catcher,   SIGNAL(boost(bool)),
-          &m_player, SLOT(boost(bool)));
+  connect(catcher,        SIGNAL(seekAudio(AudioPlayer::SeekDirection,int)),
+          m_player.get(), SLOT(skipSeconds(AudioPlayer::SeekDirection, int)));
+  connect(catcher,        SIGNAL(togglePlayPause()),
+          m_player.get(), SLOT(togglePlayPause()));
+  connect(catcher,        SIGNAL(togglePlayPause(bool)),
+          m_player.get(), SLOT(togglePlayPause(bool)));
+  connect(catcher,        SIGNAL(boost(bool)),
+          m_player.get(), SLOT(boost(bool)));
   root->installEventFilter(catcher);
 
   // Attach audio controls to the AudioPlayer
   QObject* controls = root->findChild<QObject *>("media_controls");
-  connect(controls,  SIGNAL(valueChanged(int)),
-          &m_player, SLOT(setPosition(int)));
-  connect(controls,  SIGNAL(playingStateChanged(bool)),
-          &m_player, SLOT(togglePlayPause(bool)));
+  connect(controls,       SIGNAL(valueChanged(int)),
+          m_player.get(), SLOT(setPosition(int)));
+  connect(controls,       SIGNAL(playingStateChanged(bool)),
+          m_player.get(), SLOT(togglePlayPause(bool)));
 
   // Connect GUI events to their callbacks
   connect(m_app_root, SIGNAL(saveText()),

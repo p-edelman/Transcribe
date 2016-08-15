@@ -15,6 +15,9 @@
 #include <QtQml>
 #include <QQuickView>
 
+#include <functional>
+#include <memory>
+
 #include "audioplayer.h"
 #include "keycatcher.h"
 #include "typingtimelord.h"
@@ -83,7 +86,7 @@ private:
   bool m_is_text_dirty = false;
 
   /** The main AudioPlayer instance for playing and seeking audio files. */
-  AudioPlayer m_player;
+  std::shared_ptr<AudioPlayer> m_player;
 
   /** A TypingTimeLord to let the typing of the user control the audio playback.
    */

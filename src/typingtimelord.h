@@ -4,6 +4,8 @@
 #include <QObject>
 #include <QTimer>
 
+#include <memory>
+
 #include "audioplayer.h"
 
 /** The idea is that when the user keeps typing, the playback should wait until
@@ -42,7 +44,8 @@ class TypingTimeLord : public QObject {
   Q_OBJECT
 
 public:
-  explicit TypingTimeLord(AudioPlayer* player, QObject *parent = 0);
+  explicit TypingTimeLord(std::shared_ptr<AudioPlayer> player,
+                          QObject* parent = 0);
 
   /** The intervals for the two timers. */
   unsigned int m_wait_timeout = 5000;
@@ -69,7 +72,7 @@ private:
   QTimer m_type_timer;
 
   /** The AudioPlayer that we're controlling. */
-  AudioPlayer* m_player;
+  std::shared_ptr<AudioPlayer> m_player;
 
 private slots:
   /** Callback for when the pause timer expires. */
