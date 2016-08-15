@@ -27,7 +27,7 @@ Transcribe::Transcribe(int &argc, char **argv) :
 }
 
 Transcribe::~Transcribe() {
-  m_text_file->deleteLater();
+  if (m_text_file) m_text_file->deleteLater();
 }
 
 void Transcribe::setTextDirty(bool is_dirty) {

@@ -15,9 +15,9 @@ AudioDecoder::AudioDecoder(QObject* parent) : QMediaPlayer(parent) {
 }
 
 AudioDecoder::~AudioDecoder() {
-  m_file->deleteLater();
-  m_audio_out->deleteLater();
-  m_probe->deleteLater();
+  if (m_file)      m_file->deleteLater();
+  if (m_audio_out) m_audio_out->deleteLater();
+  if (m_probe)     m_probe->deleteLater();
 }
 
 qint64 AudioDecoder::duration() const {
