@@ -1,6 +1,7 @@
 #include "audioplayer.h"
 
-AudioPlayer::AudioPlayer(QObject *parent) : QObject(parent) {
+AudioPlayer::AudioPlayer(QObject* parent) : QObject(parent) {
+
   m_state = PlayerState::PAUSED;
 
   m_decoder.setNotifyInterval(1000); // We're working with second precision

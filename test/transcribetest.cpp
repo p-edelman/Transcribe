@@ -6,8 +6,7 @@ TranscribeTest::TranscribeTest(QObject* parent) : QObject(parent) {
 
 void TranscribeTest::init() {
   // Create new Transcribe object
-  int argc = 0;
-  m_transcribe = new Transcribe(argc, NULL);
+  m_transcribe = new Transcribe;
   m_app_window = QApplication::allWindows().at(0);
 
   m_is_msg_box_dismissed = false;

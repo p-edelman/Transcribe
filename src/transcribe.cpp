@@ -1,7 +1,7 @@
 #include "transcribe.h"
 
-Transcribe::Transcribe(int &argc, char **argv) :
-  QApplication(argc, argv),
+Transcribe::Transcribe(QObject* parent) :
+  QObject(parent),
   m_player(new AudioPlayer(this), std::mem_fn(&AudioPlayer::deleteLater)),
   m_keeper(m_player),
   m_engine(this) {
@@ -21,8 +21,8 @@ Transcribe::Transcribe(int &argc, char **argv) :
   qmlRegisterType<AudioPlayer>("AudioPlayer", 1, 0, "PlayerState");
 
   // Load the GUI. When it is ready, the guiReady() method takes over.
-  QObject::connect(&m_engine, SIGNAL(objectCreated(QObject*, QUrl)),
-                   this,      SLOT(guiReady(QObject*)));
+  connect(&m_engine, SIGNAL(objectCreated(QObject*, QUrl)),
+          this,      SLOT(guiReady(QObject*)));
   m_engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
 }
 
@@ -53,7 +53,7 @@ void Transcribe::openAudioFile(const QString& path) {
   // Unload the current text file
   m_text_file = NULL;
   emit textFileNameChanged();
-  QQmlProperty::write(m_app_root, "is_editable", QVariant(false));
+  QQmlProperty::write(m_main_window, "is_editable", QVariant(false));
 
   // Open the audio file
   m_player->openFile(path);
@@ -90,10 +90,10 @@ void Transcribe::errorDetected(const QString& message) {
 
   // Close any open modal windows. This is especially useful for an error with
   // audio loading, in which case the text file dialog is still active.
-  QWidget* modal = activeModalWidget();
+  QWidget* modal = QApplication::activeModalWidget();
   while (modal != NULL) {
     modal->close();
-    modal = activeModalWidget();
+    modal = QApplication::activeModalWidget();
   }
 
   // Display the error box
@@ -127,16 +127,46 @@ void Transcribe::close() {
   }
 
   if (may_close) {
-    quit();
+#ifndef Q_OS_ANDROID
+    // Save window state
+    QSettings settings;
+    settings.beginGroup(CFG_GROUP_SCREEN);
+    if (m_main_window->visibility() == QWindow::Maximized) {
+      settings.setValue(CFG_SCREEN_IS_MAXIMIZED, true);
+    } else {
+      settings.setValue(CFG_SCREEN_IS_MAXIMIZED, false);
+    }
+    settings.setValue(CFG_SCREEN_SIZE, m_main_window->size());
+    settings.setValue(CFG_SCREEN_POS,  m_main_window->position());
+    settings.endGroup();\
+    settings.sync();
+#endif
+
+    QApplication::quit();
   }
 }
 
 void Transcribe::guiReady(QObject* root) {
-  m_app_root  = root;
-  m_text_area = m_app_root->findChild<QObject *>("text_area");
+  m_main_window = qobject_cast<QWindow*>(root);
+  m_text_area = m_main_window->findChild<QObject*>("text_area");
 
   // Set the icon, which, strangely enough, cannot be done from QML
-  ((QWindow*)root)->setIcon(QIcon("://window_icon"));
+  m_main_window->setIcon(QIcon("://window_icon"));
+
+#ifndef Q_OS_ANDROID
+  // Restore window state
+  QSettings settings;
+  settings.beginGroup(CFG_GROUP_SCREEN);
+  if (settings.value(CFG_SCREEN_IS_MAXIMIZED, false).toBool()) {
+    m_main_window->setVisibility(QWindow::Maximized);
+  } else {
+    m_main_window->resize(settings.value(CFG_SCREEN_SIZE,
+                                         QSize(640, 480)).toSize());
+    m_main_window->setPosition(settings.value(CFG_SCREEN_POS,
+                                              QPoint(200, 200)).toPoint());
+    settings.endGroup();\
+  }
+#endif
 
   // Install the key filter and connect its signals
   KeyCatcher* catcher = new KeyCatcher(root);
@@ -162,12 +192,12 @@ void Transcribe::guiReady(QObject* root) {
           m_player.get(), SLOT(togglePlayPause(bool)));
 
   // Connect GUI events to their callbacks
-  connect(m_app_root, SIGNAL(saveText()),
-          this, SLOT(saveText()));
-  connect(m_app_root, SIGNAL(pickFiles()),
-          this, SLOT(pickFiles()));
-  connect(m_app_root, SIGNAL(signalQuit()),
-          this, SLOT(close()));
+  connect(m_main_window, SIGNAL(saveText()),
+          this,          SLOT(saveText()));
+  connect(m_main_window, SIGNAL(pickFiles()),
+          this,          SLOT(pickFiles()));
+  connect(m_main_window, SIGNAL(signalQuit()),
+          this,          SLOT(close()));
 }
 
 void Transcribe::pickFiles() {
@@ -240,6 +270,6 @@ void Transcribe::openTextFile(const QString& path) {
 
   // Update the gui
   emit textFileNameChanged();
-  QQmlProperty::write(m_app_root, "is_editable", QVariant(true));
+  QQmlProperty::write(m_main_window, "is_editable", QVariant(true));
   setTextDirty(false);
 }

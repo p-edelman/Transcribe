@@ -12,6 +12,7 @@
 #include <QQmlProperty>
 #include <QSaveFile>
 #include <QScreen>
+#include <QSettings>
 #include <QtQml>
 #include <QQuickView>
 
@@ -23,7 +24,7 @@
 #include "typingtimelord.h"
 
 /** The main application class. */
-class Transcribe : public QApplication {
+class Transcribe : public QObject {
 
   Q_OBJECT
 
@@ -42,7 +43,7 @@ class Transcribe : public QApplication {
              NOTIFY textFileNameChanged)
 
 public:
-  Transcribe(int &argc, char **argv);
+  Transcribe(QObject* parent = 0);
   ~Transcribe();
 
   /** Open the audio file specified by the path. This will unload the text file
@@ -96,13 +97,19 @@ private:
   QQmlApplicationEngine m_engine;
 
   /** The main ApplicationWindow */
-  QObject* m_app_root;
+  QWindow* m_main_window;
 
   /** The text_area TextEdit that holds the transcript. */
   QObject* m_text_area;
 
   /** The text file where the transcript needs to be written to. */
   QFile* m_text_file = NULL;
+
+  /** The keys for the entries in the configuration file. */
+  const QString CFG_GROUP_SCREEN        = "screen";
+  const QString CFG_SCREEN_SIZE         = "size";
+  const QString CFG_SCREEN_POS          = "pos";
+  const QString CFG_SCREEN_IS_MAXIMIZED = "is_maximized";
 
 private slots:
   /** Callback for when the GUI is initialized and ready. It sets up all the

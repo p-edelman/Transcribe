@@ -3,7 +3,7 @@
 TypingTimeLordTest::TypingTimeLordTest() {
   QString silence_file =  SRCDIR;
   silence_file         += "files/silence.wav";
-  m_player = new AudioPlayer();
+  m_player = std::shared_ptr<AudioPlayer>(new AudioPlayer());
   m_player->openFile(silence_file);
   QTest::qWait(200);
 

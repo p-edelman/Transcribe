@@ -4,6 +4,8 @@
 #include <QtTest>
 #include <QSignalSpy>
 
+#include <memory>
+
 #include "typingtimelord.h"
 #include "audioplayer.h"
 
@@ -14,7 +16,7 @@ public:
   TypingTimeLordTest();
 
 private:
-  AudioPlayer*    m_player;
+  std::shared_ptr<AudioPlayer> m_player;
   TypingTimeLord* m_time_lord;
 
 private Q_SLOTS:
