@@ -1,5 +1,5 @@
-#ifndef TST_TYPINGTIMELORDTEST_H
-#define TST_TYPINGTIMELORDTEST_H
+#ifndef TYPINGTIMELORDTEST_H
+#define TYPINGTIMELORDTEST_H
 
 #include <QtTest>
 #include <QSignalSpy>
@@ -26,6 +26,18 @@ private Q_SLOTS:
   void keepPlayingWithSlowTyping();
   void waitAndUnwait();
   void resetWaitTimerOnTypingPause();
+
+  /** It should be able to set and retreive the timeout values, while
+   *  keeping in bounds. */
+  void setTimeouts();
+
+  /** It shouldn't be possible to set a pause timeout value smaller than the
+   *  typing timeout. */
+  void dontSetTooSmallPauseTimeout();
+
+  /** Test is changes in timeouts are actually taken into account (this is
+   *  already implicitely tested in other tests). */
+  void changeTimeouts();
 };
 
-#endif // TST_TYPINGTIMELORDTEST_H
+#endif // TYPINGTIMELORDTEST_H

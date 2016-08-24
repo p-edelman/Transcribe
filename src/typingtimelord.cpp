@@ -8,6 +8,13 @@ TypingTimeLord::TypingTimeLord(std::shared_ptr<AudioPlayer> player,
   QObject::connect(m_player.get(), SIGNAL(stateChanged()),
                    this,           SLOT(playerStateChanged()));
 
+  // Load the timeout values
+  QSettings settings;
+  settings.beginGroup(CFG_GROUP);
+  m_wait_timeout = settings.value(CFG_WAITING, m_wait_timeout).toUInt();
+  m_type_timeout = settings.value(CFG_TYPING,  m_type_timeout).toUInt();
+  settings.endGroup();
+
   // Initialize the timers to single shot timers and connect them to their
   // respective fallbacks;
   m_wait_timer.setSingleShot(true);
@@ -37,6 +44,46 @@ void TypingTimeLord::keyTyped() {
     }
   }
   restartTypeTimer();
+}
+
+void TypingTimeLord::setWaitTimeout(unsigned int timeout) {
+  if (timeout < WAIT_TIMEOUT_MIN) {
+    timeout = WAIT_TIMEOUT_MIN;
+  } else if (timeout > WAIT_TIMEOUT_MAX) {
+    timeout = WAIT_TIMEOUT_MAX;
+  } else if (timeout < m_type_timeout) {
+    timeout = m_type_timeout + 100;
+  }
+
+  if (m_wait_timeout != timeout) {
+    m_player->togglePlayPause(false);
+    m_wait_timeout = timeout;
+
+    QSettings settings;
+    settings.beginGroup(CFG_GROUP);
+    settings.setValue(CFG_WAITING, timeout);
+    settings.endGroup();
+  }
+}
+
+void TypingTimeLord::setTypeTimeout(unsigned int timeout) {
+  if (timeout < TYPE_TIMEOUT_MIN) {
+    timeout = TYPE_TIMEOUT_MIN;
+  } else if (timeout > TYPE_TIMEOUT_MAX) {
+    timeout = TYPE_TIMEOUT_MAX;
+  } else if (timeout > m_wait_timeout) {
+    timeout = m_wait_timeout - 100;
+  }
+
+  if (m_type_timeout != timeout) {
+    m_player->togglePlayPause(false);
+    m_type_timeout = timeout;
+
+    QSettings settings;
+    settings.beginGroup(CFG_GROUP);
+    settings.setValue(CFG_TYPING, timeout);
+    settings.endGroup();
+  }
 }
 
 void TypingTimeLord::waitTimeout() {

@@ -1,4 +1,4 @@
-#include <QCoreApplication>
+#include <QApplication>
 
 #include "audioplayertest.h"
 #include "sonicboostertest.h"
@@ -7,7 +7,7 @@
 #include "transcribetest.h"
 
 int main(int argc, char** argv) {
-  QCoreApplication app(argc, argv);
+  QApplication app(argc, argv);
   QTest::qExec(new AudioPlayerTest(), argc, argv);
   QTest::qExec(new SonicBoosterTest, argc, argv);
   QTest::qExec(new TypingTimeLordTest(), argc, argv);

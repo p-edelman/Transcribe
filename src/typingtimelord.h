@@ -2,6 +2,7 @@
 #define TYPINGTIMEKEEPER_H
 
 #include <QObject>
+#include <QSettings>
 #include <QTimer>
 
 #include <memory>
@@ -47,9 +48,24 @@ public:
   explicit TypingTimeLord(std::shared_ptr<AudioPlayer> player,
                           QObject* parent = 0);
 
-  /** The intervals for the two timers. */
-  unsigned int m_wait_timeout = 5000;
-  unsigned int m_type_timeout = 1000;
+  void setWaitTimeout(unsigned int timeout);
+  void setTypeTimeout(unsigned int timeout);
+  int getWaitTimeout() {return m_wait_timeout;}
+  int getTypeTimeout() {return m_type_timeout;}
+
+  /** Expose the timeout values to QML */
+  Q_PROPERTY(int wait_timeout READ getWaitTimeout WRITE setWaitTimeout)
+  Q_PROPERTY(int type_timeout READ getTypeTimeout WRITE setTypeTimeout)
+
+  /** Constants for the timeout limits. */
+  static const unsigned int WAIT_TIMEOUT_MIN = 2000;
+  static const unsigned int WAIT_TIMEOUT_MAX = 30000;
+  static const unsigned int TYPE_TIMEOUT_MIN = 500;
+  static const unsigned int TYPE_TIMEOUT_MAX = 5000;
+  Q_PROPERTY(unsigned int wait_timeout_min MEMBER WAIT_TIMEOUT_MIN CONSTANT)
+  Q_PROPERTY(unsigned int wait_timeout_max MEMBER WAIT_TIMEOUT_MAX CONSTANT)
+  Q_PROPERTY(unsigned int type_timeout_min MEMBER TYPE_TIMEOUT_MIN CONSTANT)
+  Q_PROPERTY(unsigned int type_timeout_max MEMBER TYPE_TIMEOUT_MAX CONSTANT)
 
 public slots:
   /** Signal the time keeper that a key has been typed into the editor.
@@ -68,11 +84,21 @@ private:
    *  This will be ignored if the player is not in PLAYING of WAITING state. */
   void restartTypeTimer();
 
+  /** The intervals for the two timers, initialized to default values of 5 and
+   *  1 seconds. */
+  unsigned int m_wait_timeout = 5000;
+  unsigned int m_type_timeout = 1000;
+
   QTimer m_wait_timer;
   QTimer m_type_timer;
 
   /** The AudioPlayer that we're controlling. */
   std::shared_ptr<AudioPlayer> m_player;
+
+  /** The keys for the entries in the configuration file. */
+  const QString CFG_GROUP   = "typing";
+  const QString CFG_WAITING = "waiting";
+  const QString CFG_TYPING  = "typing";
 
 private slots:
   /** Callback for when the pause timer expires. */

@@ -1,7 +1,8 @@
 <RCC>
     <qresource prefix="/">
         <file>main.qml</file>
-        <file>MediaControls.qml</file>
         <file alias="window_icon">../resources/icon/window/icon.png</file>
+        <file>SettingsGUI.qml</file>
+        <file>MainArea.qml</file>
     </qresource>
 </RCC>

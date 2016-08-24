@@ -9,10 +9,11 @@ Transcribe::Transcribe(QObject* parent) :
   connect(m_player.get(), SIGNAL(error(const QString&)),
           this,           SLOT(errorDetected(const QString&)));
 
-  // Expose the Transcribe object to the gui for setting and getting properties
+  // Expose the various objects to the gui for setting and getting properties
   // and such
-  m_engine.rootContext()->setContextProperty("app",    this);
-  m_engine.rootContext()->setContextProperty("player", m_player.get());
+  m_engine.rootContext()->setContextProperty("app",            this);
+  m_engine.rootContext()->setContextProperty("player",         m_player.get());
+  m_engine.rootContext()->setContextProperty("typingtimelord", &m_keeper);
 
   // This is a bit of quirkiness of Qt; you can't declare an enum as a QML type,
   // but you can declare a C++ class with a public enum as a QML library, and
@@ -184,14 +185,11 @@ void Transcribe::guiReady(QObject* root) {
           m_player.get(), SLOT(boost(bool)));
   root->installEventFilter(catcher);
 
-  // Attach audio controls to the AudioPlayer
-  QObject* controls = root->findChild<QObject *>("media_controls");
-  connect(controls,       SIGNAL(valueChanged(int)),
-          m_player.get(), SLOT(setPosition(int)));
-  connect(controls,       SIGNAL(playingStateChanged(bool)),
-          m_player.get(), SLOT(togglePlayPause(bool)));
-
   // Connect GUI events to their callbacks
+  connect(m_main_window,  SIGNAL(audioPositionChanged(int)),
+          m_player.get(), SLOT(setPosition(int)));
+  connect(m_main_window,  SIGNAL(playingStateChanged(bool)),
+          m_player.get(), SLOT(togglePlayPause(bool)));
   connect(m_main_window, SIGNAL(saveText()),
           this,          SLOT(saveText()));
   connect(m_main_window, SIGNAL(pickFiles()),
