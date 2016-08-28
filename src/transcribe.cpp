@@ -8,12 +8,15 @@ Transcribe::Transcribe(QObject* parent) :
 
   connect(m_player.get(), SIGNAL(error(const QString&)),
           this,           SLOT(errorDetected(const QString&)));
+  connect(m_player.get(), SIGNAL(durationChanged()),
+          this,           SLOT(saveHistory()));
 
   // Expose the various objects to the gui for setting and getting properties
   // and such
   m_engine.rootContext()->setContextProperty("app",            this);
   m_engine.rootContext()->setContextProperty("player",         m_player.get());
   m_engine.rootContext()->setContextProperty("typingtimelord", &m_keeper);
+  m_engine.rootContext()->setContextProperty("history",        &m_history);
 
   // This is a bit of quirkiness of Qt; you can't declare an enum as a QML type,
   // but you can declare a C++ class with a public enum as a QML library, and
@@ -194,6 +197,8 @@ void Transcribe::guiReady(QObject* root) {
           this,          SLOT(saveText()));
   connect(m_main_window, SIGNAL(pickFiles()),
           this,          SLOT(pickFiles()));
+  connect(m_main_window, SIGNAL(historySelected(int)),
+          this,          SLOT(restoreHistory(int)));
   connect(m_main_window, SIGNAL(signalQuit()),
           this,          SLOT(close()));
 }
@@ -236,6 +241,8 @@ void Transcribe::pickFiles() {
   }
 
   openTextFile(dlg.selectedFiles().at(0));
+
+  saveHistory();
 }
 
 void Transcribe::openTextFile(const QString& path) {
@@ -270,4 +277,24 @@ void Transcribe::openTextFile(const QString& path) {
   emit textFileNameChanged();
   QQmlProperty::write(m_main_window, "is_editable", QVariant(true));
   setTextDirty(false);
+}
+
+void Transcribe::restoreHistory(int index) {
+  QModelIndex model_index = m_history.index(index, 0);
+  QString audio_file_path = model_index.data(HistoryModel::AudioFileRole).toString();
+  QString text_file_path  = model_index.data(HistoryModel::TextFileRole).toString();
+  openAudioFile(audio_file_path);
+  openTextFile(text_file_path);
+
+  // If the text file was succesfully opened, save this as a history item again
+  // (thus sending it to the top)
+  saveHistory(true);
+}
+
+void Transcribe::saveHistory(bool allow_text_only) {
+  if ((m_text_file) &&
+      (m_player->getDuration() > 0 || allow_text_only)) {
+    m_history.add(QFileInfo(*m_text_file).absoluteFilePath(),
+                  m_player->getFilePath());
+  }
 }

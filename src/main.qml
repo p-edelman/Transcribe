@@ -17,6 +17,10 @@ ApplicationWindow {
   /** Signals that the user wants to open a new audio and text file. */
   signal pickFiles()
 
+  /** Signals that the user has selected an item from the history menu.
+    * @param index the index in the history model of the item. */
+  signal historySelected(int index)
+
   /** Signals that the user wants to quit the application. */
   signal signalQuit()
 
@@ -60,6 +64,23 @@ ApplicationWindow {
           if (app.is_text_dirty) {true} else {false}
         }
       }
+      Menu {
+        id: history_submenu
+        title: qsTr("History")
+
+        // Instantiate the items in the history menu from the HistoryModel,
+        // which is exposed as 'history'
+        Instantiator {
+          model: history
+          delegate: MenuItem {
+            text: display
+            onTriggered: historySelected(index)
+          }
+          onObjectAdded:   history_submenu.insertItem(index, object)
+          onObjectRemoved: history_submenu.removeItem(object)
+        }
+      }
+
       MenuItem {
         id:          settings_menu_item
         text:        qsTr("Settings")

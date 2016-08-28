@@ -28,6 +28,10 @@ void AudioPlayer::openFile(const QString& path) {
   m_decoder.setMedia(QUrl::fromLocalFile(path));
 }
 
+QString AudioPlayer::getFilePath() {
+  return m_decoder.getMediaPath();
+}
+
 AudioPlayer::PlayerState AudioPlayer::getState() {
   return m_state;
 }

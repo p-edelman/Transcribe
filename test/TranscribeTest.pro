@@ -20,24 +20,28 @@ SOURCES += main.cpp \
            keycatchertest.cpp \
            transcribetest.cpp \
            sonicboostertest.cpp \
+           historymodeltest.cpp \
            ../src/audioplayer.cpp \
            ../src/typingtimelord.cpp \
            ../src/keycatcher.cpp \
            ../src/transcribe.cpp \
            ../src/sonicbooster.cpp \
-           ../src/audiodecoder.cpp
+           ../src/audiodecoder.cpp \
+           ../src/historymodel.cpp
 
 HEADERS += audioplayertest.h \
            typingtimelordtest.h \
            keycatchertest.h \
            transcribetest.h \
            sonicboostertest.h \
+           historymodeltest.h \
            ../src/audioplayer.h \
            ../src/typingtimelord.h \
            ../src/keycatcher.h \
            ../src/transcribe.h \
            ../src/sonicbooster.h \
-           ../src/audiodecoder.h
+           ../src/audiodecoder.h \
+           ../src/historymodel.h
 
 RESOURCES += ../src/qml.qrc
 

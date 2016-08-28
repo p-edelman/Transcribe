@@ -57,6 +57,9 @@ public:
    *  @param path the complete path to the new file. */
   void openFile(const QString &path);
 
+  /** Return the path of the loaded file. */
+  QString getFilePath();
+
   PlayerState getState();
   uint getDuration();
   uint getPosition();

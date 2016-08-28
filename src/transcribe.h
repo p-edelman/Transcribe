@@ -22,6 +22,7 @@
 #include "audioplayer.h"
 #include "keycatcher.h"
 #include "typingtimelord.h"
+#include "historymodel.h"
 
 /** The main application class. */
 class Transcribe : public QObject {
@@ -105,6 +106,9 @@ private:
   /** The text file where the transcript needs to be written to. */
   QFile* m_text_file = NULL;
 
+  /** The history items. */
+  HistoryModel m_history;
+
   /** The keys for the entries in the configuration file. */
   const QString CFG_GROUP_SCREEN        = "screen";
   const QString CFG_SCREEN_SIZE         = "size";
@@ -119,6 +123,20 @@ private slots:
   /** Signal that the user wants to start with a new project. It will first open
    *  the audio file dialog, and then open the text file dialog. */
   void pickFiles();
+
+  /** Callback for when the user has picked an item from the history menu. It
+   *  will query m_history for the proper file names and load them.
+   *  @param index the index in the HistoryModel of the files to be loaded. */
+  void restoreHistory(int index);
+
+  /** Save the newly loaded files to the history model.
+   *  Because audio loading is asynchronous, this method should both be bound to
+   *  a signal for audio loading AND be called after text loading. The history
+   *  item will only be saved if a text file is loaded. Whether audio needs to
+   *  be available is determined by the allow_text_only parameter.
+   *  @param allow_text_only if false, the history item will only be saved if
+   *                         the audio is availaible. */
+  void saveHistory(bool allow_text_only = false);
 };
 
 #endif // TRANSCRIBE_H

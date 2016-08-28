@@ -52,6 +52,23 @@ bool AudioDecoder::isIntercepting() {
   return false;
 }
 
+QString AudioDecoder::getMediaPath() {
+  if (m_is_native_wav) {
+    if (m_file) {
+      return m_file->symLinkTarget();
+    }
+  } else {
+    if (!media().isNull()) {
+      QUrl url = media().canonicalUrl();
+      if (url.isLocalFile()) {
+        return url.toLocalFile();
+      }
+    }
+  }
+
+  return 0;
+}
+
 void AudioDecoder::setMedia(const QUrl& path) {
   pause();
 

@@ -22,9 +22,10 @@ void AudioPlayerTest::init() {
 /** Test the initialization of the AudioPlayer. */
 void AudioPlayerTest::initAudioPlayer() {
   AudioPlayer player;
-  QVERIFY(player.getState() == AudioPlayer::PAUSED);
-  QVERIFY(player.getDuration() == 0);
-  QVERIFY(player.getPosition() == 0);
+  QCOMPARE(player.getState(), AudioPlayer::PAUSED);
+  QCOMPARE((int)player.getDuration(), 0);
+  QCOMPARE((int)player.getPosition(), 0);
+  QCOMPARE(player.getFilePath(), QString(""));
 }
 
 /** Test loading of a simple wav file. This should result in the raising of one
@@ -41,6 +42,7 @@ void AudioPlayerTest::loadFile() {
   QVERIFY(duration_spy.count() > 0);
   QCOMPARE(error_spy.count(), 0);
   QCOMPARE((int)player.getDuration(), 6);
+  QCOMPARE(player.getFilePath(), m_noise_file);
 }
 
 /** When loading an empty file, the error() signal should be emitted. */
@@ -62,6 +64,9 @@ void AudioPlayerTest::loadErrorneousFile() {
   QCOMPARE(player.getState(), AudioPlayer::PAUSED);
   player.togglePlayPause(true);
   QCOMPARE(player.getState(), AudioPlayer::PAUSED);
+  QCOMPARE(player.getFilePath(), empty_file); // Even when the file fails to
+                                              // load, the file name should be
+                                              // reported.
 }
 
 /** We should be able to load a different file. After loading, we should be in
@@ -77,6 +82,7 @@ void AudioPlayerTest::loadDifferentFile() {
   QCOMPARE((int)player.getDuration(), 6); // noise.wav has a duration of 6 seconds
   QCOMPARE(player.getState(),       // We should be initalized in paused state
            AudioPlayer::PAUSED);
+  QCOMPARE(player.getFilePath(), m_noise_file);
 
   player.togglePlayPause(true);
   QCOMPARE(player.getState(), AudioPlayer::PLAYING);
@@ -90,6 +96,7 @@ void AudioPlayerTest::loadDifferentFile() {
   QCOMPARE((int)player.getDuration(), 7); // silence.wav has a duration of 7 seconds
   QCOMPARE(player.getState(),       // We should be initalized in paused state
            AudioPlayer::PAUSED);
+  QCOMPARE(player.getFilePath(), m_silence_file);
 }
 
 /** Test if we can toggle between PLAYING and PAUSED state without setting the

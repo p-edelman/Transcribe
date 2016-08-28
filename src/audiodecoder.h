@@ -10,6 +10,7 @@
 #include <QAudioFormat>
 #include <QAudioProbe>
 #include <QFile>
+#include <QMediaContent>
 #include <QUrl>
 #include <QtEndian>
 
@@ -51,6 +52,9 @@ public:
   /** Indicate whether we're sending raw audio with the bufferReady() signal, or
    *  whether audio is played directly. */
   bool isIntercepting();
+
+  /** Return the full path of the loaded media file. */
+  QString getMediaPath();
 
 public slots:
   /** Load the specified file. This method returns immediately, but it sends out
