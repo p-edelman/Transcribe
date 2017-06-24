@@ -133,7 +133,7 @@ qreal SonicBooster::getMaxFactor(qreal factor,
     m_spectrogram->data()[i] = 0;
   }
   for (int i = 0; i < num_samples; i++) {
-    m_spectrogram->data()[abs(data[i])]++;
+    m_spectrogram->data()[(word_type)abs(data[i])]++;
   }
   for (int i = std::numeric_limits<word_type>::max() - 1; i > cutoff - 1; i--) {
     m_spectrogram->data()[i] += m_spectrogram->data()[i + 1];
