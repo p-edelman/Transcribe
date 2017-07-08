@@ -134,11 +134,7 @@ ApplicationWindow {
   SettingsGUI {
     id:      config_window
     visible: false
-    Connections {
-      onSettingsDone: {
-        stack.pop()
-      }
-    }
+    onSettingsDone: stack.pop()
   }
 
   onClosing: {
