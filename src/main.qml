@@ -101,28 +101,31 @@ ApplicationWindow {
   }
 
   statusBar: StatusBar {
-    RowLayout {
-      Text {
-        id: file_name_display
-        text: app.text_file_name
-        font.pointSize: 12
+    Text {
+      id: file_name_display
+      text: app.text_file_name
+      font.pointSize: 12
+      anchors.left: parent.left
+    }
+    Text {
+      id: dirty_display
+      text: {
+        if (app.is_text_dirty) {" *"} else {""}
       }
-      Text {
-        id: dirty_display
-        text: {
-          if (app.is_text_dirty) {" *"} else {""}
-        }
-        font.pointSize: 12
-      }
-      Text {
-        id: words_num_display
-        text: app.num_words
-        font.pointSize: 12
-      }
-      Text {
-        text: " words"
-        font.pointSize: 12
-      }
+      font.pointSize: 12
+      anchors.left: file_name_display.right
+    }
+    Text {
+      id: words_num_display
+      text: app.num_words
+      font.pointSize: 12
+      anchors.right: words_text_display.left
+    }
+    Text {
+      id: words_text_display
+      text: " words"
+      font.pointSize: 12
+      anchors.right: parent.right
     }
   }
 
