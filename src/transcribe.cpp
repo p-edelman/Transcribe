@@ -212,12 +212,24 @@ void Transcribe::guiReady(QObject* root) {
 void Transcribe::pickFiles() {
   QFileDialog dlg;
 
-  // Unfortunately, QFileDialog on Android looks horrible, but we can make it
-  // a bit better by maximizing it.
-  if (QSysInfo::productType() == "android") {
+  // Unfortunately, Android doesn't really work with the concept of files,
+  // they are abstracted away. Since it would require a major effort to make
+  // this work in the Android way, we'll just try to make the best of it.
+#ifdef Q_OS_ANDROID
+    // Make the QFileDialog a bit better by maximizing it.
     dlg.setWindowState(Qt::WindowMaximized);
     dlg.setViewMode(QFileDialog::List);
-  }
+
+    // Add the root and the internal memory location to the paths to choose
+    // from. There are no real standard paths for this, let's hope Qt knows
+    // what to do.
+    QUrl home_url = QUrl::fromLocalFile(QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation).first());
+    dlg.setDirectoryUrl(home_url);
+    QList<QUrl> urls;
+    urls << QUrl::fromLocalFile("/");
+    urls << home_url;
+    dlg.setSidebarUrls(urls);
+#endif
 
   // Let the user pick an audio file
   dlg.setWindowTitle(tr("Open an audio file"));
