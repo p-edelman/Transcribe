@@ -35,6 +35,9 @@ ApplicationWindow {
       @param is_playing indicates whether the user wants the audio to play. */
   signal playingStateChanged(bool is_playing)
 
+  /** Emitted when the number of words might have been modified. */
+  signal numWordsDirty()
+
   menuBar: MenuBar {
     Menu {
       title: qsTr("&File")
@@ -101,18 +104,23 @@ ApplicationWindow {
     RowLayout {
       Text {
         id: file_name_display
-
         text: app.text_file_name
-
         font.pointSize: 12
       }
       Text {
         id: dirty_display
-
         text: {
           if (app.is_text_dirty) {" *"} else {""}
         }
-
+        font.pointSize: 12
+      }
+      Text {
+        id: words_num_display
+        text: app.num_words
+        font.pointSize: 12
+      }
+      Text {
+        text: " words"
         font.pointSize: 12
       }
     }
@@ -157,5 +165,6 @@ ApplicationWindow {
     // Connect the signals from the audio player to the main interface signals
     main_area.valueChanged.connect(audioPositionChanged)
     main_area.playingStateChanged.connect(playingStateChanged)
+    main_area.numWordsDirty.connect(numWordsDirty)
   }
 }

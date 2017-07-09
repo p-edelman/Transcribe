@@ -33,7 +33,7 @@ signals:
   void boost(bool is_up);
 
 protected:
-  /** The raise d'etre of this class: catching keys. */
+  /** The raison d'etre of this class: catching keys. */
   bool eventFilter(QObject* object, QEvent* event);
 };
 

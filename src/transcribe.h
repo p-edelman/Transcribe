@@ -43,6 +43,12 @@ class Transcribe : public QObject {
              READ getTextFileName
              NOTIFY textFileNameChanged)
 
+  /** The num_words property is a read-only property that holds the number of
+   *  words in the text area. */
+  Q_PROPERTY(uint num_words
+             READ getNumWords
+             NOTIFY numWordsChanged)
+
 public:
   Transcribe(QObject* parent = 0);
   ~Transcribe();
@@ -64,6 +70,9 @@ public:
   /** Return the file name (but not the path) of the transcript text file. */
   QString getTextFileName() const;
 
+  /** Return the number of words in the text editor. */
+  uint getNumWords();
+
 public slots:
   /** Save the text in the GUI to m_text_file.
       @return true if the file is saved, false otherwise. */
@@ -81,11 +90,15 @@ public slots:
 signals:
   void textDirtyChanged(bool is_dirty);
   void textFileNameChanged();
+  void numWordsChanged();
 
 private:
   /** Whether the text is dirty, thus the current edits in the transcription
    *  text are not changed. */
   bool m_is_text_dirty = false;
+
+  /** The number of words in the text area. */
+  uint m_num_words = 0;
 
   /** The main AudioPlayer instance for playing and seeking audio files. */
   std::shared_ptr<AudioPlayer> m_player;
@@ -137,6 +150,13 @@ private slots:
    *  @param allow_text_only if false, the history item will only be saved if
    *                         the audio is availaible. */
   void saveHistory(bool allow_text_only = false);
+
+  /** Count the number of words in the text area.
+   *  This is a naïve count; everything between space characters is regarded a
+   *  word.
+   *  When the number of words is changed, the numWordsChanged() signal is
+   *  emitted. */
+  void countWords();
 };
 
 #endif // TRANSCRIBE_H

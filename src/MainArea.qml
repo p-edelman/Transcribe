@@ -18,7 +18,14 @@ Item {
       @param is_playing indicates whether the user wants the audio to play. */
   signal playingStateChanged(bool is_playing)
 
+  /** Emitted when the number of words might have been modified. */
+  signal numWordsDirty()
+
   id: main_area
+
+  // Vars needed to determine when we should recount words
+  property bool in_word: false;     // While typing, tracks whether we're in a word at the moment
+  property int  prev_text_length: 0 // The number of chars in the text the last time we looked
 
   /** Slider and visual controls to control the audio. */
   Item {
@@ -164,8 +171,35 @@ Item {
       flickableDirection: Flickable.VerticalFlick
     }
 
-    // Set the text to dirty status whenever it changes
-    onTextChanged: app.is_text_dirty = true
+    onTextChanged: {
+      // Set the text to dirty status whenever it changes
+      app.is_text_dirty = true
+
+      // We don't want to do a (mildly expensive) word recount for every
+      // character, so we have to be a bit smart.
+
+      // Figure out if the cursor position we're at is in a word or in a space
+      var left_char   = text_area.text[text_area.cursorPosition - 1]
+      var now_in_word = true
+      if (left_char === ' ' || left_char === '\n' || left_char === '\t') {
+        now_in_word = false
+      }
+
+      if (text_area.text.length - prev_text_length != 1) {
+        // If more than one character was added or if characters were removed,
+        // do a recount
+        main_area.numWordsDirty()
+      } else {
+        // When transitioning form word to space of vice versa, do a recount.
+        if ((!in_word && now_in_word) || (in_word && !now_in_word)) {
+          main_area.numWordsDirty()
+        }
+      }
+
+      // Save the state for the next round
+      in_word          = now_in_word
+      prev_text_length = text_area.text.length
+    }
 
     // On loading, the text gets changed so the status gets set to dirty, even
     // though the user didn't change anything. So we have to reset it after

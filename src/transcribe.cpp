@@ -53,6 +53,10 @@ QString Transcribe::getTextFileName() const {
   return QString(tr("No transcript file loaded"));
 }
 
+uint Transcribe::getNumWords() {
+  return m_num_words;
+}
+
 void Transcribe::openAudioFile(const QString& path) {
   // Unload the current text file
   m_text_file = NULL;
@@ -201,6 +205,8 @@ void Transcribe::guiReady(QObject* root) {
           this,          SLOT(restoreHistory(int)));
   connect(m_main_window, SIGNAL(signalQuit()),
           this,          SLOT(close()));
+  connect(m_main_window, SIGNAL(numWordsDirty()),
+          this,          SLOT(countWords()));
 }
 
 void Transcribe::pickFiles() {
@@ -296,5 +302,33 @@ void Transcribe::saveHistory(bool allow_text_only) {
       (m_player->getDuration() > 0 || allow_text_only)) {
     m_history.add(QFileInfo(*m_text_file).absoluteFilePath(),
                   m_player->getFilePath());
+  }
+}
+
+void Transcribe::countWords() {
+  // Get the text from the editor
+  QString text = QQmlProperty::read(m_text_area, "text").toString();
+
+  // We simply iterate over all characters, and count every transition from a
+  // 'space' (space, newline, tab) to a 'non-space' a new word.
+  bool in_word   = false;
+  uint num_words = 0;
+  for (int i = 0; i < text.length(); i++) {
+    if (text[i].isSpace()) {
+      if (in_word) {
+        in_word = false;
+      }
+    } else {
+      if (!in_word) {
+        in_word = true;
+        num_words++;
+      }
+    }
+  }
+
+  // If the number of words has changed, emit a signal.
+  if (num_words != m_num_words) {
+    m_num_words = num_words;
+    emit numWordsChanged();
   }
 }
