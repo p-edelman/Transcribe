@@ -119,15 +119,26 @@ Item {
       }
     }
 
-    CheckBox {
-      id:   waiting_check;
-      text: qsTr("Waiting")
+    Rectangle {
+      id:            waiting_sign
+      anchors.right: parent.right
+      anchors.top:   slider.bottom
 
-      enabled: false
-      checked: player.state === PlayerState.WAITING ? true : false
+      width:  waiting_text.width  + 10
+      height: waiting_text.height + 10
 
-      anchors.left:           play_pause_btn.right
-      anchors.verticalCenter: play_pause_btn.verticalCenter
+      border.width: 1
+      radius:       4
+      color:        player.state === PlayerState.WAITING ? "pink"  : "transparent"
+      border.color: player.state === PlayerState.WAITING ? "black" : "transparent"
+
+      Text {
+        id:               waiting_text
+        anchors.centerIn: parent
+
+        text:  qsTr("Waiting")
+        color: player.state === PlayerState.WAITING ? "black": "transparent"
+      }
     }
   }
 
