@@ -101,31 +101,30 @@ ApplicationWindow {
   }
 
   statusBar: StatusBar {
-    Text {
-      id: file_name_display
-      text: app.text_file_name
-      font.pointSize: 12
-      anchors.left: parent.left
-    }
-    Text {
-      id: dirty_display
-      text: {
-        if (app.is_text_dirty) {" *"} else {""}
+    RowLayout { // We use a single to make the status bar auto scale to its contents
+      anchors.fill: parent
+
+      Text {
+        id:   file_name_display
+        text: app.text_file_name
       }
-      font.pointSize: 12
-      anchors.left: file_name_display.right
-    }
-    Text {
-      id: words_num_display
-      text: app.num_words
-      font.pointSize: 12
-      anchors.right: words_text_display.left
-    }
-    Text {
-      id: words_text_display
-      text: " words"
-      font.pointSize: 12
-      anchors.right: parent.right
+      Text {
+        id: dirty_display
+        text: {
+          if (app.is_text_dirty) {" *"} else {""}
+        }
+      }
+      Item {
+        Layout.fillWidth: true // Right align the word count
+      }
+      Text {
+        id:   words_num_display
+        text: app.num_words
+      }
+      Text {
+        id:   words_text_display
+        text: " words"
+      }
     }
   }
 
