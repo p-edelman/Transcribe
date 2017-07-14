@@ -3,6 +3,7 @@ import QtQuick.Controls 1.4
 import QtQuick.Controls.Styles 1.4
 
 import AudioPlayer 1.0
+import "Constants.js" as Constants
 
 /** The main part of the app, with audio controls and a text area to type in.
     This component purely takes care of the UI side of things; it emits signals
@@ -31,9 +32,12 @@ Item {
   Item {
     id: media_controls
 
-    anchors.top:   parent.top
-    anchors.left:  parent.left
-    anchors.right: parent.right
+    anchors.top:         parent.top
+    anchors.left:        parent.left
+    anchors.right:       parent.right
+    anchors.leftMargin:  Constants.margin
+    anchors.rightMargin: Constants.margin
+    anchors.topMargin:   Constants.margin
 
     implicitHeight: slider.height + play_pause_btn.height
 
@@ -146,10 +150,11 @@ Item {
     id:         text_area
     objectName: "text_area"
 
-    anchors.top:    media_controls.bottom
-    anchors.right:  parent.right
-    anchors.bottom: parent.bottom
-    anchors.left:   parent.left
+    anchors.top:       media_controls.bottom
+    anchors.right:     parent.right
+    anchors.bottom:    parent.bottom
+    anchors.left:      parent.left
+    anchors.topMargin: Constants.margin
 
     // Text input seems to be somewhat borked at the moment on touch based
     // platforms (or at least Android). Touch is registered as a mouse click,

@@ -4,5 +4,6 @@
         <file alias="window_icon">../resources/icon/window/icon.png</file>
         <file>SettingsGUI.qml</file>
         <file>MainArea.qml</file>
+        <file>Constants.js</file>
     </qresource>
 </RCC>
