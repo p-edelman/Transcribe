@@ -129,8 +129,8 @@ Item {
 
       border.width: 1
       radius:       4
-      color:        player.state === PlayerState.WAITING ? "pink"  : "transparent"
-      border.color: player.state === PlayerState.WAITING ? "black" : "transparent"
+      color:        player.state === PlayerState.WAITING ? "lightgreen" : "transparent"
+      border.color: player.state === PlayerState.WAITING ? "black"      : "transparent"
 
       Text {
         id:               waiting_text
