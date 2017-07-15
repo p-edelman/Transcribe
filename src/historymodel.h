@@ -20,7 +20,7 @@ struct FilePaths {
  *  is presented first.
  *  History items consist of a path to a text file and a path to the associated
  *  audio file. Each text file can occur just once on the list, while audio
- *  files can theoreticall be associated with multiple text files. */
+ *  files can theoretically be associated with multiple text files. */
 class HistoryModel : public QAbstractListModel {
   Q_OBJECT
 

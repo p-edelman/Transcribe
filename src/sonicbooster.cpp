@@ -128,7 +128,7 @@ qreal SonicBooster::getMaxFactor(qreal factor,
 
   // Create a reverse cumulative count of the number of samples for the
   // relevant part of the spectrum (everything between the cutoff and the
-  // max allowable value.
+  // max allowable value).
   for (int i = cutoff; i < std::numeric_limits<word_type>::max(); i++) {
     m_spectrogram->data()[i] = 0;
   }
