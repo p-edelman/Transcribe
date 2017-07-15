@@ -87,7 +87,7 @@ bool SonicBooster::boostAudioBuffer(const word_type* data, int num_samples) {
 
   if (factor != 1.0) {
     // If we amplify the audio signal, we need to check if the amount of clipped
-    // samples is acceptible (smaller than ten percent).
+    // samples is acceptible (smaller than five percent).
     if (factor > 1.0) {
       factor = getMaxFactor<word_type>(factor, data, num_samples);
     }
@@ -140,8 +140,8 @@ qreal SonicBooster::getMaxFactor(qreal factor,
   }
 
   // Now we can stepwise scale down the boost factor until the number of
-  // clipped samples falls below ten percent.
-  int fraction = num_samples / 10;
+  // clipped samples falls below five percent.
+  int fraction = num_samples / 20;
   while (m_spectrogram->data()[cutoff] > fraction) {
     factor -= 0.1;
     cutoff = std::numeric_limits<word_type>::max() / factor;
@@ -167,7 +167,6 @@ void SonicBooster::switchSignedness(const from_type* in_buffer,
 
 void SonicBooster::adjustDataBufferSize(const QAudioBuffer& buffer) {
   if (buffer.byteCount() > m_data_max_bytes) {
-    qDebug() << "Resizing buffer";
     m_data_max_bytes = buffer.byteCount();
     m_data           = (char*)realloc(m_data,
                                       m_data_max_bytes);
