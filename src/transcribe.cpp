@@ -245,15 +245,15 @@ void Transcribe::pickFiles() {
   // Recycle the file dialog to let the user pick a text file for the
   // transcript. As a file suggestion, we base a txt file on the current audio
   // file.
-  QFileInfo info(dlg.selectedFiles().at(0));
-  QString suggestion = info.absolutePath() + "/" + info.baseName() + ".txt";
   dlg.setWindowTitle(tr("Pick a text file for the transcript"));
   dlg.setNameFilter(tr("Text files (*.txt)"));
   dlg.setFileMode(QFileDialog::AnyFile);
   dlg.setAcceptMode(QFileDialog::AcceptSave);
   dlg.setOption(QFileDialog::DontConfirmOverwrite, true);
   dlg.setLabelText(QFileDialog::Accept, tr("Open/Create"));
-  dlg.selectFile(suggestion);
+  QFileInfo info(dlg.selectedFiles().at(0));
+  dlg.setDirectory(info.absolutePath());
+  dlg.selectFile(info.baseName() + ".txt");
   if (dlg.exec() == QDialog::Rejected || dlg.selectedFiles().count() != 1) {
     return;
   }
