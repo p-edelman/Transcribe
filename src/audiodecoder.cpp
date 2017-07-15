@@ -55,7 +55,7 @@ bool AudioDecoder::isIntercepting() {
 QString AudioDecoder::getMediaPath() {
   if (m_is_native_wav) {
     if (m_file) {
-      return m_file->symLinkTarget();
+      return QFileInfo(*m_file).absoluteFilePath();
     }
   } else {
     if (!media().isNull()) {

@@ -10,6 +10,7 @@
 #include <QAudioFormat>
 #include <QAudioProbe>
 #include <QFile>
+#include <QFileInfo>
 #include <QMediaContent>
 #include <QUrl>
 #include <QtEndian>
