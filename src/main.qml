@@ -103,6 +103,7 @@ ApplicationWindow {
   statusBar: StatusBar {
     RowLayout { // We use a single to make the status bar auto scale to its contents
       anchors.fill: parent
+      spacing:      0
 
       Text {
         id:   file_name_display
