@@ -133,14 +133,14 @@ Item {
 
       border.width: 1
       radius:       4
-      color:        player.state === PlayerState.WAITING ? "lightgreen" : "transparent"
-      border.color: player.state === PlayerState.WAITING ? "black"      : "transparent"
+      color:        player.state === PlayerState.WAITING ? "yellow" : "transparent"
+      border.color: player.state === PlayerState.WAITING ? "black"  : "transparent"
 
       Text {
         id:               waiting_text
         anchors.centerIn: parent
 
-        text:  qsTr("Waiting")
+        text:  qsTr("Hold")
         color: player.state === PlayerState.WAITING ? "black": "transparent"
       }
     }
