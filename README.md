@@ -17,7 +17,13 @@ The app is written using het Qt framework and is tested on Linux, Android (see b
 
 ## Status
 
-The second stable release, codenamed 'Bad Wolf' is totally usable, though somewhat rough around the edges. You can find the Android version [in the Play Store](https://play.google.com/store/apps/details?id=org.mrpi.transcribe), or use the tag 'badwolf' to check out the Git repository.
+The third stable release, codenamed 'Cyberman' is totally suited for daily usage. Please select your platform:
+
+* [Linux AppImage](https://github.com/p-edelman/Transcribe/releases/download/cyberman/transcribe-cyberman.AppImage)
+* [Windows installer](https://github.com/p-edelman/Transcribe/releases/download/cyberman/TranscribeInstaller.exe)
+* [Android app from the Play Store](https://play.google.com/store/apps/details?id=org.mrpi.transcribe)
+
+If you want to build it yourself, you should checkout the tag 'cyberman' from Git.
 
 ### Android
 
