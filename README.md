@@ -17,7 +17,7 @@ The app is written using het Qt framework and is tested on Linux, Android (see b
 
 ## Status
 
-The second stable release, codenamed 'Bad Wolf' is totally usable, though somewhat rough around the edges. You can find the Android version [in the Play Store](https://play.google.com/store/apps/details?id=org.mrpi.transcribe), or use the tag 'badwolf' to check out the Git repository.
+The third stable release, codenamed 'Cyberman' is totally suited for daily (usage). You can find the Android version [in the Play Store](https://play.google.com/store/apps/details?id=org.mrpi.transcribe), or use the tag 'cyberman' to check out the Git repository.
 
 ### Android
 
