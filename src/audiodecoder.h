@@ -75,7 +75,7 @@ signals:
 
 private slots:
   /** Indicate that it's time to check the status of the QAudioOutput buffer
-   *  and send new data if it will fit. This is the 'heartbeat' of the class,
+   *  and send a much data to it that fits. This is the 'heartbeat' of the class,
    *  and it is fired by the notify() signal of QAudioOutput. */
   void checkBuffer();
 

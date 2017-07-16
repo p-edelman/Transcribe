@@ -171,8 +171,8 @@ void AudioDecoder::setPosition(qint64 position) {
 void AudioDecoder::checkBuffer() {
   if (m_audio_out != NULL && m_state_when_native == QMediaPlayer::PlayingState) {
 
-    if (m_audio_out->bytesFree() >= m_audio_out->periodSize()) {
-      // We can append data to the buffer again, so send some new data
+    while (m_audio_out->bytesFree() >= m_audio_out->periodSize()) {
+      // We can append data to the buffer, so send some new data
       QByteArray data = m_file->read(m_audio_out->periodSize());
       if (data.length() > 0) {
         QAudioBuffer buffer(data, m_format, m_time);
@@ -183,6 +183,7 @@ void AudioDecoder::checkBuffer() {
       if (data.length() < m_audio_out->periodSize()) {
         emit mediaStatusChanged(EndOfMedia);
         m_state_when_native = QMediaPlayer::StoppedState;
+        break;
       }
     }
   }
@@ -210,10 +211,12 @@ void AudioDecoder::initAudioOutput(const QAudioFormat& format,
     // to make sure it is kept full. Therefore, we connect to the notify() signal
     // and set the interval time to half that of the amount of time we sent with
     // each buffer.
+    // We specifically ask for a QueuedConnection because we don't want checkBuffer()
+    // to be called when it is still running.
     connect(m_audio_out, SIGNAL(notify()),
-            this,        SLOT(checkBuffer()));
+            this,        SLOT(checkBuffer()), Qt::QueuedConnection);
     m_audio_out->setNotifyInterval(
-          m_format.durationForBytes(m_audio_out->periodSize()) / 2000); // us->ms
+            m_format.durationForBytes(m_audio_out->periodSize()) / 20000); // us->ms
   }
 }
 

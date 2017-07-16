@@ -106,6 +106,7 @@ void AudioPlayer::setState(PlayerState state) {
 
   if (state != m_state) {
     m_state = state;
+    emit stateChanged();
 
     // Take care of the audio
     if (m_state == PlayerState::PAUSED) {
@@ -119,8 +120,6 @@ void AudioPlayer::setState(PlayerState state) {
     } else if (m_state == PlayerState::WAITING) {
       m_decoder.pause();
     }
-
-    emit stateChanged();
   }
 }
 
