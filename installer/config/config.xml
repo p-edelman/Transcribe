@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Installer>
+  <Name>Transcribe</Name>
+  <Version>3 'Cyberman'</Version>
+  <Title>Transcribe</Title>
+  <Publisher>Pieter Edelman</Publisher>
+  <StartMenuDir>Transcribe</StartMenuDir>
+  <TargetDir>@ApplicationsDir@/Transcribe</TargetDir>
+</Installer>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package>
+  <DisplayName>Transcribe</DisplayName>
+  <Description>The main Transcribe application.</Description>
+  <Version>3.0</Version>
+  <ReleaseDate>2017-07-16</ReleaseDate>
+  <Licenses>
+    <License name="GNU General Public License v3" file="gpl-3.0.txt" />
+  </Licenses>
+  <Default>true</Default>
+  <Script>installscript.qs</Script>
+</Package>
