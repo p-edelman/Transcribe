@@ -34,6 +34,13 @@ qint64 AudioDecoder::position() const {
   return QMediaPlayer::position();
 }
 
+QMediaPlayer::State AudioDecoder::state() const {
+  if (m_is_native_wav) {
+    return m_state_when_native;
+  }
+  return QMediaPlayer::state();
+}
+
 QMediaPlayer::MediaStatus AudioDecoder::mediaStatus() const {
   if (m_is_native_wav) {
     if (m_file->pos() == m_file->size()) {
@@ -117,6 +124,7 @@ void AudioDecoder::setMedia(const QUrl& path) {
 
 void AudioDecoder::pause() {
   if (m_is_native_wav) {
+    m_state_when_native = QMediaPlayer::PausedState;
     m_audio_out->suspend();
   }
   QMediaPlayer::pause();
@@ -125,6 +133,7 @@ void AudioDecoder::pause() {
 void AudioDecoder::play() {
   if (m_is_native_wav) {
     if (m_audio_out != NULL) {
+      m_state_when_native = QMediaPlayer::PlayingState;
       if (m_audio_out->state() == QAudio::SuspendedState) {
         // We're unpausing
         m_audio_out->resume();
@@ -156,7 +165,8 @@ void AudioDecoder::setPosition(qint64 position) {
 }
 
 void AudioDecoder::checkBuffer() {
-  if (m_audio_out != NULL) {
+  if (m_audio_out != NULL && m_state_when_native == QMediaPlayer::PlayingState) {
+
     if (m_audio_out->bytesFree() >= m_audio_out->periodSize()) {
       // We can append data to the buffer again, so send some new data
       QByteArray data = m_file->read(m_audio_out->periodSize());
@@ -168,6 +178,7 @@ void AudioDecoder::checkBuffer() {
       }
       if (data.length() < m_audio_out->periodSize()) {
         emit mediaStatusChanged(EndOfMedia);
+        m_state_when_native = QMediaPlayer::StoppedState;
       }
     }
   }

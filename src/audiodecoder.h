@@ -43,6 +43,7 @@ public:
 
   qint64 duration() const;
   qint64 position() const;
+  QMediaPlayer::State state() const;
 
   MediaStatus mediaStatus() const;
 
@@ -126,6 +127,9 @@ private:
   /** Indicate if we're currently working with a wav file that we're playing
    *  natively. Otherwise QMediaPlayer is playing the current file. */
   bool m_is_native_wav = false;
+
+  /** The QMediaPlayer::State when doing native wav processing. */
+  QMediaPlayer::State m_state_when_native = QMediaPlayer::StoppedState;
 
   /** The format parameters of the audio file, if we parsed a wav file natively.
    */
