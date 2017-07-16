@@ -1,6 +1,9 @@
 #include "audiodecoder.h"
 
 AudioDecoder::AudioDecoder(QObject* parent) : QMediaPlayer(parent) {
+#if defined(Q_OS_WIN) || defined(Q_OS_ANDROID)
+  m_prefer_native_wav = true;
+#else
   // Try to set up an audio probe to intercept the raw audio data
   m_probe = new QAudioProbe(parent);
   if (m_probe->setSource(this)) {
@@ -12,6 +15,7 @@ AudioDecoder::AudioDecoder(QObject* parent) : QMediaPlayer(parent) {
     m_probe->deleteLater(); m_probe = NULL;
     m_prefer_native_wav = true;
   }
+#endif
 }
 
 AudioDecoder::~AudioDecoder() {
