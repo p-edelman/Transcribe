@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
-<manifest package="org.mrpi.transcribe" xmlns:android="http://schemas.android.com/apk/res/android" android:versionName="Cyberman" android:versionCode="300" android:installLocation="auto">
+<manifest package="org.mrpi.transcribe" xmlns:android="http://schemas.android.com/apk/res/android" android:versionName="Cyberman" android:versionCode="302" android:installLocation="auto">
     <application android:hardwareAccelerated="true" android:name="org.qtproject.qt5.android.bindings.QtApplication" android:label="Transcribe" android:icon="@drawable/icon">
-        <activity android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|layoutDirection|locale|fontScale|keyboard|keyboardHidden|navigation" android:name="org.qtproject.qt5.android.bindings.QtActivity" android:label="Transcribe" android:screenOrientation="unspecified" android:launchMode="singleTop">
+        <activity android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|layoutDirection|locale|fontScale|keyboard|keyboardHidden|navigation" android:name="org.mrpi.transcribe.TranscribeActivity" android:label="Transcribe" android:screenOrientation="unspecified" android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

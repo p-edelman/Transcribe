@@ -1,6 +1,6 @@
 TEMPLATE = app
 
-QT += qml quick multimedia widgets
+QT += qml quick multimedia widgets androidextras
 CONFIG += c++11
 
 SOURCES += main.cpp \
@@ -37,7 +37,7 @@ DISTFILES += \
     ../resources/android/res/values/libs.xml \
     ../resources/android/build.gradle \
     ../resources/android/gradle/wrapper/gradle-wrapper.properties \
-    ../resources/android/gradlew.bat
+    ../resources/android/src/org/mrpi/transcribe/TranscribeActivity.java
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/../resources/android
 

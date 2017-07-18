@@ -32,8 +32,9 @@ The experience on Android is less polished than on the desktop, so to speak. Thi
 You need to take into account:
 
 * You need an external keyboard!
-* You need to set the 'Storage' permission. For some reason, this isn't always asked and you need to enable it manually (go the the settings of your phone, choose the app list, find Transcribe, go to permissions, enable)
-* Even so, the file open dialog is hard to navigate and sometimes doesn't show the files you need the first time. If you can't find your files, you might need to type in `/mnt/sdcard` in the selection and press 'Open' to view the contents of your phone memory.
+* The app works by opening files from the SD card or internal storage, just like a desktop application and rather unlike a mobile app
+* For this you need to enable the 'Storage' permission (the app should ask for this, but if it is somehow not activated: go the the settings of your device, choose the app overview, find Transcribe, go to permissions, enable)
+* Even so, the file open dialog is hard to navigate and sometimes doesn't show the files you need the first time. If you can't find your files, you might need to type in `/mnt/sdcard` in the selection and press 'Open' to view the contents of your phone memory
 * Audio boosting only works for .wav files
 
 ### Windows 10
