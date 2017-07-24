@@ -30,6 +30,10 @@ private Q_SLOTS:
    *  rise to the top of the list. */
   void refreshItem();
 
+  /** If the timestamp on an entry is changed, it should overwrite the previous
+   *  timestamp. */
+  void refreshTime();
+
   /** If an item with a given text file already exists but is added again with
    *  a different audio file, the item should be replaced with the new audio
    *  file. */

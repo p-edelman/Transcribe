@@ -9,7 +9,7 @@ Transcribe::Transcribe(QObject* parent) :
   connect(m_player.get(), SIGNAL(error(const QString&)),
           this,           SLOT(errorDetected(const QString&)));
   connect(m_player.get(), SIGNAL(durationChanged()),
-          this,           SLOT(saveHistory()));
+          this,           SLOT(mediaDurationChanged()));
 
   // Expose the various objects to the gui for setting and getting properties
   // and such
@@ -70,7 +70,6 @@ void Transcribe::openAudioFile(const QString& path) {
 bool Transcribe::saveText() {
   if (!m_text_file) {
     // This shouldn't happen because of the GUI. We silently ignore it
-    qDebug() << "There is no text file loaded";
     return false;
   }
 
@@ -95,6 +94,9 @@ bool Transcribe::saveText() {
 void Transcribe::errorDetected(const QString& message) {
   // Pause the audio
   m_player->togglePlayPause(false);
+
+  // If we were loaded with a position to restore, invalidate it
+  m_restore_pos = 0;
 
   // Close any open modal windows. This is especially useful for an error with
   // audio loading, in which case the text file dialog is still active.
@@ -149,6 +151,8 @@ void Transcribe::close() {
     settings.endGroup();\
     settings.sync();
 #endif
+
+    saveHistory();
 
     QApplication::quit();
   }
@@ -209,6 +213,21 @@ void Transcribe::guiReady(QObject* root) {
           this,          SLOT(countWords()));
 }
 
+void Transcribe::mediaDurationChanged() {
+  if (m_player->getDuration() > 0) {
+
+    if (m_restore_pos > 0) {
+      // We were loaded with a position to restore
+      m_player->setPosition(m_restore_pos);
+      m_restore_pos = 0;
+    }
+
+    // Now that the audio file is fully loaded, we can save the state (and send
+    // the current configuration to the top).
+    saveHistory();
+  }
+}
+
 void Transcribe::pickFiles() {
   QFileDialog dlg;
 
@@ -240,6 +259,7 @@ void Transcribe::pickFiles() {
     return;
   }
 
+  m_restore_pos = 0;
   openAudioFile(dlg.selectedFiles().at(0));
 
   // Recycle the file dialog to let the user pick a text file for the
@@ -259,8 +279,6 @@ void Transcribe::pickFiles() {
   }
 
   openTextFile(dlg.selectedFiles().at(0));
-
-  saveHistory();
 }
 
 void Transcribe::openTextFile(const QString& path) {
@@ -298,22 +316,23 @@ void Transcribe::openTextFile(const QString& path) {
 }
 
 void Transcribe::restoreHistory(int index) {
+  saveHistory();
+
   QModelIndex model_index = m_history.index(index, 0);
+  m_restore_pos = model_index.data(HistoryModel::AudioPostionRole).toUInt();
   QString audio_file_path = model_index.data(HistoryModel::AudioFileRole).toString();
   QString text_file_path  = model_index.data(HistoryModel::TextFileRole).toString();
   openAudioFile(audio_file_path);
   openTextFile(text_file_path);
-
-  // If the text file was succesfully opened, save this as a history item again
-  // (thus sending it to the top)
-  saveHistory(true);
 }
 
 void Transcribe::saveHistory(bool allow_text_only) {
   if ((m_text_file) &&
       (m_player->getDuration() > 0 || allow_text_only)) {
+
     m_history.add(QFileInfo(*m_text_file).absoluteFilePath(),
-                  m_player->getFilePath());
+                  m_player->getFilePath(),
+                  m_player->getPosition());
   }
 }
 

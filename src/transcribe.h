@@ -122,6 +122,12 @@ private:
   /** The history items. */
   HistoryModel m_history;
 
+  /** If we're opening an audio file from history, it has an associated
+   *  audio position. We have to wait until the AudioPlayer has loaded the file
+   *  and has emitted the durationChanged() signal before we can set this
+   *  position, so we'll save it until this has happened. */
+  qint64 m_restore_pos = 0;
+
   /** The keys for the entries in the configuration file. */
   const QString CFG_GROUP_SCREEN        = "screen";
   const QString CFG_SCREEN_SIZE         = "size";
@@ -132,6 +138,11 @@ private slots:
   /** Callback for when the GUI is initialized and ready. It sets up all the
       bindings with the GUI. */
   void guiReady(QObject* root);
+
+  /** Callback for when the AudioPlayer signals that the duration of the media
+   *  has changed. This is basically the callback for when an audio file has
+   *  loaded, since that is when the media duration changes. */
+  void mediaDurationChanged();
 
   /** Signal that the user wants to start with a new project. It will first open
    *  the audio file dialog, and then open the text file dialog. */

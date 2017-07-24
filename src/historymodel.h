@@ -11,13 +11,14 @@
 
 #include <vector>
 
-struct FilePaths {
-  QString text;
-  QString audio;
+struct HistoryEntry {
+  QString text_file;
+  QString audio_file;
+  qint64  audio_pos;
 };
 
 /** Save the history of opened files, in the order of opening (the latest file
- *  is presented first.
+ *  is presented first).
  *  History items consist of a path to a text file and a path to the associated
  *  audio file. Each text file can occur just once on the list, while audio
  *  files can theoretically be associated with multiple text files. */
@@ -28,7 +29,8 @@ public:
   /** Data roles for querying the appropriate paths with the data() method. */
   enum HistoryRoles {
     AudioFileRole = Qt::UserRole + 1,
-    TextFileRole
+    TextFileRole,
+    AudioPostionRole
   };
 
   /** Instantiate the model and restore the history from the config file. */
@@ -44,14 +46,14 @@ public:
    *  written to the config file.
    *  @param text_file_path
    *  @param audio_file_path */
-  void add(QString text_file_path, QString audio_file_path);
+  void add(QString text_file_path, QString audio_file_path, qint64 audio_pos);
 
 private:
   /** Save the history to the config file. */
   void saveHistory();
 
   /** The actual history. The items are saved in order using a std::vector. */
-  std::vector<FilePaths> m_paths;
+  std::vector<HistoryEntry> m_items;
 
   /** The name of the group in the config file. */
   const QString CFG_GROUP = "history";
