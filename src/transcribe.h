@@ -13,6 +13,7 @@
 #include <QSaveFile>
 #include <QScreen>
 #include <QSettings>
+#include <QStandardPaths>
 #include <QtQml>
 #include <QQuickView>
 

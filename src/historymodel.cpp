@@ -81,6 +81,19 @@ void HistoryModel::add(QString text_file_path,
   saveHistory();
 }
 
+bool HistoryModel::textFileForAudio(const QString& audio_path,
+                                    QString& text_path) {
+  for (HistoryEntry const& entry : m_items) {
+    if (entry.audio_file == audio_path) {
+      text_path.clear();
+      text_path.append(entry.text_file);
+      return true;
+    }
+  }
+
+  return false;
+}
+
 void HistoryModel::saveHistory() {
   QSettings settings;
   settings.beginGroup(CFG_GROUP);

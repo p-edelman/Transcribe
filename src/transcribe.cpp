@@ -266,6 +266,27 @@ void Transcribe::pickFiles() {
   m_restore_pos = 0;
   openAudioFile(dlg.selectedFiles().at(0));
 
+#ifdef Q_OS_ANDROID
+  QString audio_path = dlg.selectedFiles().at(0);
+  QString text_path;
+
+  // Check if the audio file is in our history
+  if (!m_history.textFileForAudio(audio_path, text_path)) {
+    // If not, create a new file in the app private folder based on the audio
+    // file name. If a text file with the name already exists, append a number
+    // to it.
+    QString base_name = QFileInfo(audio_path).baseName();
+    QDir home = QDir(QStandardPaths::writableLocation((QStandardPaths::AppDataLocation)));
+    text_path = home.filePath(base_name + ".txt");
+    short counter = 1;
+    while (QFile::exists(text_path)) {
+      text_path = home.filePath(QString("%1_%2.txt").arg(base_name).arg(counter, 2, 10, QChar('0')));
+      counter++;
+    }
+  }
+
+  openTextFile(text_path);
+#else
   // Recycle the file dialog to let the user pick a text file for the
   // transcript. As a file suggestion, we base a txt file on the current audio
   // file.
@@ -283,6 +304,12 @@ void Transcribe::pickFiles() {
   }
 
   openTextFile(dlg.selectedFiles().at(0));
+#endif
+
+  // saveHistory() is called when the audio file has finished loading, but we
+  // need do it here as well because openTextFile() might return after the audio
+  // file has finished loading. The joys of concurrency ...
+  saveHistory();
 }
 
 #ifdef Q_OS_ANDROID

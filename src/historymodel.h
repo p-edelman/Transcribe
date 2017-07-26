@@ -41,12 +41,15 @@ public:
   QVariant data(const QModelIndex& index,
                 int role = Qt::DisplayRole) const override;
 
-public:
   /** Add an item to the list. If this changes the list, the changes are
    *  written to the config file.
    *  @param text_file_path
    *  @param audio_file_path */
   void add(QString text_file_path, QString audio_file_path, qint64 audio_pos);
+
+  /** Check if a file is known for the given audio file. If so, text_path
+   *  will be set to the path to the text file, and true is returned. */
+  bool textFileForAudio(const QString& audio_path, QString& text_path);
 
 private:
   /** Save the history to the config file. */
