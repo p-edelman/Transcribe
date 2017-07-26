@@ -203,6 +203,10 @@ void Transcribe::guiReady(QObject* root) {
           m_player.get(), SLOT(togglePlayPause(bool)));
   connect(m_main_window, SIGNAL(saveText()),
           this,          SLOT(saveText()));
+#ifdef Q_OS_ANDROID
+  connect(m_main_window, SIGNAL(shareText()),
+          this,          SLOT(shareText()));
+#endif
   connect(m_main_window, SIGNAL(pickFiles()),
           this,          SLOT(pickFiles()));
   connect(m_main_window, SIGNAL(historySelected(int)),
@@ -280,6 +284,17 @@ void Transcribe::pickFiles() {
 
   openTextFile(dlg.selectedFiles().at(0));
 }
+
+#ifdef Q_OS_ANDROID
+  void Transcribe::shareText() {
+    QAndroidJniObject::callStaticMethod<void>(
+          "org/mrpi/Transcribe/TranscriptionSharer",
+          "shareTranscription",
+          "(Landroid/app/Activity;Ljava/lang/String;)V",
+          QtAndroid::androidActivity().object(),
+          QAndroidJniObject::fromString(QQmlProperty::read(m_text_area, "text").toString()).object());
+  }
+#endif
 
 void Transcribe::openTextFile(const QString& path) {
   // Because the way the UI works, we can assume that the text is not dirty

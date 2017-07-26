@@ -27,6 +27,10 @@ ApplicationWindow {
   /** Signals that the user wants to save the text. */
   signal saveText()
 
+  /** Signals that the text should be shared with an external app (Android
+      only). */
+  signal shareText()
+
   /** Emitted when the user changes the position in the audio stream.
       @param seconds the time of the slider in seconds */
   signal audioPositionChanged(int seconds)
@@ -66,6 +70,13 @@ ApplicationWindow {
         enabled: {
           if (app.is_text_dirty) {true} else {false}
         }
+      }
+      MenuItem {
+        // Android only
+        visible:     Qt.platform.os == "android"
+        id:          android_share_menu_item
+        text:        qsTr("Export text")
+        onTriggered: main_window.shareText()
       }
       Menu {
         id: history_submenu

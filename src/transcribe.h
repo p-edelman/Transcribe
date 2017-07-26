@@ -16,6 +16,11 @@
 #include <QtQml>
 #include <QQuickView>
 
+#ifdef Q_OS_ANDROID
+#include <QtAndroid>
+#include <QAndroidJniObject>
+#endif
+
 #include <functional>
 #include <memory>
 
@@ -147,6 +152,10 @@ private slots:
   /** Signal that the user wants to start with a new project. It will first open
    *  the audio file dialog, and then open the text file dialog. */
   void pickFiles();
+
+#ifdef Q_OS_ANDROID
+  void shareText();
+#endif
 
   /** Callback for when the user has picked an item from the history menu. It
    *  will query m_history for the proper file names and load them.
