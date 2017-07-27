@@ -51,6 +51,10 @@ public:
    *  will be set to the path to the text file, and true is returned. */
   bool textFileForAudio(const QString& audio_path, QString& text_path);
 
+  /** Delete all entries that contain the give file path, which may be an
+   *  audio or text file based on the 'by' parameter. */
+  void del(HistoryRoles by, const QFile* file);
+
 private:
   /** Save the history to the config file. */
   void saveHistory();

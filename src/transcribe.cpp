@@ -206,6 +206,8 @@ void Transcribe::guiReady(QObject* root) {
 #ifdef Q_OS_ANDROID
   connect(m_main_window, SIGNAL(shareText()),
           this,          SLOT(shareText()));
+  connect(m_main_window, SIGNAL(deleteText()),
+          this,          SLOT(deleteText()));
 #endif
   connect(m_main_window, SIGNAL(pickFiles()),
           this,          SLOT(pickFiles()));
@@ -320,6 +322,38 @@ void Transcribe::pickFiles() {
           "(Landroid/app/Activity;Ljava/lang/String;)V",
           QtAndroid::androidActivity().object(),
           QAndroidJniObject::fromString(QQmlProperty::read(m_text_area, "text").toString()).object());
+  }
+
+  void Transcribe::deleteText() {
+    if (m_text_file) {
+      // Let's ask for confirmation first
+      QMessageBox box;
+      box.setText(tr("Do you really want to delete the transcription text?"));
+      box.setInformativeText(tr("There's no way to get it back.\nThe audio file will not be deleted."));
+      box.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
+
+      if (box.exec() == QMessageBox::Yes) {
+        // Delete the file from our history model
+        m_history.del(HistoryModel::TextFileRole, m_text_file);
+
+        // Clear and lock the text area
+        QQmlProperty::write(m_text_area,
+                            "text",
+                            QVariant::fromValue(QString()));
+        QQmlProperty::write(m_main_window,
+                            "is_editable",
+                            QVariant(false));
+        setTextDirty(false);
+
+        // Actually remove the file from disk
+        m_text_file->remove();
+
+        // Update the text file parameter
+        m_text_file->deleteLater();
+        m_text_file = NULL;
+        emit textFileNameChanged();
+      }
+    }
   }
 #endif
 

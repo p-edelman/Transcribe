@@ -94,6 +94,27 @@ bool HistoryModel::textFileForAudio(const QString& audio_path,
   return false;
 }
 
+void HistoryModel::del(HistoryRoles by, const QFile* file) {
+  // Get the absolute path for the given file
+  QString file_path = QFileInfo(*file).absoluteFilePath();
+
+  // Iterate over the history items and remove all matches
+  std::vector<HistoryEntry>::iterator it = m_items.begin();
+  while(it != m_items.end()) {
+    if (((by == HistoryRoles::AudioFileRole) && (it->audio_file == file_path)) ||
+        ((by == HistoryRoles::TextFileRole)  && (it->text_file  == file_path))) {
+      beginRemoveRows(QModelIndex(), it - m_items.begin(), it - m_items.begin());
+      it = m_items.erase(it);
+      endRemoveRows();
+    } else {
+      it++;
+    }
+  }
+
+  // Save the changes
+  saveHistory();
+}
+
 void HistoryModel::saveHistory() {
   QSettings settings;
   settings.beginGroup(CFG_GROUP);

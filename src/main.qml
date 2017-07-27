@@ -31,6 +31,8 @@ ApplicationWindow {
       only). */
   signal shareText()
 
+  signal deleteText()
+
   /** Emitted when the user changes the position in the audio stream.
       @param seconds the time of the slider in seconds */
   signal audioPositionChanged(int seconds)
@@ -77,6 +79,13 @@ ApplicationWindow {
         id:          android_share_menu_item
         text:        qsTr("Export text")
         onTriggered: main_window.shareText()
+      }
+      MenuItem {
+        // Android only
+        visible:     Qt.platform.os == "android"
+        id:          android_delete_menu_item
+        text:        qsTr("Delete text")
+        onTriggered: main_window.deleteText()
       }
       Menu {
         id: history_submenu

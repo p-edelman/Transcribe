@@ -155,7 +155,14 @@ private slots:
   void pickFiles();
 
 #ifdef Q_OS_ANDROID
+  /** Share the text of the currently opende file via an Android intent. */
   void shareText();
+
+  /** Delete the currently opened text file:
+   *  - close the file and unload it
+   *  - delete it from disk
+   *  - delete its history item. */
+  void deleteText();
 #endif
 
   /** Callback for when the user has picked an item from the history menu. It
