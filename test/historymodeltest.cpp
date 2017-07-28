@@ -91,6 +91,23 @@ void HistoryModelTest::refreshItem() {
   QCOMPARE(index.data(HistoryModel::AudioFileRole).toString(), m_audio_file2);
 }
 
+void HistoryModelTest::delItem() {
+  HistoryModel history;
+  history.add(m_text_file1, m_audio_file1, 0);
+  history.add(m_text_file2, m_audio_file2, 0);
+
+  QCOMPARE(history.rowCount(), 2);
+
+  history.del(HistoryModel::AudioFileRole, new QFile(m_audio_file2));
+  QCOMPARE(history.rowCount(), 1);
+  QModelIndex index = history.index(0, 0);
+  QCOMPARE(index.data(HistoryModel::TextFileRole).toString(),  m_text_file1);
+  QCOMPARE(index.data(HistoryModel::AudioFileRole).toString(), m_audio_file1);
+
+  history.del(HistoryModel::TextFileRole, new QFile(m_text_file1));
+  QCOMPARE(history.rowCount(), 0);
+}
+
 void HistoryModelTest::refreshTime() {
   HistoryModel history;
   history.add(m_text_file2, m_audio_file2, 0);

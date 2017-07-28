@@ -30,6 +30,10 @@ private Q_SLOTS:
    *  rise to the top of the list. */
   void refreshItem();
 
+  /** It should be possible to delete items from the history, either using the
+   *  audio file path as key or the text file path. */
+  void delItem();
+
   /** If the timestamp on an entry is changed, it should overwrite the previous
    *  timestamp. */
   void refreshTime();
