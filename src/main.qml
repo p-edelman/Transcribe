@@ -44,15 +44,37 @@ ApplicationWindow {
   /** Emitted when the number of words might have been modified. */
   signal numWordsDirty()
 
+  toolBar: ToolBar {
+    visible: Qt.platform.os == "android"
+    RowLayout {
+      anchors.fill: parent
+
+      ToolButton {
+        text:      qsTr("&Open audio")
+        enabled:   app.is_text_dirty ? false : true
+        onClicked: pickFiles()
+      }
+      ToolButton {
+        text:      qsTr("&Save transcription")
+        onClicked: main_window.saveText()
+      }
+      ToolButton {
+        text:      qsTr("Export transcription")
+        onClicked: main_window.shareText()
+      }
+    }
+  }
+
   menuBar: MenuBar {
     Menu {
       title: qsTr("&File")
 
       enabled: {
-        if (stack.depth == 1) {true} else {false}
+        if (stack.depth === 1) {true} else {false}
       }
 
       MenuItem {
+        visible: Qt.platform.os != "android"
         text: {
           if (app.is_text_dirty) {
             qsTr("Open audio and text (save text changes first)")
@@ -60,31 +82,21 @@ ApplicationWindow {
             qsTr("&Open audio and text")
           }
         }
-        enabled: {
-          if (app.is_text_dirty) {false} else {true}
-        }
+        enabled:     app.is_text_dirty ? false : true
         onTriggered: pickFiles()
       }
       MenuItem {
+        visible:     Qt.platform.os != "android"
         id:          save_text_menu_item
         text:        qsTr("&Save text")
         onTriggered: main_window.saveText()
-        enabled: {
-          if (app.is_text_dirty) {true} else {false}
-        }
-      }
-      MenuItem {
-        // Android only
-        visible:     Qt.platform.os == "android"
-        id:          android_share_menu_item
-        text:        qsTr("Export text")
-        onTriggered: main_window.shareText()
+        enabled:     app.is_text_dirty ? true : false
       }
       MenuItem {
         // Android only
         visible:     Qt.platform.os == "android"
         id:          android_delete_menu_item
-        text:        qsTr("Delete text")
+        text:        qsTr("Delete transcription")
         onTriggered: main_window.deleteText()
       }
       Menu {
