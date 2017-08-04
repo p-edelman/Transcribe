@@ -45,21 +45,28 @@ ApplicationWindow {
   signal numWordsDirty()
 
   toolBar: ToolBar {
+    // The toolbar provides the 'quick access' buttons on Android, for which
+    // especially the save button is important. For other platforms it would
+    // just take up space, so we hide it there.
     visible: Qt.platform.os == "android"
     RowLayout {
       anchors.fill: parent
 
-      ToolButton {
-        text:      qsTr("&Open audio")
+      Item {
+        Layout.fillWidth: true // Right align everything
+      }
+      AndroidToolButton {
+        text:      "\uE145"
         enabled:   app.is_text_dirty ? false : true
         onClicked: pickFiles()
       }
-      ToolButton {
-        text:      qsTr("&Save transcription")
+      AndroidToolButton {
+        text:      "\uE161"
+        enabled:   app.is_text_dirty ? true : false
         onClicked: main_window.saveText()
       }
-      ToolButton {
-        text:      qsTr("Export transcription")
+      AndroidToolButton {
+        text:      "\uE163"
         onClicked: main_window.shareText()
       }
     }

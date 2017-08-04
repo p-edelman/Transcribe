@@ -2,8 +2,10 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file alias="window_icon">../resources/icon/window/icon.png</file>
+        <file alias="fonts/MaterialIcons.ttf">../resources/fonts/MaterialIcons-Regular.ttf</file>
         <file>SettingsGUI.qml</file>
         <file>MainArea.qml</file>
         <file>Constants.js</file>
+        <file>AndroidToolButton.qml</file>
     </qresource>
 </RCC>
