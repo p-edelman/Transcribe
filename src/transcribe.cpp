@@ -158,6 +158,27 @@ void Transcribe::close() {
   }
 }
 
+#ifdef Q_OS_ANDROID
+void Transcribe::connectVirtualKeyboard() {
+  if (qApp->inputMethod()->isVisible()) {
+    // The virtual keyboard is visible. The only way to detect typing is by
+    // observing changes in the text area, the KeyCatcher doesn't respond to
+    // it.
+    connect(m_text_area, SIGNAL(textChanged()),
+            &m_keeper,   SLOT(keyTyped()));
+  } else {
+    // The virtual keyboard is not visible, so there's a physical keyboard that
+    // is intercepted by the KeyCatcher and listening to text changes as well
+    // would produce double signals.
+    // Listening to the physical keyboard has a bit broader scope than the
+    // virtual keyboard since it also responds to keyboard navigation and
+    // such.
+    disconnect(m_text_area, SIGNAL(textChanged()),
+               &m_keeper,   SLOT(keyTyped()));
+  }
+}
+#endif
+
 void Transcribe::guiReady(QObject* root) {
   m_main_window = qobject_cast<QWindow*>(root);
   m_text_area = m_main_window->findChild<QObject*>("text_area");
@@ -195,6 +216,13 @@ void Transcribe::guiReady(QObject* root) {
   connect(catcher,        SIGNAL(boost(bool)),
           m_player.get(), SLOT(boost(bool)));
   root->installEventFilter(catcher);
+#ifdef Q_OS_ANDROID
+  // On Android, we might connect the signals when using the virtual keyboard
+  // in addition to the signals from the physical keyboard.
+  connect(qApp->inputMethod(), SIGNAL(visibleChanged()),
+          this,                SLOT(connectVirtualKeyboard()));
+  connectVirtualKeyboard();
+#endif
 
   // Connect GUI events to their callbacks
   connect(m_main_window,  SIGNAL(audioPositionChanged(int)),

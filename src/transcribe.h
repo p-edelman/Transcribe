@@ -93,6 +93,14 @@ public slots:
    *  be saved. */
   void close();
 
+#ifdef Q_OS_ANDROID
+  /** Connect the TypingTimeLord to the proper signals based on whether the
+   *  virtual keyboard is present or not.
+   *  Should be called every time the visibility of the virtual keyboard
+   *  changes. */
+  void connectVirtualKeyboard();
+#endif
+
 signals:
   void textDirtyChanged(bool is_dirty);
   void textFileNameChanged();

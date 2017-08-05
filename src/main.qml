@@ -31,6 +31,7 @@ ApplicationWindow {
       only). */
   signal shareText()
 
+  /** Signals that the current text file should be deleted. */
   signal deleteText()
 
   /** Emitted when the user changes the position in the audio stream.
