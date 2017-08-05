@@ -47,7 +47,11 @@
         </activity>
     </application>
     <uses-sdk android:minSdkVersion="16" android:targetSdkVersion="23"/>
-    <supports-screens android:largeScreens="true" android:normalScreens="false" android:anyDensity="true" android:smallScreens="false"/>
+    <supports-screens android:xlargeScreens="true"
+                      android:largeScreens="true"
+                      android:normalScreens="true"
+                      android:smallScreens="false"
+                      android:anyDensity="true" />
 
     <!-- The following comment will be replaced upon deployment with default permissions based on the dependencies of the application.
          Remove the comment if you do not require these default permissions. -->
