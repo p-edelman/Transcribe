@@ -344,6 +344,7 @@ void Transcribe::pickFiles() {
 
 #ifdef Q_OS_ANDROID
   void Transcribe::shareText() {
+    m_player->togglePlayPause(false);
     QAndroidJniObject::callStaticMethod<void>(
           "org/mrpi/Transcribe/TranscriptionSharer",
           "shareTranscription",
