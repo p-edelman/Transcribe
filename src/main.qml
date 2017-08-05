@@ -68,6 +68,7 @@ ApplicationWindow {
       }
       AndroidToolButton {
         text:      "\uE163"
+        enabled:   app.text_file_name == "" ? false : true
         onClicked: main_window.shareText()
       }
     }
@@ -105,6 +106,7 @@ ApplicationWindow {
         visible:     Qt.platform.os == "android"
         id:          android_delete_menu_item
         text:        qsTr("Delete transcription")
+        enabled:     app.text_file_name == "" ? false : true
         onTriggered: main_window.deleteText()
       }
       Menu {
@@ -147,7 +149,7 @@ ApplicationWindow {
 
       Text {
         id:   file_name_display
-        text: app.text_file_name
+        text: app.text_file_name != "" ? app.text_file_name : qsTr("No transcript file loaded")
       }
       Text {
         id: dirty_display

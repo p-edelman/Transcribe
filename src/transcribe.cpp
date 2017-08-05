@@ -50,7 +50,7 @@ QString Transcribe::getTextFileName() const {
     QFileInfo info(m_text_file->fileName());
     return info.fileName();
   }
-  return QString(tr("No transcript file loaded"));
+  return QString("");
 }
 
 uint Transcribe::getNumWords() {

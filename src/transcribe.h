@@ -73,7 +73,8 @@ public:
   void setTextDirty(bool is_dirty);
   bool isTextDirty();
 
-  /** Return the file name (but not the path) of the transcript text file. */
+  /** Return the file name (but not the path) of the transcript text file.
+      If no transcript file is loaded, an empty string is returned. */
   QString getTextFileName() const;
 
   /** Return the number of words in the text editor. */
