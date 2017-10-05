@@ -13,6 +13,8 @@ SOURCES += main.cpp \
     audiodecoder.cpp \
     historymodel.cpp
 
+android: SOURCES += materialiconprovider.cpp
+
 RESOURCES += qml.qrc
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
@@ -29,6 +31,8 @@ HEADERS += \
     sonicbooster.h \
     audiodecoder.h \
     historymodel.h
+
+android: HEADERS += materialiconprovider.h
 
 DISTFILES += \
     README.md \

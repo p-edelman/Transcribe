@@ -6,6 +6,7 @@
         <file>SettingsGUI.qml</file>
         <file>MainArea.qml</file>
         <file>Constants.js</file>
-        <file>AndroidToolButton.qml</file>
+        <file>AndroidToolBar.qml</file>
+        <file>CrossPlatformButton.qml</file>
     </qresource>
 </RCC>

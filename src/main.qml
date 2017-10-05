@@ -45,34 +45,10 @@ ApplicationWindow {
   /** Emitted when the number of words might have been modified. */
   signal numWordsDirty()
 
-  toolBar: ToolBar {
-    // The toolbar provides the 'quick access' buttons on Android, for which
-    // especially the save button is important. For other platforms it would
-    // just take up space, so we hide it there.
-    visible: Qt.platform.os == "android"
-    RowLayout {
-      anchors.fill: parent
-
-      Item {
-        Layout.fillWidth: true // Right align everything
-      }
-      AndroidToolButton {
-        text:      "\uE145"
-        enabled:   app.is_text_dirty ? false : true
-        onClicked: pickFiles()
-      }
-      AndroidToolButton {
-        text:      "\uE161"
-        enabled:   app.is_text_dirty ? true : false
-        onClicked: main_window.saveText()
-      }
-      AndroidToolButton {
-        text:      "\uE163"
-        enabled:   app.text_file_name == "" ? false : true
-        onClicked: main_window.shareText()
-      }
-    }
+  AndroidToolBar {
+    id: android_toolbar
   }
+  toolBar: android_toolbar
 
   menuBar: MenuBar {
     Menu {
