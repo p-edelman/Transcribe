@@ -151,7 +151,7 @@ void Transcribe::close() {
     }
     settings.setValue(CFG_SCREEN_SIZE, m_main_window->size());
     settings.setValue(CFG_SCREEN_POS,  m_main_window->position());
-    settings.endGroup();\
+    settings.endGroup();
     settings.sync();
 #endif
 
@@ -426,14 +426,14 @@ void Transcribe::openTextFile(const QString& path) {
 }
 
 void Transcribe::restoreHistory(int index) {
-  saveHistory();
-
   QModelIndex model_index = m_history.index(index, 0);
   m_restore_pos = model_index.data(HistoryModel::AudioPostionRole).toUInt();
   QString audio_file_path = model_index.data(HistoryModel::AudioFileRole).toString();
   QString text_file_path  = model_index.data(HistoryModel::TextFileRole).toString();
   openAudioFile(audio_file_path);
   openTextFile(text_file_path);
+
+  saveHistory();
 }
 
 void Transcribe::saveHistory(bool allow_text_only) {
