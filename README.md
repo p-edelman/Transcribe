@@ -31,7 +31,6 @@ The experience on Android is less polished than on the desktop, so to speak. Thi
 
 You need to take into account:
 
-* You need an external keyboard!
 * The app works by opening files from the SD card or internal storage, just like a desktop application and rather unlike a mobile app
 * For this you need to enable the 'Storage' permission (the app should ask for this, but if it is somehow not activated: go the the settings of your device, choose the app overview, find Transcribe, go to permissions, enable)
 * Even so, the file open dialog is hard to navigate and sometimes doesn't show the files you need the first time. If you can't find your files, you might need to type in `/mnt/sdcard` in the selection and press 'Open' to view the contents of your phone memory
@@ -59,4 +58,6 @@ And that's all there is to it!
 
 ## License
 
-[GPLv3](http://www.gnu.org/licenses/gpl-3.0.en.html)
+All code is licensed according to the [GPLv3](http://www.gnu.org/licenses/gpl-3.0.en.html).
+
+This app ships with an unmodified copy of the [Material Icons font](https://material.io/icons/), which is distributed according to the terms of the [Apache License Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt).
