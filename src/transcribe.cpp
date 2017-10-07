@@ -210,8 +210,8 @@ void Transcribe::guiReady(QObject* root) {
           &m_keeper, SLOT(keyTyped()));
   connect(catcher, SIGNAL(saveFile()),
           this,    SLOT(saveText()));
-  connect(catcher,        SIGNAL(seekAudio(AudioPlayer::SeekDirection,int)),
-          m_player.get(), SLOT(skipSeconds(AudioPlayer::SeekDirection, int)));
+  connect(catcher,        SIGNAL(seekAudio(int)),
+          m_player.get(), SLOT(skipSeconds(int)));
   connect(catcher,        SIGNAL(togglePlayPause()),
           m_player.get(), SLOT(togglePlayPause()));
   connect(catcher,        SIGNAL(togglePlayPause(bool)),
@@ -232,6 +232,8 @@ void Transcribe::guiReady(QObject* root) {
           m_player.get(), SLOT(setPosition(int)));
   connect(m_main_window,  SIGNAL(playingStateChanged(bool)),
           m_player.get(), SLOT(togglePlayPause(bool)));
+  connect(m_main_window,  SIGNAL(seekAudio(int)),
+          m_player.get(), SLOT(skipSeconds(int)));
   connect(m_main_window, SIGNAL(saveText()),
           this,          SLOT(saveText()));
 #ifdef Q_OS_ANDROID

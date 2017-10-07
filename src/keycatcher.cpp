@@ -22,10 +22,10 @@ bool KeyCatcher::eventFilter(QObject* object, QEvent* event) {
           emit togglePlayPause(false);
           break;
         case Qt::Key_MediaNext:
-          emit seekAudio(AudioPlayer::FORWARD, 5);
+          emit seekAudio(5);
           break;
         case Qt::Key_MediaPrevious:
-          emit seekAudio(AudioPlayer::BACKWARD, 5);
+          emit seekAudio(-5);
           break;
         default:
           is_consumed = false;
@@ -44,10 +44,10 @@ bool KeyCatcher::eventFilter(QObject* object, QEvent* event) {
     } else if (key_event->modifiers() == Qt::AltModifier) {
       switch(key_event->key()) {
         case Qt::Key_Left:
-          emit seekAudio(AudioPlayer::BACKWARD, 5);
+          emit seekAudio(-5);
           break;
         case Qt::Key_Right:
-          emit seekAudio(AudioPlayer::FORWARD, 5);
+          emit seekAudio(5);
           break;
         case Qt::Key_Up:
           emit boost(true);

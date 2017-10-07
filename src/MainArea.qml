@@ -19,6 +19,11 @@ Item {
       @param is_playing indicates whether the user wants the audio to play. */
   signal playingStateChanged(bool is_playing)
 
+  /** Emitted when the user presses a forward or rewind button.
+      @param seconds the number of seconds to seek, either negative or positive.
+    */
+  signal seekAudio(int seconds)
+
   /** Emitted when the number of words might have been modified. */
   signal numWordsDirty()
 
@@ -102,6 +107,8 @@ Item {
       icon_id:       "media-seek-backward"
       fallback_text: "-5s"
 
+      onClicked: main_area.seekAudio(-5)
+
       anchors.verticalCenter: play_pause_btn.verticalCenter
       anchors.right:          play_pause_btn.left
     }
@@ -139,8 +146,11 @@ Item {
     CrossPlatformButton {
       id:            ffwd_btn
       enabled:       player.duration > 0 ? true : false
+
       icon_id:       "media-seek-forward"
       fallback_text: "+5s"
+
+      onClicked: main_area.seekAudio(5)
 
       anchors.verticalCenter: play_pause_btn.verticalCenter
       anchors.left:           play_pause_btn.right

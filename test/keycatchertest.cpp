@@ -1,8 +1,6 @@
 #include "keycatchertest.h"
 
 KeyCatcherTest::KeyCatcherTest() {
-  qRegisterMetaType<AudioPlayer::SeekDirection>();
-
   m_root    = new QObject();
   m_catcher = new KeyCatcher(m_root);
   m_root->installEventFilter(m_catcher);
@@ -102,14 +100,14 @@ void KeyCatcherTest::testAudioSeekWithArrows() {
   valid_modifiers.append(Qt::AltModifier);
   QList<Qt::KeyboardModifiers> invalid_modifiers = getInvalidModifiers(valid_modifiers);
 
-  QSignalSpy spy(m_catcher, SIGNAL(seekAudio(AudioPlayer::SeekDirection, int)));
+  QSignalSpy spy(m_catcher, SIGNAL(seekAudio(int)));
 
   QList<Qt::KeyboardModifiers>::iterator vmod;
   for (vmod = valid_modifiers.begin(); vmod != valid_modifiers.end(); vmod++) {
     QKeyEvent event(QEvent::KeyPress, Qt::Key_Left, *vmod);
     QApplication::sendEvent(m_root, &event);
     QCOMPARE(spy.count(), 1);
-    QCOMPARE(spy.last().at(0), QVariant(AudioPlayer::BACKWARD));
+    QCOMPARE(spy.last().at(0), QVariant(-5));
     QCOMPARE(m_key_typed_spy->count(), 0);
   }
 
@@ -117,7 +115,7 @@ void KeyCatcherTest::testAudioSeekWithArrows() {
     QKeyEvent event(QEvent::KeyPress, Qt::Key_Right, *vmod);
     QApplication::sendEvent(m_root, &event);
     QCOMPARE(spy.count(), 2);
-    QCOMPARE(spy.last().at(0), QVariant(AudioPlayer::FORWARD));
+    QCOMPARE(spy.last().at(0), QVariant(5));
     QCOMPARE(m_key_typed_spy->count(), 0);
   }
 
@@ -170,24 +168,24 @@ void KeyCatcherTest::testAudioPlayPauseWithAudioKeys() {
 /** Test if we can seek through the audio with the hardware previous and next
  *  keys. */
 void KeyCatcherTest::testAudioSeekWithAudioKeys() {
-  QSignalSpy spy(m_catcher, SIGNAL(seekAudio(AudioPlayer::SeekDirection,int)));
+  QSignalSpy spy(m_catcher, SIGNAL(seekAudio(int)));
 
   QApplication::sendEvent(m_root,
     new QKeyEvent(QEvent::KeyPress, Qt::Key_MediaPrevious, 0));
   QCOMPARE(spy.count(), 1);
-  QCOMPARE(spy.last().at(0), QVariant(AudioPlayer::BACKWARD));
+  QCOMPARE(spy.last().at(0), QVariant(-5));
 
   QApplication::sendEvent(m_root,
     new QKeyEvent(QEvent::KeyPress, Qt::Key_MediaNext, 0));
   QCOMPARE(spy.count(), 2);
-  QCOMPARE(spy.last().at(0), QVariant(AudioPlayer::FORWARD));
+  QCOMPARE(spy.last().at(0), QVariant(5));
 }
 
 /** Test if modifiers on the hardware audio keys are ignored. */
 void KeyCatcherTest::testModifiersOnAudioAudioKeys() {
   QSignalSpy spy_pp_noarg(m_catcher, SIGNAL(togglePlayPause()));
   QSignalSpy spy_pp_arg(m_catcher, SIGNAL(togglePlayPause(bool)));
-  QSignalSpy spy_seek(m_catcher, SIGNAL(seekAudio(AudioPlayer::SeekDirection,int)));
+  QSignalSpy spy_seek(m_catcher, SIGNAL(seekAudio(int)));
   QList<Qt::KeyboardModifiers> mods;
   QList<Qt::KeyboardModifiers> invalid_mods = getInvalidModifiers(mods);
 

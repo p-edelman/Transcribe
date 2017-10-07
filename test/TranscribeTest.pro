@@ -27,7 +27,8 @@ SOURCES += main.cpp \
            ../src/transcribe.cpp \
            ../src/sonicbooster.cpp \
            ../src/audiodecoder.cpp \
-           ../src/historymodel.cpp
+           ../src/historymodel.cpp \
+           ../src/icontranslationmatrix.cpp
 
 HEADERS += audioplayertest.h \
            typingtimelordtest.h \
@@ -41,7 +42,8 @@ HEADERS += audioplayertest.h \
            ../src/transcribe.h \
            ../src/sonicbooster.h \
            ../src/audiodecoder.h \
-           ../src/historymodel.h
+           ../src/historymodel.h \
+           ../src/icontranslationmatrix.h
 
 RESOURCES += ../src/qml.qrc
 

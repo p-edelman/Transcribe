@@ -42,6 +42,11 @@ ApplicationWindow {
       @param is_playing indicates whether the user wants the audio to play. */
   signal playingStateChanged(bool is_playing)
 
+  /** Emitted when the user presses a forward or rewind button.
+      @param seconds the number of seconds to seek, either negative or positive.
+    */
+  signal seekAudio(int seconds)
+
   /** Emitted when the number of words might have been modified. */
   signal numWordsDirty()
 
@@ -186,6 +191,7 @@ ApplicationWindow {
     // Connect the signals from the audio player to the main interface signals
     main_area.valueChanged.connect(audioPositionChanged)
     main_area.playingStateChanged.connect(playingStateChanged)
+    main_area.seekAudio.connect(seekAudio)
     main_area.numWordsDirty.connect(numWordsDirty)
   }
 }

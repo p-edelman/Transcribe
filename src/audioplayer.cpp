@@ -47,19 +47,16 @@ uint AudioPlayer::getPosition() {
   return ((m_decoder.position() + 500) / 1000);
 }
 
-void AudioPlayer::skipSeconds(SeekDirection direction, int seconds) {
+void AudioPlayer::skipSeconds(int seconds) {
   qint64 new_pos;
-  if (direction == SeekDirection::FORWARD) {
-    new_pos = m_decoder.position() + seconds * 1000;
-    if (new_pos > m_decoder.duration()) {
-      new_pos = m_decoder.duration();
-    }
-  } else {
-    new_pos = m_decoder.position() - seconds * 1000;
-    if (new_pos < 0) {
-      new_pos = 0;
-    }
+  new_pos = m_decoder.position() + seconds * 1000;
+  if (new_pos < 0) {
+    new_pos = 0;
   }
+  else if (new_pos > m_decoder.duration()) {
+    new_pos = m_decoder.duration();
+  }
+
   m_decoder.setPosition(new_pos);
   emit positionChanged();
 }

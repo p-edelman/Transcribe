@@ -140,6 +140,5 @@ void TranscribeTest::unloadTextFileOnAudioOpening() {
   QString silence_file = QString(SRCDIR);
   silence_file += "files/silence.wav";
   m_transcribe->openAudioFile(silence_file);
-
-  QCOMPARE(m_transcribe->getTextFileName(), QString("No transcript file loaded"));
+  QCOMPARE(m_transcribe->getTextFileName(), QString(""));
 }

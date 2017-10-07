@@ -164,25 +164,25 @@ void AudioPlayerTest::seek() {
 
   // Seek forward
   int num_signals = spy.count();
-  player.skipSeconds(AudioPlayer::FORWARD, 4);
+  player.skipSeconds(4);
   QVERIFY(spy.count() > num_signals);
   QCOMPARE((int)player.getPosition(), 4);
 
   // Seek backward
   num_signals = spy.count();
-  player.skipSeconds(AudioPlayer::BACKWARD, 2);
+  player.skipSeconds(-2);
   QVERIFY(spy.count() > num_signals);
   QCOMPARE((int)player.getPosition(), 2);
 
   // Make sure we can't seek before beginning
   num_signals = spy.count();
-  player.skipSeconds(AudioPlayer::BACKWARD, 10);
+  player.skipSeconds(-10);
   QVERIFY(spy.count() > num_signals);
   QCOMPARE((int)player.getPosition(), 0);
 
   // Make sure we can't seek past the end
   num_signals = spy.count();
-  player.skipSeconds(AudioPlayer::FORWARD, 20);
+  player.skipSeconds(20);
   QVERIFY(spy.count() > num_signals);
   QCOMPARE((int)player.getPosition(), 6);
   QTest::qWait(200);

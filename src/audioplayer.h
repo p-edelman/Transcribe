@@ -35,9 +35,6 @@ public:
   enum PlayerState {PLAYING, PAUSED, WAITING};
   Q_ENUMS(PlayerState)
 
-  enum SeekDirection {FORWARD, BACKWARD};
-  Q_ENUMS(SeekDirection)
-
   /** The player state. */
   Q_PROPERTY(PlayerState state
              READ getState
@@ -85,8 +82,10 @@ public slots:
   /** Seek to the specified position in the stream. */
   void setPosition(int seconds);
 
-  /** Skip a number of seconds backward or forward in the audio stream. */
-  void skipSeconds(AudioPlayer::SeekDirection direction, int seconds);
+  /** Skip a number of seconds in the audio stream
+   *  @param seconds the number of seconds to skip, either negative or positve.
+   */
+  void skipSeconds(int seconds);
 
   /** Switch between paused and playing states, depending on the current state:
    *  - if PLAYING of WAITING, switch to PAUSED

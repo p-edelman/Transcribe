@@ -10,8 +10,6 @@
 #include "transcribe.h"
 #include "audioplayer.h"
 
-Q_DECLARE_METATYPE(AudioPlayer::SeekDirection)
-
 class KeyCatcherTest : public QObject {
   Q_OBJECT
 

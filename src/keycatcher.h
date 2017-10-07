@@ -20,7 +20,7 @@ signals:
   void keyTyped();
 
   /** Signals for audio control */
-  void seekAudio(AudioPlayer::SeekDirection, int seconds);
+  void seekAudio(int seconds);
   void togglePlayPause();
   void togglePlayPause(bool should_play);
 
