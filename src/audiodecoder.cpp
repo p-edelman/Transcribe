@@ -56,6 +56,11 @@ QMediaPlayer::MediaStatus AudioDecoder::mediaStatus() const {
   return QMediaPlayer::mediaStatus();
 }
 
+bool AudioDecoder::isAudioAvailable() const {
+  if (m_is_native_wav) return true;
+  return QMediaPlayer::isAudioAvailable();
+}
+
 bool AudioDecoder::isIntercepting() {
   if (m_probe || m_is_native_wav) {
     return true;

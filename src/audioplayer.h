@@ -40,17 +40,30 @@ public:
              READ getState
              NOTIFY stateChanged)
 
-  /** The duration of the loaded audio file in whole seconds. */
+  /** The duration of the loaded audio file in whole seconds.
+   *  WARNING: Sometimes audio is actually available, but the duration is
+   *           reported as 0 or -1 seconds. When the audio is actually played,
+   *           the actual duration will be updated.
+   *           To know for sure if audio is available for playback, use the
+   *           is_available property. */
   Q_PROPERTY(uint duration
              READ getDuration
              NOTIFY durationChanged)
+
+  /** Whether audio is available or not. */
+  Q_PROPERTY(bool is_available
+             READ isAvailable
+             NOTIFY availabilityChanged)
 
   /** The position in the audio playback in whole seconds. */
   Q_PROPERTY(uint position
              READ getPosition
              NOTIFY positionChanged)
 
-  /** The ability to boost the audio. */
+  /** Indicates if we can boost the current loaded audio *to the best of our
+   *  current knowledge!* That is, we might think that we can boost the audio
+   *  but it may turn out that we can't if we try. In that case, subsequent
+   *  calls to this method return false. */
   Q_PROPERTY(bool can_boost
              READ canBoost
              NOTIFY canBoostChanged)
@@ -65,11 +78,7 @@ public:
   PlayerState getState();
   uint getDuration();
   uint getPosition();
-
-  /** Indicates if we can boost the current loaded audio *to the best of our
-   *  current knowledge!* That is, we might think that we can boost the audio
-   *  but it may turn out that we can't if we try. In that case, subsequent
-   *  calls to this method return false. */
+  bool isAvailable();
   bool canBoost();
 
 signals:
@@ -84,6 +93,9 @@ signals:
    *  occurs every millisecond, even though the position property is measured
    *  in whole seconds. */
   void positionChanged();
+
+  /** Signals that the availability of the audio has changed. */
+  void availabilityChanged();
 
   /** Signals that the ability to boost the audio has changed. */
   void canBoostChanged();

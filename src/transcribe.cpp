@@ -447,7 +447,7 @@ void Transcribe::restoreHistory(int index) {
 
 void Transcribe::saveHistory(bool allow_text_only) {
   if ((m_text_file) &&
-      (m_player->getDuration() > 0 || allow_text_only)) {
+      (m_player->isAvailable() || allow_text_only)) {
 
     m_history.add(QFileInfo(*m_text_file).absoluteFilePath(),
                   m_player->getFilePath(),

@@ -52,7 +52,7 @@ Item {
 
     Text {
       id:      curr_time
-      enabled: player.duration > 0 ? true : false
+      enabled: player.is_available
 
       text: {
         if (slider.pressed) {
@@ -67,7 +67,7 @@ Item {
 
     Slider {
       id:      slider
-      enabled: player.duration > 0 ? true : false
+      enabled: player.is_available
 
       orientation:              Qt.Horizontal
       updateValueWhileDragging: true
@@ -98,7 +98,7 @@ Item {
     Text {
       id:      end_time
       text:    formatSeconds(player.duration)
-      enabled: player.duration > 0 ? true : false
+      enabled: player.is_available
 
       anchors.right: parent.right
       anchors.top:   parent.top
@@ -127,8 +127,8 @@ Item {
     }
 
     CrossPlatformButton {
-      id:         rew_btn
-      enabled:    player.duration > 0
+      id:      rew_btn
+      enabled: player.is_available
 
       icon_id:       "media-seek-backward"
       fallback_text: "-5s"
@@ -142,7 +142,7 @@ Item {
 
     CrossPlatformButton {
       id:      play_pause_btn
-      enabled: player.duration > 0
+      enabled: player.is_available
 
       icon_id:       player.state === PlayerState.PAUSED ? "media-playback-start" :
                                                            "media-playback-pause"
@@ -158,7 +158,7 @@ Item {
 
     CrossPlatformButton {
       id:      ffwd_btn
-      enabled: player.duration > 0
+      enabled: player.is_available
 
       icon_id:       "media-seek-forward"
       fallback_text: "+5s"
@@ -172,7 +172,7 @@ Item {
 
     CrossPlatformButton {
       id:      volume_down_btn
-      enabled: (player.duration > 0 && player.can_boost)
+      enabled: (player.is_available && player.can_boost)
 
       icon_id:       "audio-volume-low"
       fallback_text: qsTr("volume down")
@@ -186,7 +186,7 @@ Item {
 
     CrossPlatformButton {
       id:      volume_up_btn
-      enabled: (player.duration > 0 && player.can_boost)
+      enabled: (player.is_available && player.can_boost)
 
       icon_id:       "audio-volume-high"
       fallback_text: qsTr("volume up")

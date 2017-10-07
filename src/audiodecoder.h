@@ -47,6 +47,9 @@ public:
 
   MediaStatus mediaStatus() const;
 
+  /** Reimplemented to indicate if the audio is available. */
+  bool isAudioAvailable() const;
+
   /** Return an opened QIODevice where raw audio data can be written to to play
    *  it back. */
   QIODevice* playbackDevice() {return m_audio_out_device;}

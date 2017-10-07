@@ -30,6 +30,10 @@ void AudioPlayer::openFile(const QString& path) {
   m_decoder.setMedia(QUrl::fromLocalFile(path));
 }
 
+bool AudioPlayer::isAvailable() {
+  return m_decoder.isAudioAvailable();
+}
+
 QString AudioPlayer::getFilePath() {
   return m_decoder.getMediaPath();
 }
@@ -68,11 +72,13 @@ void AudioPlayer::skipSeconds(int seconds) {
 }
 
 void AudioPlayer::handleMediaAvailabilityChanged() {
-  // Signal the MediaControls that the duration of the loaded media has changed.
-  // Note that the reported duration might be -1 initially even though the
-  // audio is available. That's why this method needs to be bound to the
-  // durationChanged signal as well.
+  // Signal the MediaControls that the duration and status of the loaded media
+  // have changed.
+  // Note that we use one method for this because these signals are both part of
+  // the loading process. Unfortunately, the reported duration might be -1
+  // initially and might get stuck there, even though the audio is available.
   emit durationChanged();
+  emit availabilityChanged();
   if (!m_decoder.isIntercepting()) {
     m_can_boost = false;
     emit canBoostChanged();
