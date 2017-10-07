@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Transcribe
+Exec=AppRun %F
+Icon=transcribe_icon
+Comment=Transcribe audio files to text
+Terminal=false
+Categories=Office

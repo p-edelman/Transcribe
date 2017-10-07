@@ -70,5 +70,11 @@ Thumbs.db
 # --------
 *.dll
 *.exe
+*.AppImage
 
-build*
+build-*
+build/appimage/*
+!build/appimage/transcribe.desktop
+!build/appimage/transcribe_icon.svg
+!build/appimage/BUILDING.md
+
