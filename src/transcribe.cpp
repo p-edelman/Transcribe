@@ -428,6 +428,9 @@ void Transcribe::openTextFile(const QString& path) {
 }
 
 void Transcribe::restoreHistory(int index) {
+  saveHistory(); // Save the history to remember the audio position befor we
+                 // load a new file
+
   QModelIndex model_index = m_history.index(index, 0);
   m_restore_pos = model_index.data(HistoryModel::AudioPostionRole).toUInt();
   QString audio_file_path = model_index.data(HistoryModel::AudioFileRole).toString();
@@ -435,6 +438,10 @@ void Transcribe::restoreHistory(int index) {
   openAudioFile(audio_file_path);
   openTextFile(text_file_path);
 
+  // Same as with pickFiles():
+  // saveHistory() is called when the audio file has finished loading, but we
+  // need do it here as well because openTextFile() might return after the audio
+  // file has finished loading. The joys of concurrency ...
   saveHistory();
 }
 
