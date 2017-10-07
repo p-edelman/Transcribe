@@ -110,6 +110,7 @@ Item {
 
       icon_id:       "media-seek-backward"
       fallback_text: "-5s"
+      tooltip:       "seek 5 s backward (<i>&lt;ALT&gt;+left</i>)"
 
       onClicked: main_area.seekAudio(-5)
 
@@ -153,6 +154,7 @@ Item {
 
       icon_id:       "media-seek-forward"
       fallback_text: "+5s"
+      tooltip:       "seek 5 s forward (<i>&lt;ALT&gt;+right</i>)"
 
       onClicked: main_area.seekAudio(5)
 
@@ -166,6 +168,7 @@ Item {
 
       icon_id:       "audio-volume-low"
       fallback_text: "volume down"
+      tooltip:       "decrease volume (<i>&lt;ALT&gt;+down</i>)"
 
       onClicked: boostAudio(false)
 
@@ -179,6 +182,7 @@ Item {
 
       icon_id:       "audio-volume-high"
       fallback_text: "volume up"
+      tooltip:       "increase volume (<i>&lt;ALT&gt;+up</i>)"
 
       onClicked: boostAudio(true)
 
