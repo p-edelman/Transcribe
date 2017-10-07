@@ -12,6 +12,11 @@ Button {
   property string fallback_text : ""
   property string icon_id       : ""
 
+  // Make sure our height is an even number, because that makes it so much
+  // easier to properly position the icon
+  height: (implicitHeight % 2 === 0) ? implicitHeight : implicitHeight + 1
+
+  // Set width equal to the height if we have an icon
   width: (icon.width > 1 && icon.height > 1) ? height: implicitWidth
 
   // We can't use iconSource because it doesn't work well with image providers
@@ -19,9 +24,18 @@ Button {
   Image {
     id: icon
     source: "image://translatedicon/" + icon_id + (enabled ? "" : "/inactive")
-    sourceSize.width:  parent.height * 0.75
-    sourceSize.height: parent.height * 0.75
-    anchors.centerIn: parent
+
+    // Again, request an icon with an even number of pixels, because that makes
+    // it easier to position it properly
+    function calcSize() {
+      var size = Math.round(parent.height * 0.75)
+      if (size % 2 !== 0) size += 1
+      return size
+    }
+
+    sourceSize.width:  calcSize()
+    sourceSize.height: calcSize()
+    anchors.centerIn:  parent
   }
 
   text: (icon.width == 1 && icon.height == 1) ? fallback_text: ""
