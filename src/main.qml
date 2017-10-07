@@ -5,7 +5,17 @@ import QtQml 2.2
 
 ApplicationWindow {
   id:    main_window
-  title: qsTr("Transcribe")
+  title: {
+    var title = "Transcribe"
+    if (Qt.platform.os != "android" && app.text_file_name != "") {
+      title = app.text_file_name + " - " + title
+      if (app.is_text_dirty) {
+        title += " *"
+      }
+    }
+
+    title
+  }
 
   visible: true
   width:   640
@@ -138,9 +148,7 @@ ApplicationWindow {
       }
       Text {
         id: dirty_display
-        text: {
-          if (app.is_text_dirty) {" *"} else {""}
-        }
+        text: app.is_text_dirty ? " *" : ""
       }
       Item {
         Layout.fillWidth: true // Right align the word count
