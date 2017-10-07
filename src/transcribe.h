@@ -26,13 +26,10 @@
 #include <memory>
 
 #include "audioplayer.h"
+#include "icontranslationmatrix.h"
 #include "historymodel.h"
 #include "keycatcher.h"
 #include "typingtimelord.h"
-
-#ifdef Q_OS_ANDROID
-#include "materialiconprovider.h"
-#endif
 
 /** The main application class. */
 class Transcribe : public QObject {

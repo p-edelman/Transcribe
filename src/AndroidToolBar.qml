@@ -10,22 +10,38 @@ ToolBar {
 
   RowLayout {
     anchors.fill: parent
+    spacing: 0
 
     Item {
       Layout.fillWidth: true // Right align everything
     }
     ToolButton {
-      iconSource: enabled ? "image://materialicon/open" : "image://materialicon/open/inactive"
+      Image {
+        source: "image://translatedicon/open" + (enabled ? "" : "/inactive")
+        sourceSize.width:  parent.height * 0.75
+        sourceSize.height: parent.height * 0.75
+        anchors.centerIn: parent
+      }
       enabled:   app.is_text_dirty ? false : true
       onClicked: pickFiles()
     }
     ToolButton {
-      iconSource: enabled ? "image://materialicon/save" : "image://materialicon/save/inactive"
+      Image {
+        source: "image://translatedicon/save" + (enabled ? "" : "/inactive")
+        sourceSize.width:  parent.height * 0.75
+        sourceSize.height: parent.height * 0.75
+        anchors.centerIn: parent
+      }
       enabled:   app.is_text_dirty ? true : false
       onClicked: main_window.saveText()
     }
     ToolButton {
-      iconSource: enabled ? "image://materialicon/send" : "image://materialicon/send/inactive"
+      Image {
+        source: "image://translatedicon/send" + (enabled ? "" : "/inactive")
+        sourceSize.width:  parent.height * 0.75
+        sourceSize.height: parent.height * 0.75
+        anchors.centerIn: parent
+      }
       enabled:   app.text_file_name == "" ? false : true
       onClicked: main_window.shareText()
     }

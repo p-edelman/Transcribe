@@ -12,26 +12,17 @@ Button {
   property string fallback_text : ""
   property string icon_id       : ""
 
-  iconSource: {
-    if ((Qt.platform.os === "android") && (icon_id != "")) {
-      var android_icon = "image://materialicon/" + icon_id
-      enabled ? android_icon : android_icon + "/inactive"
-    } else {
-      ""
-    }
+  width: (icon.width > 1 && icon.height > 1) ? height: implicitWidth
+
+  // We can't use iconSource because it doesn't work well with image providers
+  // (at least on Linux), so we simply draw an image
+  Image {
+    id: icon
+    source: "image://translatedicon/" + icon_id + (enabled ? "" : "/inactive")
+    sourceSize.width:  parent.height * 0.75
+    sourceSize.height: parent.height * 0.75
+    anchors.centerIn: parent
   }
 
-  iconName: {
-    if ((Qt.platform.os === "linux") && (icon_id != "")) {
-      icon_id
-    } else {
-      ""
-    }
-  }
-
-  Component.onCompleted: {
-    if ((iconSource == "") && (iconName == "") && (text == "")) {
-      text = fallback_text
-    }
-  }
+  text: (icon.width == 1 && icon.height == 1) ? fallback_text: ""
 }

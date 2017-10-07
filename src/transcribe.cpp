@@ -24,9 +24,8 @@ Transcribe::Transcribe(QObject* parent) :
   // (the class) as "PlayerState" in QML.
   qmlRegisterType<AudioPlayer>("AudioPlayer", 1, 0, "PlayerState");
 
-#ifdef Q_OS_ANDROID
-  m_engine.addImageProvider(QLatin1String("materialicon"), new MaterialIconProvider);
-#endif
+  m_engine.addImageProvider(QLatin1String("translatedicon"),
+                            new IconTranslationMatrix);
 
   // Load the GUI. When it is ready, the guiReady() method takes over.
   connect(&m_engine, SIGNAL(objectCreated(QObject*, QUrl)),

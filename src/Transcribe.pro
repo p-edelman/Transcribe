@@ -11,9 +11,8 @@ SOURCES += main.cpp \
     typingtimelord.cpp \
     sonicbooster.cpp \
     audiodecoder.cpp \
-    historymodel.cpp
-
-android: SOURCES += materialiconprovider.cpp
+    historymodel.cpp \
+    icontranslationmatrix.cpp
 
 RESOURCES += qml.qrc
 
@@ -30,9 +29,8 @@ HEADERS += \
     typingtimelord.h \
     sonicbooster.h \
     audiodecoder.h \
-    historymodel.h
-
-android: HEADERS += materialiconprovider.h
+    historymodel.h \
+    icontranslationmatrix.h
 
 DISTFILES += \
     README.md \
