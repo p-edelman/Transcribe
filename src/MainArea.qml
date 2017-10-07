@@ -109,8 +109,8 @@ Item {
       anchors.left: parent.left
       anchors.top:  slider.bottom
 
-      width:  waiting_text.width  + 10
-      height: waiting_text.height + 10
+      width:  waiting_text.width * 1.5
+      height: play_pause_btn.height
 
       border.width: 1
       radius:       4
