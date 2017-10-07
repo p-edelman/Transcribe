@@ -24,6 +24,10 @@ Item {
     */
   signal seekAudio(int seconds)
 
+  /** Emitted when the user wants to change the audio boosting.
+      @param is_up whether the boost should be increased or decreased. */
+  signal boostAudio(bool is_up)
+
   /** Emitted when the number of words might have been modified. */
   signal numWordsDirty()
 
@@ -102,7 +106,7 @@ Item {
 
     CrossPlatformButton {
       id:         rew_btn
-      enabled:    player.duration > 0 ? true : false
+      enabled:    player.duration > 0
 
       icon_id:       "media-seek-backward"
       fallback_text: "-5s"
@@ -144,8 +148,8 @@ Item {
     }
 
     CrossPlatformButton {
-      id:            ffwd_btn
-      enabled:       player.duration > 0 ? true : false
+      id:      ffwd_btn
+      enabled: player.duration > 0
 
       icon_id:       "media-seek-forward"
       fallback_text: "+5s"
@@ -154,6 +158,32 @@ Item {
 
       anchors.verticalCenter: play_pause_btn.verticalCenter
       anchors.left:           play_pause_btn.right
+    }
+
+    CrossPlatformButton {
+      id:      volume_down_btn
+      enabled: (player.duration > 0 && player.can_boost)
+
+      icon_id:       "audio-volume-low"
+      fallback_text: "volume down"
+
+      onClicked: boostAudio(false)
+
+      anchors.verticalCenter: play_pause_btn.verticalCenter
+      anchors.right:          volume_up_btn.left
+    }
+
+    CrossPlatformButton {
+      id:      volume_up_btn
+      enabled: (player.duration > 0 && player.can_boost)
+
+      icon_id:       "audio-volume-high"
+      fallback_text: "volume up"
+
+      onClicked: boostAudio(true)
+
+      anchors.verticalCenter: play_pause_btn.verticalCenter
+      anchors.right:          parent.right
     }
 
     Rectangle {

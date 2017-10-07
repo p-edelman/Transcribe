@@ -206,10 +206,10 @@ void Transcribe::guiReady(QObject* root) {
 
   // Install the key filter and connect its signals
   KeyCatcher* catcher = new KeyCatcher(root);
-  connect(catcher,   SIGNAL(keyTyped()),
-          &m_keeper, SLOT(keyTyped()));
-  connect(catcher, SIGNAL(saveFile()),
-          this,    SLOT(saveText()));
+  connect(catcher,        SIGNAL(keyTyped()),
+          &m_keeper,      SLOT(keyTyped()));
+  connect(catcher,        SIGNAL(saveFile()),
+          this,           SLOT(saveText()));
   connect(catcher,        SIGNAL(seekAudio(int)),
           m_player.get(), SLOT(skipSeconds(int)));
   connect(catcher,        SIGNAL(togglePlayPause()),
@@ -234,6 +234,8 @@ void Transcribe::guiReady(QObject* root) {
           m_player.get(), SLOT(togglePlayPause(bool)));
   connect(m_main_window,  SIGNAL(seekAudio(int)),
           m_player.get(), SLOT(skipSeconds(int)));
+  connect(m_main_window,  SIGNAL(boostAudio(bool)),
+          m_player.get(), SLOT(boost(bool)));
   connect(m_main_window, SIGNAL(saveText()),
           this,          SLOT(saveText()));
 #ifdef Q_OS_ANDROID

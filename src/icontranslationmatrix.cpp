@@ -81,6 +81,10 @@ QChar IconTranslationMatrix::getCharForIconId(QString id) {
     code = QChar(0xE020);
   } else if (id == "media-seek-forward") {
     code = QChar(0xE01F);
+  } else if (id == "audio-volume-low") {
+    code = QChar(0xE04D);
+  } else if (id == "audio-volume-high") {
+    code = QChar(0xE050);
   }
 
   return code;

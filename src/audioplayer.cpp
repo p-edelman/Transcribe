@@ -21,6 +21,8 @@ AudioPlayer::AudioPlayer(QObject* parent) : QObject(parent) {
 
 void AudioPlayer::openFile(const QString& path) {
   m_sonic_booster.resetLevel();
+  m_can_boost = true;
+  emit canBoostChanged();
 
   m_error_handled = false;
 
@@ -47,6 +49,10 @@ uint AudioPlayer::getPosition() {
   return ((m_decoder.position() + 500) / 1000);
 }
 
+bool AudioPlayer::canBoost() {
+  return m_can_boost;
+}
+
 void AudioPlayer::skipSeconds(int seconds) {
   qint64 new_pos;
   new_pos = m_decoder.position() + seconds * 1000;
@@ -67,6 +73,10 @@ void AudioPlayer::handleMediaAvailabilityChanged() {
   // audio is available. That's why this method needs to be bound to the
   // durationChanged signal as well.
   emit durationChanged();
+  if (!m_decoder.isIntercepting()) {
+    m_can_boost = false;
+    emit canBoostChanged();
+  }
 }
 
 void AudioPlayer::handleMediaError() {
@@ -166,6 +176,8 @@ void AudioPlayer::boost(bool is_up) {
       m_sonic_booster.decreaseLevel();
     }
   } else {
+    m_can_boost = false;
+    emit canBoostChanged();
     emit error(BOOST_UNSUPPORTED_MSG);
   }
 }
@@ -178,6 +190,8 @@ void AudioPlayer::handleAudioBuffer(const QAudioBuffer& buffer) {
   if (buffer.isValid()) {
     if (m_sonic_booster.level() != 0) {
       if (!m_sonic_booster.canBoost(buffer.format())) {
+        m_can_boost = false;
+        emit canBoostChanged();
         emit error(BOOST_UNSUPPORTED_MSG);
         m_sonic_booster.resetLevel();
       }

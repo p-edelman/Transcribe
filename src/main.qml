@@ -47,6 +47,10 @@ ApplicationWindow {
     */
   signal seekAudio(int seconds)
 
+  /** Emitted when the user wants to change the audio boosting.
+      @param is_up whether the boost should be increased or decreased. */
+  signal boostAudio(bool is_up)
+
   /** Emitted when the number of words might have been modified. */
   signal numWordsDirty()
 
@@ -192,6 +196,7 @@ ApplicationWindow {
     main_area.valueChanged.connect(audioPositionChanged)
     main_area.playingStateChanged.connect(playingStateChanged)
     main_area.seekAudio.connect(seekAudio)
+    main_area.boostAudio.connect(boostAudio)
     main_area.numWordsDirty.connect(numWordsDirty)
   }
 }

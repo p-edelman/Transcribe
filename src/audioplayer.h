@@ -50,6 +50,11 @@ public:
              READ getPosition
              NOTIFY positionChanged)
 
+  /** The ability to boost the audio. */
+  Q_PROPERTY(bool can_boost
+             READ canBoost
+             NOTIFY canBoostChanged)
+
   /** Open a new audio file.
    *  @param path the complete path to the new file. */
   void openFile(const QString &path);
@@ -60,6 +65,12 @@ public:
   PlayerState getState();
   uint getDuration();
   uint getPosition();
+
+  /** Indicates if we can boost the current loaded audio *to the best of our
+   *  current knowledge!* That is, we might think that we can boost the audio
+   *  but it may turn out that we can't if we try. In that case, subsequent
+   *  calls to this method return false. */
+  bool canBoost();
 
 signals:
   /** Signals the the playing state has changed. */
@@ -73,6 +84,9 @@ signals:
    *  occurs every millisecond, even though the position property is measured
    *  in whole seconds. */
   void positionChanged();
+
+  /** Signals that the ability to boost the audio has changed. */
+  void canBoostChanged();
 
   /** Signals that the audio failed to load or play.
    *  @param message an error message that can be displayed to the user. */
@@ -159,6 +173,10 @@ private:
    *  thrown by QMediaPlayer. We need to signal a problem just once to the end
    *  user though, so we need to keep track of whether it is handled already. */
   bool m_error_handled = false;
+
+  /** Remember if we can boost the audio. We can get an indication for this from
+   *  the AudioDecoded, but we can't know for sure until we actually try it. */
+  bool m_can_boost = false;
 
   /** Message to display to the user if he tries to boost the audio, but this
    *  isn't possible.
