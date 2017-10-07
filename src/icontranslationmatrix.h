@@ -29,16 +29,20 @@ public:
                         const QSize& requested_size);
 
 private:
+  /** Return a Material font code for the specified icon name. This is where the
+   *  translation magic happens. */
+  QChar getCharForIconId(QString id);
+
   /** Draw the specified icon from the theme onto the provided pixmap, adapted
    *  to the size of said pixmap, in active or inactive form.
    *  If the icon couldn't be obtained from the theme, this method returns
    *  false. */
   bool fromTheme(QString name, bool is_active, QPixmap* pixmap);
 
-  /** Draw the specified char code onto the provided pixmap, in active or
+  /** Draw the specified icon onto the provided pixmap, in active or
    *  inactive form.
    *  If the icon isn't available, this method returns false. */
-  bool fromMaterialFont(QChar code, bool is_active, QPixmap* pixmap);
+  bool fromMaterialFont(QString id, bool is_active, QPixmap* pixmap);
 
   // TODO
   const int DEFAULT_SIZE = 100;

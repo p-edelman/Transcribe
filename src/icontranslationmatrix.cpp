@@ -25,29 +25,13 @@ QPixmap IconTranslationMatrix::requestPixmap(const QString& identifier,
     }
   }
 
-  // Find the character code from the Material font for this request.
-  QChar code(0);
-  if (id == "open") {
-    code = QChar(0xE145);
-  } else if (id == "save") {
-    code = QChar(0xE161);
-  } else if (id == "send") {
-    code = QChar(0xE163);
-  } else if (id == "media-playback-start") {
-    code = QChar(0xE037);
-  } else if (id == "media-seek-backward") {
-    code = QChar(0xE020);
-  } else if (id == "media-seek-forward") {
-    code = QChar(0xE01F);
-  }
-
 #ifdef Q_OS_ANDROID
-  has_icon = fromMaterialFont(code, is_active, &pixmap);
+  has_icon = fromMaterialFont(id, is_active, &pixmap);
 #else
   has_icon = fromTheme(id, is_active, &pixmap);
   if (!has_icon) {
     // Fallback to Material icon
-    has_icon = fromMaterialFont(code, is_active, &pixmap);
+    has_icon = fromMaterialFont(id, is_active, &pixmap);
   }
 #endif
 
@@ -83,8 +67,28 @@ bool IconTranslationMatrix::fromTheme(QString name, bool is_active,
   return true;
 }
 
-bool IconTranslationMatrix::fromMaterialFont(QChar code, bool is_active,
-                                            QPixmap* pixmap) {
+QChar IconTranslationMatrix::getCharForIconId(QString id) {
+  QChar code(0);
+  if (id == "open") {
+    code = QChar(0xE145);
+  } else if (id == "save") {
+    code = QChar(0xE161);
+  } else if (id == "send") {
+    code = QChar(0xE163);
+  } else if (id == "media-playback-start") {
+    code = QChar(0xE037);
+  } else if (id == "media-seek-backward") {
+    code = QChar(0xE020);
+  } else if (id == "media-seek-forward") {
+    code = QChar(0xE01F);
+  }
+
+  return code;
+}
+
+bool IconTranslationMatrix::fromMaterialFont(QString id, bool is_active,
+                                             QPixmap* pixmap) {
+  QChar code = getCharForIconId(id);
   if (code == QChar(0)) return false;
 
   QPainter painter(pixmap);
