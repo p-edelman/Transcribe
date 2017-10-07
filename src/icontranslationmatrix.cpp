@@ -77,6 +77,8 @@ QChar IconTranslationMatrix::getCharForIconId(QString id) {
     code = QChar(0xE163);
   } else if (id == "media-playback-start") {
     code = QChar(0xE037);
+  } else if (id == "media-playback-pause") {
+    code = QChar(0xE034);
   } else if (id == "media-seek-backward") {
     code = QChar(0xE020);
   } else if (id == "media-seek-forward") {

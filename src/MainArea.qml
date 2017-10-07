@@ -104,96 +104,10 @@ Item {
       anchors.top:   parent.top
     }
 
-    CrossPlatformButton {
-      id:         rew_btn
-      enabled:    player.duration > 0
-
-      icon_id:       "media-seek-backward"
-      fallback_text: "-5s"
-      tooltip:       "seek 5 s backward (<i>&lt;ALT&gt;+left</i>)"
-
-      onClicked: main_area.seekAudio(-5)
-
-      anchors.verticalCenter: play_pause_btn.verticalCenter
-      anchors.right:          play_pause_btn.left
-    }
-
-    CrossPlatformButton {
-      id:        play_pause_btn
-      checkable: true
-      enabled: player.duration > 0 ? true : false
-      text:    player.state === PlayerState.PAUSED ? qsTr("Play") : qsTr("Pause")
-
-      icon_id: "media-playback-start"
-
-      anchors.horizontalCenter: slider.horizontalCenter
-      anchors.top:              slider.bottom
-
-      // We cannot directly bind the checked state here because it can get
-      // overruled by the user, and then the binding is lost. So we need to
-      // explicitly respond to the signal here,
-      Connections {
-        target: player
-        onStateChanged: {
-          if (player.state === PlayerState.PAUSED) {
-            play_pause_btn.checked = false
-          } else {
-            play_pause_btn.checked = true
-          }
-        }
-      }
-
-      onClicked: {
-        main_area.playingStateChanged(checked)
-      }
-    }
-
-    CrossPlatformButton {
-      id:      ffwd_btn
-      enabled: player.duration > 0
-
-      icon_id:       "media-seek-forward"
-      fallback_text: "+5s"
-      tooltip:       "seek 5 s forward (<i>&lt;ALT&gt;+right</i>)"
-
-      onClicked: main_area.seekAudio(5)
-
-      anchors.verticalCenter: play_pause_btn.verticalCenter
-      anchors.left:           play_pause_btn.right
-    }
-
-    CrossPlatformButton {
-      id:      volume_down_btn
-      enabled: (player.duration > 0 && player.can_boost)
-
-      icon_id:       "audio-volume-low"
-      fallback_text: "volume down"
-      tooltip:       "decrease volume (<i>&lt;ALT&gt;+down</i>)"
-
-      onClicked: boostAudio(false)
-
-      anchors.verticalCenter: play_pause_btn.verticalCenter
-      anchors.right:          volume_up_btn.left
-    }
-
-    CrossPlatformButton {
-      id:      volume_up_btn
-      enabled: (player.duration > 0 && player.can_boost)
-
-      icon_id:       "audio-volume-high"
-      fallback_text: "volume up"
-      tooltip:       "increase volume (<i>&lt;ALT&gt;+up</i>)"
-
-      onClicked: boostAudio(true)
-
-      anchors.verticalCenter: play_pause_btn.verticalCenter
-      anchors.right:          parent.right
-    }
-
     Rectangle {
-      id:            waiting_sign
-      anchors.right: parent.right
-      anchors.top:   slider.bottom
+      id:           waiting_sign
+      anchors.left: parent.left
+      anchors.top:  slider.bottom
 
       width:  waiting_text.width  + 10
       height: waiting_text.height + 10
@@ -210,6 +124,78 @@ Item {
         text:  qsTr("Hold")
         color: player.state === PlayerState.WAITING ? "black": "transparent"
       }
+    }
+
+    CrossPlatformButton {
+      id:         rew_btn
+      enabled:    player.duration > 0
+
+      icon_id:       "media-seek-backward"
+      fallback_text: "-5s"
+      tooltip:       qsTr("seek 5 s backward (<i>&lt;ALT&gt;+left</i>)")
+
+      onClicked: main_area.seekAudio(-5)
+
+      anchors.verticalCenter: play_pause_btn.verticalCenter
+      anchors.right:          play_pause_btn.left
+    }
+
+    CrossPlatformButton {
+      id:      play_pause_btn
+      enabled: player.duration > 0
+
+      icon_id:       player.state === PlayerState.PAUSED ? "media-playback-start" :
+                                                           "media-playback-pause"
+      fallback_text: player.state === PlayerState.PAUSED ? qsTr("Play") :
+                                                           qsTr("Pause")
+      tooltip:       qsTr("play/pause (<i>&lt;CTRL&gt;+space</i>)")
+
+      anchors.horizontalCenter: slider.horizontalCenter
+      anchors.top:              slider.bottom
+
+      onClicked: main_area.playingStateChanged(player.state === PlayerState.PAUSED)
+    }
+
+    CrossPlatformButton {
+      id:      ffwd_btn
+      enabled: player.duration > 0
+
+      icon_id:       "media-seek-forward"
+      fallback_text: "+5s"
+      tooltip:       qsTr("seek 5 s forward (<i>&lt;ALT&gt;+right</i>)")
+
+      onClicked: main_area.seekAudio(5)
+
+      anchors.verticalCenter: play_pause_btn.verticalCenter
+      anchors.left:           play_pause_btn.right
+    }
+
+    CrossPlatformButton {
+      id:      volume_down_btn
+      enabled: (player.duration > 0 && player.can_boost)
+
+      icon_id:       "audio-volume-low"
+      fallback_text: qsTr("volume down")
+      tooltip:       qsTr("decrease volume (<i>&lt;ALT&gt;+down</i>)")
+
+      onClicked: boostAudio(false)
+
+      anchors.verticalCenter: play_pause_btn.verticalCenter
+      anchors.right:          volume_up_btn.left
+    }
+
+    CrossPlatformButton {
+      id:      volume_up_btn
+      enabled: (player.duration > 0 && player.can_boost)
+
+      icon_id:       "audio-volume-high"
+      fallback_text: qsTr("volume up")
+      tooltip:       qsTr("increase volume (<i>&lt;ALT&gt;+up</i>)")
+
+      onClicked: boostAudio(true)
+
+      anchors.verticalCenter: play_pause_btn.verticalCenter
+      anchors.right:          parent.right
     }
   }
 
