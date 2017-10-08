@@ -17,13 +17,13 @@ The app is written using het Qt framework and is tested on Linux, Android (see b
 
 ## Status
 
-The third stable release, codenamed 'Cyberman' is totally suited for daily usage. Please select your platform:
+The fourth stable release, codenamed 'Dalek' is totally suited for daily usage. Please select your platform:
 
-* [Linux AppImage](https://github.com/p-edelman/Transcribe/releases/download/cyberman/transcribe-cyberman.AppImage)
-* [Windows installer](https://github.com/p-edelman/Transcribe/releases/download/cyberman/TranscribeInstaller.exe)
+* [Linux AppImage](https://github.com/p-edelman/Transcribe/releases/download/dalek/transcribe-dalek.AppImage)
+* [Windows installer](https://github.com/p-edelman/Transcribe/releases/download/dalek/TranscribeInstaller.exe)
 * [Android app from the Play Store](https://play.google.com/store/apps/details?id=org.mrpi.transcribe)
 
-If you want to build it yourself, you should checkout the tag 'cyberman' from Git.
+If you want to build it yourself, you should checkout the tag 'dalek' from Git.
 
 ### Android
 
