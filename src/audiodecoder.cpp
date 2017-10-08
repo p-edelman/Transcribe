@@ -135,8 +135,9 @@ void AudioDecoder::pause() {
   if (m_is_native_wav) {
     m_state_when_native = QMediaPlayer::PausedState;
     m_audio_out->suspend();
+  } else if (isAudioAvailable()) {
+    QMediaPlayer::pause();
   }
-  QMediaPlayer::pause();
 }
 
 void AudioDecoder::play() {
@@ -152,7 +153,7 @@ void AudioDecoder::play() {
         checkBuffer();
       }
     }
-  } else {
+  } else if (isAudioAvailable()) {
     QMediaPlayer::play();
   }
 }
