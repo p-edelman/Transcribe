@@ -2,8 +2,8 @@
 <Package>
   <DisplayName>Transcribe</DisplayName>
   <Description>The main Transcribe application.</Description>
-  <Version>3.0</Version>
-  <ReleaseDate>2017-07-16</ReleaseDate>
+  <Version>4.0</Version>
+  <ReleaseDate>2017-10-08</ReleaseDate>
   <Licenses>
     <License name="GNU General Public License v3" file="gpl-3.0.txt" />
   </Licenses>
