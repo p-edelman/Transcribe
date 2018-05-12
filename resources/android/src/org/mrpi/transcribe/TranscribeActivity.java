@@ -1,10 +1,5 @@
 package org.mrpi.transcribe;
 
-import android.app.AlertDialog;
-import android.app.AlertDialog.Builder;
-import android.content.pm.PackageManager;
-import android.content.DialogInterface;
-import android.os.Bundle;
 import android.Manifest;
 
 public class TranscribeActivity extends org.qtproject.qt5.android.bindings.QtActivity {
@@ -16,38 +11,9 @@ public class TranscribeActivity extends org.qtproject.qt5.android.bindings.QtAct
   // A unique code for the request for the permissions we need
   private static int PERMS_REQUEST_CODE = 31415;
 
-  @Override
-  public void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-
-    // Check if we have permissions to read file storage, and if not ask for
-    // them.
-    if (!hasStoragePermissions()) {
-      requestStoragePermissions();
-    }
-  }
-
-  /** Figure out if we have permissions to read the device storage. */
-  public boolean hasStoragePermissions() {
-    boolean has_permissions = true;
-    for (String permission: PERMS) {
-      if (checkSelfPermission(permission) != PackageManager.PERMISSION_GRANTED) {
-        has_permissions = false;
-      }
-    }
-
-    return has_permissions;
-  }
-
-  /** If the storage permissions are not given, and the user hasn't indicated
-      that she won't give them, then open a pop-up to ask for the permissions.
-    */
-  private void requestStoragePermissions() {
-    if (!hasStoragePermissions()) {
-      if (shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
-        requestPermissions(PERMS, PERMS_REQUEST_CODE);
-      }
-    }
+  /** Present the user with a popup to request storage permissions. */
+  public void requestStoragePerm() {
+    requestPermissions(PERMS, PERMS_REQUEST_CODE);
   }
 
   /** Handle the answer to the request for file storage permissions. */
@@ -56,19 +22,11 @@ public class TranscribeActivity extends org.qtproject.qt5.android.bindings.QtAct
                                          String[] permissions,
                                          int[] results) {
     if (request_code == PERMS_REQUEST_CODE) {
-      if (!hasStoragePermissions()) {
-        if (shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
-          AlertDialog.Builder builder = new AlertDialog.Builder(this);
-          builder.setTitle("Storage permission")
-                 .setMessage("This app needs access to your device memory to read audio files. It can't function properly if you don't grant it permission to do so.");
-          builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-              requestStoragePermissions();
-          }});
-          AlertDialog dialog = builder.create();
-          dialog.show();
-        }
-      }
+      handleStorageRequestResponse(results[0]);
     }
   }
+
+  /** Method defined in C to signal that the user picked her storage permissions
+    * preference. */
+  private native void handleStorageRequestResponse(int something);
 }

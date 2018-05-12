@@ -13,6 +13,7 @@ SOURCES += main.cpp \
     audiodecoder.cpp \
     historymodel.cpp \
     icontranslationmatrix.cpp
+android: SOURCES += androidsignals.cpp
 
 RESOURCES += qml.qrc
 
@@ -31,6 +32,7 @@ HEADERS += \
     audiodecoder.h \
     historymodel.h \
     icontranslationmatrix.h
+android: HEADERS += androidsignals.h
 
 DISTFILES += \
     README.md \

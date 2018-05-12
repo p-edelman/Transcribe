@@ -29,6 +29,7 @@
 #include "icontranslationmatrix.h"
 #include "historymodel.h"
 #include "keycatcher.h"
+#include "androidsignals.h"
 #include "typingtimelord.h"
 
 /** The main application class. */
@@ -165,6 +166,12 @@ private slots:
   void pickFiles();
 
 #ifdef Q_OS_ANDROID
+  /** Check to see if the app hast the external storage permission. If it has,
+   *  it will return true. If not, the asynchronous procedure to ask it to the
+   *  user will be started and the method returns false. The result should be
+   *  caught with the storagePermResponse() signal from AndroidSignals. */
+  bool askForStoragePerm();
+
   /** Share the text of the currently opende file via an Android intent. */
   void shareText();
 
