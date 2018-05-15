@@ -61,6 +61,12 @@ uint Transcribe::getNumWords() {
 }
 
 void Transcribe::openAudioFile(const QString& path) {
+
+#ifdef Q_OS_ANDROID
+  auto callback = std::bind(&Transcribe::openAudioFile, this, path);
+  if (!StoragePerm::instance()->tryPermission(callback)) return;
+#endif
+
   // Unload the current text file
   m_text_file = NULL;
   emit textFileNameChanged();
@@ -239,8 +245,6 @@ void Transcribe::guiReady(QObject* root) {
   connect(m_main_window, SIGNAL(saveText()),
           this,          SLOT(saveText()));
 #ifdef Q_OS_ANDROID
-  connect(AndroidSignals::instance(), SIGNAL(storagePermResponse(bool)),
-          this,                       SLOT(pickFiles()));
   connect(m_main_window, SIGNAL(shareText()),
           this,          SLOT(shareText()));
   connect(m_main_window, SIGNAL(deleteText()),
@@ -280,7 +284,7 @@ void Transcribe::pickFiles() {
 #ifdef Q_OS_ANDROID
     // First see if we have storage permissions. We fail here if we don't have
     // them and let the callback to the request popup call this method again.
-    if (!askForStoragePerm()) return;
+    if (!StoragePerm::instance()->tryPermission(std::bind(&Transcribe::pickFiles, this))) return;
 
     // Make the QFileDialog a bit better by maximizing it.
     dlg.setWindowState(Qt::WindowMaximized);
@@ -356,32 +360,6 @@ void Transcribe::pickFiles() {
 }
 
 #ifdef Q_OS_ANDROID
-  bool Transcribe::askForStoragePerm() {
-    // The permission that we need
-    QString perm = "android.permission.READ_EXTERNAL_STORAGE";
-
-    if (QtAndroid::checkPermission(perm) == QtAndroid::PermissionResult::Granted) {
-      return true;
-    }
-
-    // Show an explanation when we don't have permissions because the user
-    // previously declined the request. Note that when the user declined
-    // for good, this check returns false and nothing happens.
-    if (QtAndroid::shouldShowRequestPermissionRationale(perm)) {
-      QMessageBox msg_box;
-      msg_box.setWindowTitle("Permission denied");
-      msg_box.setText("This app needs access to your device memory to read audio files. It can't function properly if it doesn't have permissions to do so.");
-      msg_box.setStandardButtons(QMessageBox::Ok);
-      msg_box.exec();
-    }
-
-    // Qt since version 5.10 has the storage request permissions built in, but
-    // they seem very buggy and underdocumented, so we'll leave it to a dedicated
-    // method in Java.
-    QtAndroid::androidActivity().callMethod<void>("requestStoragePerm");
-    return false;
-  }
-
   void Transcribe::shareText() {
     m_player->togglePlayPause(false);
     QAndroidJniObject::callStaticMethod<void>(

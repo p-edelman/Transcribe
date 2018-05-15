@@ -1,5 +1,6 @@
 package org.mrpi.transcribe;
 
+import android.content.pm.PackageManager;
 import android.Manifest;
 
 public class TranscribeActivity extends org.qtproject.qt5.android.bindings.QtActivity {
@@ -22,11 +23,11 @@ public class TranscribeActivity extends org.qtproject.qt5.android.bindings.QtAct
                                          String[] permissions,
                                          int[] results) {
     if (request_code == PERMS_REQUEST_CODE) {
-      handleStorageRequestResponse(results[0]);
+      handleStorageRequestResponse(results[0] == PackageManager.PERMISSION_GRANTED);
     }
   }
 
   /** Method defined in C to signal that the user picked her storage permissions
     * preference. */
-  private native void handleStorageRequestResponse(int something);
+  private native void handleStorageRequestResponse(boolean has_permission);
 }
