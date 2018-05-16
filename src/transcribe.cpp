@@ -84,6 +84,12 @@ bool Transcribe::saveText() {
 
   QSaveFile file(m_text_file->fileName());
   if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+#ifdef Q_OS_ANDROID
+    // The on-screen keyboard doesn't actully add the word to the text area
+    // until it is committed, normally by a space or period etc. To include it
+    // in our saved file, we need to manually commit it.
+    qApp->inputMethod()->commit();
+#endif
     QTextStream out_stream(&file);
     out_stream << QQmlProperty::read(m_text_area, "text").toString();
     if (file.commit()) {
