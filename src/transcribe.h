@@ -7,6 +7,7 @@
 #include <QString>
 #include <QSysInfo>
 #include <QWindow>
+#include <QMessageBox>
 #include <QQmlApplicationEngine>
 #include <QQmlProperty>
 #include <QSaveFile>
