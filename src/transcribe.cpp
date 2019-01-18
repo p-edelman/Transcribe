@@ -309,7 +309,7 @@ void Transcribe::pickFiles() {
 
   // Let the user pick an audio file
   dlg.setWindowTitle(tr("Open an audio file"));
-  dlg.setNameFilter(tr("Audio files (*.wav *.mp3 *.aac *.amr *.aiff *.flac *.ogg *.wma)"));
+  dlg.setNameFilter(tr("Audio files (*.wav *.mp3 *.aac *.amr *.aiff *.flac *.ogg *.wma, *.opus)"));
   dlg.setFileMode(QFileDialog::ExistingFile);
   dlg.setAcceptMode(QFileDialog::AcceptOpen);
   if (dlg.exec() == QDialog::Rejected || dlg.selectedFiles().count() != 1) {
