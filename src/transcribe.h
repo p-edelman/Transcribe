@@ -4,10 +4,10 @@
 #include <QApplication>
 #include <QFileDialog>
 #include <QFileInfo>
-#include <QMessageBox>
 #include <QString>
 #include <QSysInfo>
 #include <QWindow>
+#include <QMessageBox>
 #include <QQmlApplicationEngine>
 #include <QQmlProperty>
 #include <QSaveFile>
@@ -30,6 +30,9 @@
 #include "historymodel.h"
 #include "keycatcher.h"
 #include "typingtimelord.h"
+#ifdef Q_OS_ANDROID
+#include "storageperm.h"
+#endif
 
 /** The main application class. */
 class Transcribe : public QObject {

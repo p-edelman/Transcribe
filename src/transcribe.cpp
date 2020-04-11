@@ -61,6 +61,12 @@ uint Transcribe::getNumWords() {
 }
 
 void Transcribe::openAudioFile(const QString& path) {
+
+#ifdef Q_OS_ANDROID
+  auto callback = std::bind(&Transcribe::openAudioFile, this, path);
+  if (!StoragePerm::instance()->tryPermission(callback)) return;
+#endif
+
   // Unload the current text file
   m_text_file = NULL;
   emit textFileNameChanged();
@@ -78,6 +84,12 @@ bool Transcribe::saveText() {
 
   QSaveFile file(m_text_file->fileName());
   if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+#ifdef Q_OS_ANDROID
+    // The on-screen keyboard doesn't actully add the word to the text area
+    // until it is committed, normally by a space or period etc. To include it
+    // in our saved file, we need to manually commit it.
+    qApp->inputMethod()->commit();
+#endif
     QTextStream out_stream(&file);
     out_stream << QQmlProperty::read(m_text_area, "text").toString();
     if (file.commit()) {
@@ -276,6 +288,10 @@ void Transcribe::pickFiles() {
   // they are abstracted away. Since it would require a major effort to make
   // this work in the Android way, we'll just try to make the best of it.
 #ifdef Q_OS_ANDROID
+    // First see if we have storage permissions. We fail here if we don't have
+    // them and let the callback to the request popup call this method again.
+    if (!StoragePerm::instance()->tryPermission(std::bind(&Transcribe::pickFiles, this))) return;
+
     // Make the QFileDialog a bit better by maximizing it.
     dlg.setWindowState(Qt::WindowMaximized);
     dlg.setViewMode(QFileDialog::List);
@@ -293,7 +309,7 @@ void Transcribe::pickFiles() {
 
   // Let the user pick an audio file
   dlg.setWindowTitle(tr("Open an audio file"));
-  dlg.setNameFilter(tr("Audio files (*.wav *.mp3 *.aac *.amr *.aiff *.flac *.ogg *.wma)"));
+  dlg.setNameFilter(tr("Audio files (*.wav *.mp3 *.aac *.amr *.aiff *.flac *.ogg *.wma, *.opus)"));
   dlg.setFileMode(QFileDialog::ExistingFile);
   dlg.setAcceptMode(QFileDialog::AcceptOpen);
   if (dlg.exec() == QDialog::Rejected || dlg.selectedFiles().count() != 1) {
