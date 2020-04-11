@@ -1,5 +1,7 @@
 # Transcribe
 
+**NOTE**: I'm no longer maintaining this project. I wrote it at a time when it was an "itch to scratch" for me, but since I've switched jobs, I don't have a need for it anymore. That being said, the app probably works as advertised.
+
 A tool for people who need to transcribe audio recordings to text (more specifically, people that are slow typists and have fat fingers ;)
 
 The app is quite simple; it allows you to load an audio file and play it while typing out the text, so you don't have to switch constantly between audio player and text editor. Crucially, the app:
@@ -21,7 +23,7 @@ The fourth stable release, codenamed 'Dalek' is totally suited for daily usage. 
 
 * [Linux AppImage](https://github.com/p-edelman/Transcribe/releases/download/dalek/transcribe-dalek.AppImage)
 * [Windows installer](https://github.com/p-edelman/Transcribe/releases/download/dalek/TranscribeInstaller.exe)
-* [Android app from the Play Store](https://play.google.com/store/apps/details?id=org.mrpi.transcribe)
+* [Android app ~~from the Play Store~~ as a direct download](https://github.com/p-edelman/Transcribe/releases/download/dalek/Transcribe-dalek.apk)
 
 If you want to build it yourself, you should checkout the tag 'dalek' from Git.
 
@@ -35,6 +37,8 @@ You need to take into account:
 * For this you need to enable the 'Storage' permission (the app should ask for this, but if it is somehow not activated: go the the settings of your device, choose the app overview, find Transcribe, go to permissions, enable)
 * Even so, the file open dialog is hard to navigate and sometimes doesn't show the files you need the first time. If you can't find your files, you might need to type in `/mnt/sdcard` in the selection and press 'Open' to view the contents of your phone memory
 * Audio boosting only works for .wav files
+
+**NOTE**: The app is not available in the Play Store anymore, as it required a lot of maintainance. Google makes you jump through new hoops all the time and there was a lot of vitriol from people who rather spend their time writing negative reviews than reading even the basic description. I simply don't have the time to manage this. The app is still available as a direct download.
 
 ### Windows 10
 
